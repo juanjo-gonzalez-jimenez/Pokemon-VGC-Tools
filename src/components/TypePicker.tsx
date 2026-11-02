@@ -1,5 +1,6 @@
 import {TYPES, type TypeName} from '../lib/typechart';
 import {TYPE_COLORS} from './TypeBadge';
+import {Panel} from './Panel';
 
 export const MAX_TYPES = 4;
 
@@ -14,18 +15,18 @@ export function TypePicker({selected, onChange}: Props) {
     onChange(selected.includes(t) ? selected.filter(s => s !== t) : [...selected, t]);
 
   return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2>Move types</h2>
-        <span className="muted">
-          {selected.length}/{MAX_TYPES} selected
-          {selected.length > 0 && (
-            <button className="link" onClick={() => onChange([])}>
-              Clear
-            </button>
-          )}
-        </span>
-      </div>
+    <Panel
+      id="move-types"
+      title="Move types"
+      note={`${selected.length}/${MAX_TYPES} selected`}
+      actions={
+        selected.length > 0 && (
+          <button className="link" onClick={() => onChange([])}>
+            Clear
+          </button>
+        )
+      }
+    >
       <div className="type-grid">
         {TYPES.map(t => {
           const on = selected.includes(t);
@@ -43,6 +44,6 @@ export function TypePicker({selected, onChange}: Props) {
           );
         })}
       </div>
-    </section>
+    </Panel>
   );
 }

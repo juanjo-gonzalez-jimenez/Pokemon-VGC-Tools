@@ -1,4 +1,5 @@
 import {BUCKETS, type Bucket} from '../lib/coverage';
+import {Panel} from './Panel';
 
 export const BUCKET_LABELS: Record<Bucket, string> = {
   super: 'Super effective',
@@ -11,11 +12,7 @@ export const pct = (x: number, digits = 1) => `${(x * 100).toFixed(digits)}%`;
 
 export function CoverageSummary({buckets, weighted}: {buckets: Record<Bucket, number>; weighted: boolean}) {
   return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2>Coverage</h2>
-        <span className="muted">{weighted ? 'weighted by usage' : 'each Pokémon counts equally'}</span>
-      </div>
+    <Panel id="coverage" title="Coverage" note={weighted ? 'weighted by usage' : 'each Pokémon counts equally'}>
       <div className="stat-row">
         {BUCKETS.map(b => (
           <div key={b} className={`stat bucket-${b}`}>
@@ -31,6 +28,6 @@ export function CoverageSummary({buckets, weighted}: {buckets: Record<Bucket, nu
           ) : null,
         )}
       </div>
-    </section>
+    </Panel>
   );
 }

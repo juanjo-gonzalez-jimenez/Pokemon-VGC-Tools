@@ -2,22 +2,31 @@ import {useState} from 'react';
 import {bucketOf, type PokemonCoverage} from '../lib/coverage';
 import {pct} from './CoverageSummary';
 import {TypeBadge} from './TypeBadge';
+import {Panel} from './Panel';
 
 const multLabel = (m: number) => `${Number(m.toFixed(3))}×`;
 
-export function PokemonTable({results}: {results: PokemonCoverage[]}) {
-  const [wallsOnly, setWallsOnly] = useState(false);
+interface Props {
+  results: PokemonCoverage[];
+  title?: string;
+  defaultWallsOnly?: boolean;
+}
+
+export function PokemonTable({results, title = 'Roster', defaultWallsOnly = false}: Props) {
+  const [wallsOnly, setWallsOnly] = useState(defaultWallsOnly);
   const rows = wallsOnly ? results.filter(r => r.buckets.resisted + r.buckets.immune > 0) : results;
 
   return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2>Roster</h2>
-        <label className="muted">
+    <Panel
+      id={`table-${title}`}
+      title={title}
+      actions={
+        <label>
           <input type="checkbox" checked={wallsOnly} onChange={e => setWallsOnly(e.target.checked)} /> Only Pokémon
           that wall you
         </label>
-      </div>
+      }
+    >
       <div className="table-wrap">
         <table>
           <thead>
@@ -71,6 +80,6 @@ export function PokemonTable({results}: {results: PokemonCoverage[]}) {
         </table>
         {!rows.length && <p className="muted empty">Nothing walls this selection. 🎉</p>}
       </div>
-    </section>
+    </Panel>
   );
 }

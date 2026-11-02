@@ -2,6 +2,7 @@ import type {Suggestion} from '../lib/suggest';
 import type {TypeName} from '../lib/typechart';
 import {pct} from './CoverageSummary';
 import {TypeBadge} from './TypeBadge';
+import {Panel} from './Panel';
 
 const signed = (x: number) => `${x >= 0 ? '+' : '−'}${pct(Math.abs(x))}`;
 
@@ -13,11 +14,7 @@ interface Props {
 
 export function Suggestions({suggestions, canAdd, onAdd}: Props) {
   return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2>Best type to add</h2>
-        <span className="muted">{canAdd ? 'click to add' : 'remove a type to try others'}</span>
-      </div>
+    <Panel id="type-suggestions" title="Best type to add" note={canAdd ? 'click to add' : 'remove a type to try others'}>
       <ol className="suggestions">
         {suggestions.slice(0, 6).map(s => (
           <li key={s.type}>
@@ -29,6 +26,6 @@ export function Suggestions({suggestions, canAdd, onAdd}: Props) {
           </li>
         ))}
       </ol>
-    </section>
+    </Panel>
   );
 }
