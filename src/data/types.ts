@@ -9,6 +9,8 @@ export interface RegulationSummary {
   /** Rating cutoff the stats were taken at. */
   cutoff: number;
   battles: number;
+  /** Showdown data mod the regulation uses, e.g. "champions"; names its file in data/mods/. */
+  mod: string;
 }
 
 export interface RegulationIndex {
@@ -69,12 +71,27 @@ export interface MoveData {
   target: string;
   /** Move priority bracket; > 0 moves before normal moves. */
   priority: number;
+  /** Sound-based move (Liquid Voice turns these into Water moves). */
+  sound?: true;
+  /** Set by applyMod(): the move doesn't exist in the regulation's game. */
+  unavailable?: true;
 }
 
 export interface ItemData {
   name: string;
   /** Index on Showdown's 24×24 item icon sheet (0 = none). */
   sprite: number;
+  /** Set by applyMod(): the item doesn't exist in the regulation's game. */
+  unavailable?: true;
+}
+
+/** How a regulation's game (a Showdown data mod) differs from the base move and item data. */
+export interface ModData {
+  /** Moves whose type or base power differ from the base data. */
+  moves: Record<string, {type?: string; basePower?: number}>;
+  /** Ids of moves and items that don't exist in this game. */
+  unavailableMoves: string[];
+  unavailableItems: string[];
 }
 
 export type SpeciesTable = Record<string, SpeciesData>;

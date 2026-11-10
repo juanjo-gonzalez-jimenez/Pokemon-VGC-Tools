@@ -31,7 +31,8 @@ interface Props {
 
 
 export function DexPage({regulations, regId, onRegChange, selectedId, onSelect}: Props) {
-  const tables = useLookupTables();
+  const regulation = regulations.find(r => r.id === regId);
+  const tables = useLookupTables(regulation?.mod);
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<SortKey>('usage');
   const [type, setType] = useState<TypeName | ''>('');
@@ -70,7 +71,7 @@ export function DexPage({regulations, regId, onRegChange, selectedId, onSelect}:
           <DexDetail
             pokemon={selected}
             rank={rank.get(selected.id)}
-            cutoff={regulations.find(r => r.id === regId)?.cutoff ?? 0}
+            cutoff={regulation?.cutoff ?? 0}
             roster={roster}
             moves={tables?.moves ?? null}
             items={tables?.items ?? null}

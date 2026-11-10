@@ -1,10 +1,10 @@
 import type {MetaPokemon, MoveTable} from '../data/types';
 import {bestHit, coverPokemon} from './coverage';
 import {toID} from './ids';
-import {moveType} from './moves';
+import {attackOf, typesOf, uniqueAttacks, type Attack} from './attack';
 import type {TeamMember} from './paste';
-import {attackTypes, memberSpeed, speedMatchup, type SpeedMode} from './team';
-import {TYPES, type TypeName} from './typechart';
+import {memberAttacks, memberSpeed, speedMatchup, type SpeedMode} from './team';
+import type {TypeName} from './typechart';
 
 /** A move counts as part of a Pokémon's kit when at least this share of its sets run it. */
 export const COMMON_MOVE_SHARE = 0.15;
@@ -41,16 +41,19 @@ export function mainAbility(p: MetaPokemon): string {
  * Attacking types from damaging moves run on at least `minShare` of its sets. A type's share is
  * that of its most common move of the type (a conservative estimate when it has several).
  */
-export function commonAttackTypes(p: MetaPokemon, moves: MoveTable, minShare = COMMON_MOVE_SHARE): TypeName[] {
+export function commonAttacks(p: MetaPokemon, moves: MoveTable, minShare = COMMON_MOVE_SHARE): Attack[] {
   const ability = mainAbility(p);
-  const types = new Set<TypeName>();
-  for (const [name, share] of Object.entries(p.moves)) {
-    const move = moves[toID(name)];
-    if (share < minShare || !move || move.category === 'Status') continue;
-    const type = moveType(move, ability) as TypeName;
-    if (TYPES.includes(type)) types.add(type);
-  }
-  return TYPES.filter(t => types.has(t));
+  return uniqueAttacks(
+    Object.entries(p.moves).map(([name, share]) => {
+      const move = moves[toID(name)];
+      return share >= minShare && move ? attackOf(move, ability) : null;
+    }),
+  );
+}
+
+/** Types of commonAttacks(). */
+export function commonAttackTypes(p: MetaPokemon, moves: MoveTable, minShare = COMMON_MOVE_SHARE): TypeName[] {
+  return typesOf(commonAttacks(p, moves, minShare));
 }
 
 export function assessThreat(
@@ -59,15 +62,15 @@ export function assessThreat(
   moves: MoveTable,
   mode: SpeedMode = 'normal',
 ): Threat {
-  const types = commonAttackTypes(p, moves, RELIABLE_MOVE_SHARE);
+  const attacks = commonAttacks(p, moves, RELIABLE_MOVE_SHARE);
   const hits: Threat['hits'] = [];
   const answers: string[] = [];
   const fasterThan: string[] = [];
 
   for (const m of team) {
-    const hit = bestHit(types, m.species.types, m.ability);
+    const hit = bestHit(attacks, m.species.types, m.ability);
     if (hit.mult > 1) hits.push({label: m.label, types: hit.bestTypes});
-    if (coverPokemon(attackTypes(m), p).buckets.super >= 0.5) answers.push(m.label);
+    if (coverPokemon(memberAttacks(m), p).buckets.super >= 0.5) answers.push(m.label);
     if (speedMatchup(memberSpeed(m), p, mode).slower > 0.5) fasterThan.push(m.label);
   }
 
@@ -76,7 +79,7 @@ export function assessThreat(
     WEIGHTS.hits * (hits.length / n) +
     WEIGHTS.unanswered * (1 - answers.length / n) +
     WEIGHTS.faster * (fasterThan.length / n);
-  return {pokemon: p, attackTypes: types, hits, answers, fasterThan, severity, score: severity * Math.sqrt(p.usage)};
+  return {pokemon: p, attackTypes: typesOf(attacks), hits, answers, fasterThan, severity, score: severity * Math.sqrt(p.usage)};
 }
 
 /** The meta Pokémon the team struggles with most, worst first. */

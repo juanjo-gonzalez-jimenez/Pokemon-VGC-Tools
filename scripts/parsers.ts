@@ -55,15 +55,65 @@ export function legalSpecies(formatsDataTs: string, dex: Record<string, Legality
  * always the first field) and its `spritenum` appears before the next entry starts.
  */
 export function parseItems(source: string): ItemTable {
+  const items: ItemTable = {};
+  for (const {id, name, segment} of itemSegments(source)) {
+    const sprite = /spritenum:(\d+)/.exec(segment);
+    items[id] = {name, sprite: sprite ? Number(sprite[1]) : 0};
+  }
+  return items;
+}
+
+/** Item id -> `isNonstandard` value in items.js ("Past", "Future", ...), for items that have one. */
+export function parseItemNonstandard(source: string): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const {id, segment} of itemSegments(source)) {
+    const value = /isNonstandard:"(\w+)"/.exec(segment);
+    if (value) map.set(id, value[1]);
+  }
+  return map;
+}
+
+/** Splits items.js into one text segment per item entry. */
+function itemSegments(source: string): Array<{id: string; name: string; segment: string}> {
   // Fields before `name` may include one level of nested braces (e.g. `fling:{basePower:80}`).
   const starts = [...source.matchAll(/(\w+):\{(?:[^{}]|\{[^{}]*\})*?name:"([^"]+)"/g)];
-  const items: ItemTable = {};
-  starts.forEach((m, i) => {
-    const segment = source.slice(m.index, starts[i + 1]?.index ?? source.length);
-    const sprite = /spritenum:(\d+)/.exec(segment);
-    items[m[1]] = {name: m[2], sprite: sprite ? Number(sprite[1]) : 0};
-  });
-  return items;
+  return starts.map((m, i) => ({
+    id: m[1],
+    name: m[2],
+    segment: source.slice(m.index, starts[i + 1]?.index ?? source.length),
+  }));
+}
+
+/** What a data mod changes about one move or item (only the fields this app uses). */
+export interface ModOverride {
+  /** "Past" etc. removes it from the game; null makes a base-game "Past"/"Future" entry available. */
+  isNonstandard?: string | null;
+  type?: string;
+  basePower?: number;
+}
+
+/**
+ * Entries of a mod's moves.ts / items.ts: top-level `\tid: {` blocks, reading the fields written
+ * at two tabs of indentation (deeper lines belong to nested objects or functions).
+ */
+export function parseModOverrides(source: string): Map<string, ModOverride> {
+  const out = new Map<string, ModOverride>();
+  for (const [, id, body] of source.matchAll(/^\t(\w+): \{\n([\s\S]*?)^\t\},/gm)) {
+    const override: ModOverride = {};
+    const nonstandard = /^\t\tisNonstandard: (?:"(\w+)"|(null)),/m.exec(body);
+    if (nonstandard) override.isNonstandard = nonstandard[2] ? null : nonstandard[1];
+    const type = /^\t\ttype: "(\w+)",/m.exec(body);
+    if (type) override.type = type[1];
+    const power = /^\t\tbasePower: (\d+),/m.exec(body);
+    if (power) override.basePower = Number(power[1]);
+    out.set(id, override);
+  }
+  return out;
+}
+
+/** The mod a data mod inherits from (`inherit: 'champions'` in its scripts.ts), if any. */
+export function parseModInherit(scriptsTs: string): string | null {
+  return /^\tinherit: '(\w+)',/m.exec(scriptsTs)?.[1] ?? null;
 }
 
 /** `BattlePokemonIconIndexes` ("charizardmegay: 1320 + 2,") from the client's battle-dex-data.ts. */

@@ -19,13 +19,18 @@ import {
   formatName,
   legalSpecies,
   parseIconIndexes,
+  parseItemNonstandard,
   parseItems,
+  parseModInherit,
+  parseModOverrides,
 } from './parsers';
 import {toID} from '../src/lib/ids';
 import {spriteId} from '../src/lib/sprites';
 import {calcStat, parseSpread, STATS, type StatsTable} from '../src/lib/stats';
 import type {
+  ItemTable,
   MetaPokemon,
+  ModData,
   MoveTable,
   RegulationData,
   RegulationIndex,
@@ -39,7 +44,8 @@ const ITEMS_URL = 'https://play.pokemonshowdown.com/data/items.js';
 const SHOWDOWN_RAW = 'https://raw.githubusercontent.com/smogon/pokemon-showdown/master/';
 /** Format rules (which data mod each format uses) and per-mod legality, both read as text. */
 const FORMATS_TS_URL = `${SHOWDOWN_RAW}config/formats.ts`;
-const formatsDataUrl = (mod: string) => `${SHOWDOWN_RAW}data/mods/${mod}/formats-data.ts`;
+const modFileUrl = (mod: string, file: string) => `${SHOWDOWN_RAW}data/mods/${mod}/${file}.ts`;
+const formatsDataUrl = (mod: string) => modFileUrl(mod, 'formats-data');
 /** Showdown client data with the icon-sheet index of every form (read as text, never executed). */
 const ICON_INDEX_URL =
   'https://raw.githubusercontent.com/smogon/pokemon-showdown-client/master/play.pokemonshowdown.com/src/battle-dex-data.ts';
@@ -86,6 +92,8 @@ interface DexMove {
   basePower: number;
   target: string;
   priority: number;
+  flags?: Record<string, number>;
+  isNonstandard?: string | null;
 }
 
 interface ChaosPokemon {
@@ -114,6 +122,14 @@ async function get(url: string): Promise<Response> {
   const res = await fetch(url, {headers: {'User-Agent': 'pokemon-vgc-tools-data-updater'}});
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`);
   return res;
+}
+
+/** Text of a file that may not exist (a mod only has the files it changes). */
+async function getOptionalText(url: string): Promise<string | null> {
+  const res = await fetch(url, {headers: {'User-Agent': 'pokemon-vgc-tools-data-updater'}});
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`);
+  return res.text();
 }
 
 /** Links of an Apache-style directory listing. */
@@ -328,9 +344,66 @@ function buildLookupTables(dex: Record<string, DexEntry>, moves: Record<string, 
       basePower: m.basePower,
       target: m.target,
       priority: m.priority,
+      ...(m.flags?.sound ? {sound: true as const} : {}),
     };
   }
   return {species, moveTable};
+}
+
+/** A mod and the mods it inherits from, base-most first: ["champions", "championsregmb"]. */
+async function modChain(mod: string): Promise<string[]> {
+  const chain = [mod];
+  for (let current = mod; chain.length < 10; ) {
+    const scripts = await getOptionalText(modFileUrl(current, 'scripts'));
+    const parent = scripts ? parseModInherit(scripts) : null;
+    if (!parent) break;
+    chain.unshift(parent);
+    current = parent;
+  }
+  return chain;
+}
+
+/**
+ * How a mod's game differs from the base data: availability (base `isNonstandard`, then each
+ * mod in the chain may set or clear it) and move type / base power changes.
+ */
+async function buildModData(
+  mod: string,
+  moves: Record<string, DexMove>,
+  moveTable: MoveTable,
+  items: ItemTable,
+  baseItemNonstandard: Map<string, string>,
+): Promise<ModData> {
+  const moveState = new Map(
+    Object.keys(moveTable).map(id => [id, {nonstandard: moves[id].isNonstandard ?? null, type: moves[id].type, basePower: moves[id].basePower}]),
+  );
+  const itemState = new Map(Object.keys(items).map(id => [id, baseItemNonstandard.get(id) ?? null]));
+
+  for (const link of await modChain(mod)) {
+    const moveOverrides = parseModOverrides((await getOptionalText(modFileUrl(link, 'moves'))) ?? '');
+    for (const [id, o] of moveOverrides) {
+      const state = moveState.get(id);
+      if (!state) continue;
+      if (o.isNonstandard !== undefined) state.nonstandard = o.isNonstandard;
+      if (o.type) state.type = o.type;
+      if (o.basePower !== undefined) state.basePower = o.basePower;
+    }
+    const itemOverrides = parseModOverrides((await getOptionalText(modFileUrl(link, 'items'))) ?? '');
+    for (const [id, o] of itemOverrides) {
+      if (itemState.has(id) && o.isNonstandard !== undefined) itemState.set(id, o.isNonstandard);
+    }
+  }
+
+  const data: ModData = {moves: {}, unavailableMoves: [], unavailableItems: []};
+  for (const [id, state] of moveState) {
+    if (state.nonstandard) data.unavailableMoves.push(id);
+    const change: {type?: string; basePower?: number} = {};
+    if (state.type !== moves[id].type) change.type = state.type;
+    if (state.basePower !== moves[id].basePower) change.basePower = state.basePower;
+    if (Object.keys(change).length) data.moves[id] = change;
+  }
+  for (const [id, nonstandard] of itemState) if (nonstandard) data.unavailableItems.push(id);
+  return data;
 }
 
 function check(condition: boolean, message: string): asserts condition {
@@ -358,7 +431,9 @@ function checkNotShrunk(what: string, count: number, previous: number | null) {
 async function main() {
   const dex = (await (await get(POKEDEX_URL)).json()) as Record<string, DexEntry>;
   const moves = (await (await get(MOVES_URL)).json()) as Record<string, DexMove>;
-  const items = parseItems(await (await get(ITEMS_URL)).text());
+  const itemsText = await (await get(ITEMS_URL)).text();
+  const items = parseItems(itemsText);
+  const baseItemNonstandard = parseItemNonstandard(itemsText);
   iconIndexes = parseIconIndexes(await (await get(ICON_INDEX_URL)).text());
   const {species, moveTable} = buildLookupTables(dex, moves);
 
@@ -385,6 +460,13 @@ async function main() {
     return legalByMod.get(mod)!;
   };
 
+  const modDir = join(OUT_DIR, 'mods');
+  const modData = new Map<string, ModData>();
+  const modFor = async (mod: string) => {
+    if (!modData.has(mod)) modData.set(mod, await buildModData(mod, moves, moveTable, items, baseItemNonstandard));
+    return modData.get(mod)!;
+  };
+
   const formats = await findFormats();
   check(formats.size > 0, 'no Champions VGC formats found in recent Smogon stats');
 
@@ -404,16 +486,17 @@ async function main() {
   for (const [id, {month, cutoff}] of formats) {
     const chaos = (await (await get(`${STATS_URL}${month}/chaos/${id}-${cutoff}.json`)).json()) as ChaosFile;
     const {roster, missing} = buildRoster(chaos, dex, names);
+    check(modOf.has(id), `format ${id} not found in Showdown's config/formats.ts`);
+    const mod = modOf.get(id)!;
     const data: RegulationData = {
       id,
       name: formatName(id),
       month,
       cutoff,
       battles: chaos.info['number of battles'],
+      mod,
       pokemon: roster,
     };
-    check(modOf.has(id), `format ${id} not found in Showdown's config/formats.ts`);
-    const mod = modOf.get(id)!;
     // Searcher list: every legal Pokémon, with all-ratings stats for ones too rare at the cutoff.
     const allChaos =
       cutoff === 0 ? null : ((await (await get(`${STATS_URL}${month}/chaos/${id}-0.json`)).json()) as ChaosFile);
@@ -426,13 +509,32 @@ async function main() {
     checkNotShrunk(`${data.name} roster`, roster.length, previousCount(rosterPath, 'pokemon'));
     checkNotShrunk(`${data.name} searcher list`, dexList.length, previousCount(dexPath));
 
+    // Game differences. Anything players actually use must exist in the game, so a used move or
+    // item flagged unavailable means the override parsing is wrong.
+    const game = await modFor(mod);
+    const goneMoves = new Set(game.unavailableMoves);
+    const goneItems = new Set(game.unavailableItems);
+    const usedButGone = [
+      ...new Set(
+        roster.flatMap(p => [
+          ...Object.keys(p.moves).filter(m => p.moves[m] >= 0.05 && goneMoves.has(toID(m))),
+          ...Object.keys(p.items).filter(i => p.items[i] >= 0.05 && goneItems.has(toID(i))),
+        ]),
+      ),
+    ];
+    check(usedButGone.length === 0, `${data.name}: used but flagged unavailable: ${usedButGone.slice(0, 8).join(', ')}`);
+    check(game.unavailableMoves.length < Object.keys(moveTable).length * 0.8, `${mod}: almost every move unavailable`);
+
     outputs.set(rosterPath, JSON.stringify(data));
     outputs.set(dexPath, JSON.stringify(dexList));
-    regulations.push({id, name: data.name, month, cutoff, battles: data.battles});
+    outputs.set(join(modDir, `${mod}.json`), JSON.stringify(game));
+    regulations.push({id, name: data.name, month, cutoff, battles: data.battles, mod});
     const count = (s: MetaPokemon['source']) => dexList.filter(p => p.source === s).length;
     summary.push(
       `${data.name}: ${month} @${cutoff}, ${data.battles} battles, ${roster.length} Pokémon` +
-        `; searcher: ${dexList.length} legal (${count('all')} from all ratings, ${count('none')} unused) [${mod}]` +
+        `; searcher: ${dexList.length} legal (${count('all')} from all ratings, ${count('none')} unused)` +
+        `; ${mod}: ${Object.keys(game.moves).length} changed / ${game.unavailableMoves.length} removed moves, ` +
+        `${game.unavailableItems.length} removed items` +
         (missing.length ? `, ${missing.length} unmatched (${missing.slice(0, 5).join(', ')})` : ''),
     );
   }
@@ -443,9 +545,11 @@ async function main() {
   outputs.set(join(OUT_DIR, 'index.json'), JSON.stringify(index, null, 2));
 
   // All checks passed: write, and drop regulation files that are no longer produced.
-  mkdirSync(regDir, {recursive: true});
-  for (const f of readdirSync(regDir)) {
-    if (!outputs.has(join(regDir, f))) rmSync(join(regDir, f));
+  for (const dir of [regDir, modDir]) {
+    mkdirSync(dir, {recursive: true});
+    for (const f of readdirSync(dir)) {
+      if (!outputs.has(join(dir, f))) rmSync(join(dir, f));
+    }
   }
   let changed = 0;
   for (const [path, content] of outputs) {

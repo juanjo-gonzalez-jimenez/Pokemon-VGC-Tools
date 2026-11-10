@@ -6,14 +6,16 @@
       "name": "VGC 2026 Reg M-C",
       "month": "2026-10",
       "cutoff": 1760,
-      "battles": 1649648
+      "battles": 1649648,
+      "mod": "champions"
     },
     {
       "id": "gen9championsvgc2026regmb",
       "name": "VGC 2026 Reg M-B",
       "month": "2026-09",
       "cutoff": 1760,
-      "battles": 326464
+      "battles": 326464,
+      "mod": "championsregmb"
     }
   ]
 }

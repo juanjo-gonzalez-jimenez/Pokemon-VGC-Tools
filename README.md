@@ -84,8 +84,19 @@ species, moves, items or legal Pokémon, or a list that shrank by more than 30%)
 - `.github/workflows/update-data.yml`: on the 3rd and 10th of each month (or run manually from
   the Actions tab) it refreshes the data, commits it if it changed and redeploys.
 
+### Game accuracy
+
+- **Champions changes**: each regulation uses its Showdown data mod (`champions`,
+  `championsregmb`). Move type and base power changes are applied, and moves and items that
+  don't exist in the game are flagged in the Team tab's legality checks (`src/data/mods/`).
+- **Defender abilities**: Levitate, Flash Fire, Water Absorb, Thick Fat, Filter and similar.
+- **Attacker abilities**: Pixilate / Aerilate / Refrigerate / Galvanize / Normalize / Liquid
+  Voice change move types; Mold Breaker / Teravolt / Turboblaze ignore defensive abilities;
+  Scrappy / Mind's Eye hit Ghost types; Tinted Lens doubles resisted hits.
+- **Moves**: Weather Ball follows the user's weather ability, Freeze-Dry is super effective on
+  Water, Flying Press combines Fighting and Flying.
+
 ### Not modelled (yet)
 
-Special moves (Freeze-Dry, Scrappy, Thousand Arrows, Flying Press), Lightning Rod / Storm
-Drain redirection in doubles, actual damage. Move data is base Gen 9, so
-Champions-specific move changes aren't reflected.
+Lightning Rod / Storm Drain redirection in doubles, learnsets (whether a Pokémon can learn a
+move), actual damage.

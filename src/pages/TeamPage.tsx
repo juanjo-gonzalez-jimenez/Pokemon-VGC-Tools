@@ -88,9 +88,16 @@ function save(text: string) {
   }
 }
 
-export function TeamPage({roster, weighted}: {roster: MetaPokemon[]; weighted: boolean}) {
+interface Props {
+  roster: MetaPokemon[];
+  weighted: boolean;
+  /** The regulation's Showdown data mod, for move and item differences. */
+  mod: string | undefined;
+}
+
+export function TeamPage({roster, weighted, mod}: Props) {
   const [text, setText] = useState(loadSaved);
-  const tables = useLookupTables();
+  const tables = useLookupTables(mod);
   // Shared by the speed tiers and the threat list.
   const [speedMode, setSpeedMode] = useState<SpeedMode>('normal');
 
@@ -102,7 +109,7 @@ export function TeamPage({roster, weighted}: {roster: MetaPokemon[]; weighted: b
   const defense = useMemo(() => defensiveChart(team), [team]);
   const attackTypes = useMemo(() => teamAttackTypes(team), [team]);
   const speeds = useMemo(() => teamSpeeds(team, roster, weighted, speedMode), [team, roster, weighted, speedMode]);
-  const legality = useMemo(() => checkLegality(team), [team]);
+  const legality = useMemo(() => checkLegality(team, tables?.items), [team, tables]);
   const roles = useMemo(() => teamRoles(team), [team]);
   const threats = useMemo(
     () => (tables ? threatList(team, roster, tables.moves, speedMode) : []),
@@ -160,7 +167,7 @@ export function TeamPage({roster, weighted}: {roster: MetaPokemon[]; weighted: b
               ))}
             </ul>
           ) : (
-            <p className="legal-ok">✓ No rule problems found (stat points, items, species, abilities, moves).</p>
+            <p className="legal-ok">✓ No rule problems found (stat points, items, species, abilities, moves, availability).</p>
           ))}
       </Panel>
 

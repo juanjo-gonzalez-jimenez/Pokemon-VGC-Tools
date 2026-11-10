@@ -4,7 +4,7 @@ import {toID} from './ids';
 import type {TeamMember} from './paste';
 import {teamRoles} from './roles';
 import {defensiveChart, type SpeedMode} from './team';
-import {commonAttackTypes, mainAbility, RELIABLE_MOVE_SHARE, threatList} from './threats';
+import {commonAttacks, mainAbility, RELIABLE_MOVE_SHARE, threatList} from './threats';
 import type {TypeName} from './typechart';
 
 /** A move is treated as part of a candidate's usual set when this share of its sets run it. */
@@ -91,7 +91,7 @@ export function suggestTeammates(
         return b.resisted + b.immune >= 0.5;
       });
 
-      const attacks = commonAttackTypes(p, moves, RELIABLE_MOVE_SHARE);
+      const attacks = commonAttacks(p, moves, RELIABLE_MOVE_SHARE);
       const checks = threats
         .filter(t => coverPokemon(attacks, t.pokemon).buckets.super >= 0.5)
         .map(t => t.pokemon.name);

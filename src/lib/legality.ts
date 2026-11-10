@@ -1,3 +1,4 @@
+import type {ItemTable} from '../data/types';
 import {toID} from './ids';
 import type {TeamMember} from './paste';
 import {STAT_LABELS, STATS} from './stats';
@@ -7,8 +8,11 @@ export const MAX_TOTAL_SP = 66;
 export const MAX_STAT_SP = 32;
 export const MAX_MOVES = 4;
 
-/** Rule problems a Champions VGC team would be rejected for. */
-export function checkLegality(team: readonly TeamMember[]): string[] {
+/**
+ * Rule problems a Champions VGC team would be rejected for. Moves and items are checked against
+ * the regulation's game when the tables come from applyMod() (which sets `unavailable`).
+ */
+export function checkLegality(team: readonly TeamMember[], items?: ItemTable | null): string[] {
   const issues: string[] = [];
 
   for (const m of team) {
@@ -20,6 +24,12 @@ export function checkLegality(team: readonly TeamMember[]): string[] {
       }
     }
     if (m.moveLines > MAX_MOVES) issues.push(`${m.label} has ${m.moveLines} moves (max ${MAX_MOVES}).`);
+    for (const move of m.moves) {
+      if (move.unavailable) issues.push(`${m.label}: ${move.name} isn't available in this regulation.`);
+    }
+    if (m.item && items?.[toID(m.item)]?.unavailable) {
+      issues.push(`${m.label}: ${m.item} isn't available in this regulation.`);
+    }
     const legal = m.baseSpecies.abilities.map(toID);
     if (m.pastedAbility && !legal.includes(toID(m.pastedAbility))) {
       issues.push(`${m.baseSpecies.name} can't have ${m.pastedAbility} (options: ${m.baseSpecies.abilities.join(', ')}).`);

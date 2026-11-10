@@ -1,7 +1,7 @@
 import type {MetaPokemon} from '../data/types';
 import {bestHit} from './coverage';
 import type {TeamMember} from './paste';
-import {moveType} from './moves';
+import {attackOf, typesOf, uniqueAttacks, type Attack} from './attack';
 import {calcStat} from './stats';
 import {TYPES, type TypeName} from './typechart';
 
@@ -32,10 +32,14 @@ export function defensiveChart(team: readonly TeamMember[]): DefensiveRow[] {
 
 // ---------------------------------------------------------------- offence
 
+/** The member's distinct attacks: damaging moves with its ability's effects (Pixilate, Mold Breaker…). */
+export function memberAttacks(member: TeamMember): Attack[] {
+  return uniqueAttacks(member.moves.map(m => attackOf(m, member.ability)));
+}
+
 /** Distinct types of the member's damaging moves. */
 export function attackTypes(member: TeamMember): TypeName[] {
-  const types = member.moves.filter(m => m.category !== 'Status').map(m => moveType(m, member.ability) as TypeName);
-  return [...new Set(types)].filter(t => TYPES.includes(t));
+  return typesOf(memberAttacks(member));
 }
 
 /** Distinct attacking types across the whole team, in type-chart order. */

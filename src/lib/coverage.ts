@@ -1,5 +1,6 @@
 import {abilityEffect} from './abilities';
-import {effectiveness, type TypeName} from './typechart';
+import {asAttack, attackMultiplier, type AttackLike} from './attack';
+import type {TypeName} from './typechart';
 
 export interface Form {
   /** Display name, e.g. "Charizard-Mega-Y". */
@@ -55,25 +56,27 @@ export interface PokemonCoverage {
  * Best multiplier any of `attacks` achieves against one form with one ability, and every
  * attacking type that ties for it (none when nothing gets through).
  */
-export function bestHit(attacks: readonly TypeName[], types: readonly string[], ability: string) {
+export function bestHit(attacks: readonly AttackLike[], types: readonly string[], ability: string) {
   const effect = abilityEffect(ability);
   let mult = 0;
   let bestTypes: TypeName[] = [];
-  for (const atk of attacks) {
-    let m = effectiveness(atk, types);
-    if (effect) m = effect.apply(m, atk);
+  for (const raw of attacks) {
+    const atk = asAttack(raw);
+    let m = attackMultiplier(atk, types);
+    if (effect && !atk.ignoresAbility) m = effect.apply(m, atk.type);
+    if (atk.tintedLens && m > 0 && m < 1) m *= 2;
     if (m === 0) continue;
     if (m > mult) {
       mult = m;
-      bestTypes = [atk];
-    } else if (m === mult) {
-      bestTypes.push(atk);
+      bestTypes = [atk.type];
+    } else if (m === mult && !bestTypes.includes(atk.type)) {
+      bestTypes.push(atk.type);
     }
   }
   return {mult, bestTypes, note: effect?.note};
 }
 
-export function coverPokemon(attacks: readonly TypeName[], pokemon: Pokemon): PokemonCoverage {
+export function coverPokemon(attacks: readonly AttackLike[], pokemon: Pokemon): PokemonCoverage {
   const scenarios: Scenario[] = [];
   for (const form of pokemon.forms) {
     const abilities = Object.entries(form.abilities);
@@ -104,7 +107,7 @@ export interface CoverageSummary {
  * otherwise each counts equally.
  */
 export function coverRoster(
-  attacks: readonly TypeName[],
+  attacks: readonly AttackLike[],
   roster: readonly Pokemon[],
   weighted: boolean,
 ): CoverageSummary {

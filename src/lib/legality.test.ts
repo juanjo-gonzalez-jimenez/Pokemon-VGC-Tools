@@ -31,6 +31,14 @@ describe('checkLegality', () => {
     expect(issues.some(i => i.includes('Sitrus Berry is held by more than one'))).toBe(true);
     expect(issues.some(i => i.includes('More than one Charizard'))).toBe(true);
   });
+  it('flags moves and items that are not in the regulation', () => {
+    const gone = move('Absorb', 'Grass', {unavailable: true});
+    const items = {zcrystal: {name: 'Z Crystal', sprite: 1, unavailable: true as const}, sitrusberry: {name: 'Sitrus Berry', sprite: 2}};
+    const issues = checkLegality([member(chomp, '', {moves: [gone], item: 'Z Crystal'})], items);
+    expect(issues.some(i => i.includes("Absorb isn't available"))).toBe(true);
+    expect(issues.some(i => i.includes("Z Crystal isn't available"))).toBe(true);
+    expect(checkLegality([member(chomp, '', {item: 'Sitrus Berry'})], items)).toEqual([]);
+  });
   it('does not limit the number of Mega Stones', () => {
     const a = {...species('Gengar', ['Ghost', 'Poison'])};
     const b = {...species('Absol', ['Dark'])};

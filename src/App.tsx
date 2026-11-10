@@ -138,7 +138,7 @@ export function App() {
       ) : page === 'coverage' ? (
         <CoveragePage roster={roster} weighted={weighted} types={types} onTypesChange={setTypes} />
       ) : (
-        <TeamPage roster={roster} weighted={weighted} />
+        <TeamPage roster={roster} weighted={weighted} mod={summary?.mod} />
       )}
 
       {page !== 'dex' && (

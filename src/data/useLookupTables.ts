@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
-import type {ItemTable, MoveTable, SpeciesTable} from './types';
+import {applyMod} from '../lib/mods';
+import type {ItemTable, ModData, MoveTable, SpeciesTable} from './types';
 
 export interface LookupTables {
   species: SpeciesTable;
@@ -7,27 +8,48 @@ export interface LookupTables {
   items: ItemTable;
 }
 
-let pending: Promise<LookupTables> | null = null;
-let loaded: LookupTables | null = null;
+let base: Promise<LookupTables> | null = null;
+/** Each regulation game's differences from the base data, one small lazy chunk per mod. */
+const modLoaders = import.meta.glob<ModData>('./mods/*.json', {import: 'default'});
+/** Tables with a mod applied, by mod name ('' = base data). */
+const ready = new Map<string, LookupTables>();
+const pending = new Map<string, Promise<LookupTables>>();
 
-/** Starts the download once; every page shares the same tables. */
-function loadTables(): Promise<LookupTables> {
-  pending ??= Promise.all([import('./species.json'), import('./moves.json'), import('./items.json')]).then(([s, m, i]) => {
-    loaded = {species: s.default as SpeciesTable, moves: m.default as MoveTable, items: i.default as ItemTable};
-    return loaded;
-  });
-  return pending;
+function loadBase(): Promise<LookupTables> {
+  base ??= Promise.all([import('./species.json'), import('./moves.json'), import('./items.json')]).then(
+    ([s, m, i]) => ({species: s.default as SpeciesTable, moves: m.default as MoveTable, items: i.default as ItemTable}),
+  );
+  return base;
 }
 
-/** Species and move tables, loaded as a separate chunk on first use (null until ready). */
-export function useLookupTables(): LookupTables | null {
-  const [tables, setTables] = useState<LookupTables | null>(loaded);
+/** Starts each download once; every page shares the same tables. */
+function loadTables(mod: string): Promise<LookupTables> {
+  if (!pending.has(mod)) {
+    const loader = modLoaders[`./mods/${mod}.json`];
+    pending.set(
+      mod,
+      Promise.all([loadBase(), loader ? loader() : null]).then(([tables, modData]) => {
+        const result = modData ? applyMod(tables, modData) : tables;
+        ready.set(mod, result);
+        return result;
+      }),
+    );
+  }
+  return pending.get(mod)!;
+}
+
+/**
+ * Species, move and item tables for a regulation's game (`mod`, from the regulation summary),
+ * loaded on first use; null until ready. Without a mod the base data is returned.
+ */
+export function useLookupTables(mod = ''): LookupTables | null {
+  const [, rerender] = useState(0);
   useEffect(() => {
     let live = true;
-    if (!loaded) loadTables().then(t => live && setTables(t));
+    if (!ready.has(mod)) loadTables(mod).then(() => live && rerender(n => n + 1));
     return () => {
       live = false;
     };
-  }, []);
-  return tables;
+  }, [mod]);
+  return ready.get(mod) ?? null;
 }

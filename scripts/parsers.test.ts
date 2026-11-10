@@ -1,5 +1,15 @@
 import {describe, expect, it} from 'vitest';
-import {championsVgcCutoffs, formatMods, formatName, legalSpecies, parseIconIndexes, parseItems} from './parsers';
+import {
+  championsVgcCutoffs,
+  formatMods,
+  formatName,
+  legalSpecies,
+  parseIconIndexes,
+  parseItemNonstandard,
+  parseItems,
+  parseModInherit,
+  parseModOverrides,
+} from './parsers';
 
 describe('formatName', () => {
   it('reads year and regulation letters', () => {
@@ -82,6 +92,61 @@ describe('parseItems', () => {
   });
   it('does not treat nested objects as items', () => {
     expect(Object.keys(items).sort()).toEqual(['abilityshield', 'choicescarf', 'quickclaw', 'weirdberry']);
+  });
+});
+
+describe('parseItemNonstandard', () => {
+  it('reads the flag per item without leaking into the next entry', () => {
+    const src =
+      'exports.BattleItems = {abomasite:{name:"Abomasite",spritenum:575,num:674,gen:6,isNonstandard:"Past"},' +
+      'choicescarf:{name:"Choice Scarf",spritenum:69,num:287,gen:4},' +
+      'staraptite:{name:"Staraptite",spritenum:500,isNonstandard:"Future"}};';
+    expect([...parseItemNonstandard(src)]).toEqual([['abomasite', 'Past'], ['staraptite', 'Future']]);
+  });
+});
+
+describe('parseModOverrides', () => {
+  const src = `export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
+	aircutter: {
+		inherit: true,
+		basePower: 90,
+	},
+	barrage: {
+		inherit: true,
+		basePower: 110,
+		isNonstandard: "Past",
+	},
+	growth: {
+		inherit: true,
+		type: "Grass",
+		onModifyMove(move) {
+			if (true) { move.basePower = 999; }
+		},
+		secondary: {
+			chance: 10,
+			basePower: 5,
+		},
+	},
+	abomasite: {
+		inherit: true,
+		isNonstandard: null,
+	},
+};`;
+  const map = parseModOverrides(src);
+  it('reads base power, type and availability', () => {
+    expect(map.get('aircutter')).toEqual({basePower: 90});
+    expect(map.get('barrage')).toEqual({basePower: 110, isNonstandard: 'Past'});
+    expect(map.get('abomasite')).toEqual({isNonstandard: null});
+  });
+  it('ignores fields nested deeper than the entry itself', () => {
+    expect(map.get('growth')).toEqual({type: 'Grass'});
+  });
+});
+
+describe('parseModInherit', () => {
+  it('finds the parent mod', () => {
+    expect(parseModInherit("export const Scripts = {\n\tinherit: 'champions',\n\tgen: 9,\n};")).toBe('champions');
+    expect(parseModInherit('export const Scripts = {\n\tgen: 9,\n\tinit() {},\n};')).toBeNull();
   });
 });
 
