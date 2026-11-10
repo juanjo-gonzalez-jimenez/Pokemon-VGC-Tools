@@ -99,7 +99,7 @@ export function parseTeam(text: string, species: SpeciesTable, moves: MoveTable)
         ability = line.slice('Ability:'.length).trim();
       } else if (/^(EVs|SPs|Stat Points):/.test(line)) {
         sp = parseStatLine(line.slice(line.indexOf(':') + 1));
-      } else if (/ Nature$/.test(line)) {
+      } else if (line.endsWith(' Nature')) {
         const n = line.replace(/ Nature$/, '');
         if (isNature(n)) nature = n;
         else warnings.push(`${label}: unknown nature "${n}", treated as neutral.`);

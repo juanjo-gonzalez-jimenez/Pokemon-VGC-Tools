@@ -118,7 +118,7 @@ export function DexSidebar(props: Props) {
             </button>
           </li>
         ))}
-        {!list.length && <li className="muted empty">No Pokémon match these filters.</li>}
+        {!list.length && <li className="muted empty">No Pokémon match your search.</li>}
       </ul>
     </aside>
   );

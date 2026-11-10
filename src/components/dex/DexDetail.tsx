@@ -215,7 +215,7 @@ export function DexDetail({pokemon: p, rank, cutoff, roster, moves, items, possi
           <ShareList rows={natureRows} />
         </Tile>
 
-        <Tile title="Stat point spreads" note="HP/Atk/Def/SpA/SpD/Spe at Lv. 50">
+        <Tile title="Stat point spreads" note="stats at Lv. 50">
           <ShareList rows={spreadRows} />
         </Tile>
 

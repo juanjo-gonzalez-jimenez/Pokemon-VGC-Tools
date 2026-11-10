@@ -48,7 +48,8 @@ body {
   color: var(--text);
   font: 15px/1.45 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
-main { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; display: grid; gap: 16px; }
+/* minmax(0, 1fr) lets wide tables scroll inside their panel instead of stretching the page. */
+main { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 h1 { margin: 0 0 4px; font-size: 1.6rem; }
 h2 { margin: 0; font-size: 1.05rem; }
 header p { margin: 0; }
@@ -411,10 +412,12 @@ main.wide {
 
 @media (max-width: 800px) {
   main.wide { height: auto; }
-  .dex { grid-template-columns: 1fr; }
+  .dex { grid-template-columns: minmax(0, 1fr); }
   .dex-list { max-height: 320px; }
   .dex-main { overflow: visible; }
-  .tiles { --tile-height: 300px; }
+  /* On phones tiles fit their content, up to a cap, instead of leaving empty space. */
+  .tiles { grid-auto-rows: auto; }
+  .tile { max-height: 320px; }
 }
 .dex-source { margin: 0; padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; background: color-mix(in srgb, var(--resisted) 14%, transparent); }
 .dex-row-usage .tag { margin-left: 4px; font-size: 0.6rem; }

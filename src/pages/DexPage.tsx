@@ -78,7 +78,7 @@ export function DexPage({regulations, regId, onRegChange, selectedId, onSelect}:
             onSelect={onSelect}
           />
         ) : (
-          <p className="muted">No Pokémon match these filters.</p>
+          <p className="muted">No Pokémon match your search.</p>
         )}
       </div>
     </div>

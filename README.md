@@ -50,26 +50,42 @@ Links like `#/dex/garchomp` open a Pokémon directly.
 
 ### Setup
 
+Live site: https://juanjo-gonzalez-jimenez.github.io/Pokemon-VGC-Tools/
+
 Node 20+ is required (installed in WSL via nvm: `source ~/.nvm/nvm.sh`).
 
 ```sh
 npm install
 npm run dev          # local dev server
+npm run lint         # oxlint
 npm test             # unit tests
-npm run build        # static site in dist/ (works on GitHub Pages)
+npm run build        # static site in dist/
 npm run update-data  # refresh data from Showdown + Smogon
 ```
 
 ### Data
 
-`npm run update-data` downloads Showdown's `pokedex.json` and the latest Smogon `chaos` usage
-stats for every Pokémon Champions VGC format found in the last 3 months (1760 cutoff when available), and
-writes `src/data/` (regulation rosters with usage, abilities, items, moves and Speed
-distributions, plus `species.json` and `moves.json` for reading pasted teams). A regulation's roster is every Pokémon with ≥0.1% usage in its stats, so new
-regulations appear automatically once Smogon publishes them. Re-run monthly.
+`npm run update-data` downloads Showdown's `pokedex.json`, moves and items, and the latest Smogon
+`chaos` usage stats for every Pokémon Champions VGC format found in the last 3 months (1760
+cutoff when available), and writes `src/data/`: regulation rosters with usage, abilities, items,
+moves, spreads and Speed distributions, a searcher list of every legal Pokémon, and
+`species.json` / `moves.json` / `items.json` for reading pasted teams. A regulation's meta roster
+is every Pokémon with ≥0.1% usage, so new regulations appear automatically once Smogon
+publishes them.
+
+Showdown's source files are only read as text (`scripts/parsers.ts`, covered by tests). The
+script computes everything first and aborts without writing if a result looks broken (too few
+species, moves, items or legal Pokémon, or a list that shrank by more than 30%).
+
+### Automation
+
+- `.github/workflows/deploy.yml`: every push to `main` is linted, tested, built and published
+  to GitHub Pages (repo Settings → Pages → Source: GitHub Actions).
+- `.github/workflows/update-data.yml`: on the 3rd and 10th of each month (or run manually from
+  the Actions tab) it refreshes the data, commits it if it changed and redeploys.
 
 ### Not modelled (yet)
 
 Special moves (Freeze-Dry, Scrappy, Thousand Arrows, Flying Press), Lightning Rod / Storm
-Drain redirection in doubles, Tailwind / Trick Room, actual damage. Move data is base Gen 9, so
+Drain redirection in doubles, actual damage. Move data is base Gen 9, so
 Champions-specific move changes aren't reflected.

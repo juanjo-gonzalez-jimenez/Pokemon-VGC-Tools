@@ -1,0 +1,53 @@
+name: Update data
+
+# Refreshes src/data from Smogon usage stats and Showdown data. Smogon publishes the previous
+# month's stats in the first days of each month; the second run catches late uploads.
+on:
+  schedule:
+    - cron: '17 6 3,10 * *'
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      # Aborts without writing anything if a download or parser looks broken.
+      - run: npm run update-data
+      - run: npm test
+      - run: npm run build
+      - id: commit
+        name: Commit changed data
+        run: |
+          if git diff --quiet -- src/data; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          month=$(node -p "require('./src/data/index.json').updated")
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data
+          git commit -m "Update usage data ($month)"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+  # Pushes made by the workflow token don't trigger other workflows, so deploy explicitly.
+  deploy:
+    needs: refresh
+    if: needs.refresh.outputs.changed == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: main

@@ -12,6 +12,7 @@ export interface RegulationSummary {
 }
 
 export interface RegulationIndex {
+  /** Newest stats month included, e.g. "2026-10". */
   updated: string;
   regulations: RegulationSummary[];
 }
