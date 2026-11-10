@@ -1,13 +1,14 @@
 import {useEffect} from 'react';
 import {usePersistentState} from '../hooks/usePersistentState';
 import {oneOf} from '../lib/storage';
+import {Icon, type IconName} from './Icon';
 
 type Theme = 'system' | 'light' | 'dark';
 const STORAGE_KEY = 'vgc-tools:theme';
-const OPTIONS: Array<{id: Theme; label: string; icon: string}> = [
-  {id: 'system', label: 'System theme', icon: '◐'},
-  {id: 'light', label: 'Light theme', icon: '☀'},
-  {id: 'dark', label: 'Dark theme', icon: '☾'},
+const OPTIONS: Array<{id: Theme; label: string; icon: IconName}> = [
+  {id: 'system', label: 'System theme', icon: 'monitor'},
+  {id: 'light', label: 'Light theme', icon: 'sun'},
+  {id: 'dark', label: 'Dark theme', icon: 'moon'},
 ];
 
 /** System / Light / Dark switch. Sets `data-theme` on <html>, which the stylesheets key off. */
@@ -33,7 +34,7 @@ export function ThemeToggle() {
           className={theme === o.id ? 'on' : ''}
           onClick={() => setTheme(o.id)}
         >
-          {o.icon}
+          <Icon name={o.icon} />
         </button>
       ))}
     </div>

@@ -4,7 +4,7 @@ import {STAT_LABELS, STATS} from '../lib/stats';
 import {memberSpeed} from '../lib/team';
 import type {ItemTable} from '../data/types';
 import {ItemIcon, Sprite} from './Sprite';
-import {TypeBadge} from './TypeBadge';
+import {TypeBadge, typingVars} from './TypeBadge';
 import {spriteId} from '../lib/sprites';
 import {toID} from '../lib/ids';
 
@@ -17,7 +17,7 @@ export function TeamCards({team, items}: {team: TeamMember[]; items: ItemTable |
   return (
     <div className="team-cards">
       {team.map((m, i) => (
-        <article key={i} className="team-card">
+        <article key={i} className="team-card" style={typingVars(m.species.types)}>
           <header className="team-card-head">
             <Sprite
               sprite={spriteId(m.species.name, m.species.baseSpecies)}

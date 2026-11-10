@@ -8,8 +8,8 @@ import {calcStat, NATURES, STAT_LABELS, STATS} from '../../lib/stats';
 import {metaSpeedSummary} from '../../lib/team';
 import {mainAbility} from '../../lib/threats';
 import {pct} from '../CoverageSummary';
-import {ItemIcon, PokemonIcon} from '../Sprite';
-import {TypeBadge} from '../TypeBadge';
+import {ItemIcon, PokemonIcon, Sprite} from '../Sprite';
+import {TypeBadge, typingVars} from '../TypeBadge';
 import {ShareList, type ShareRow} from './ShareList';
 
 const TOP_TEAMMATES = 15;
@@ -50,6 +50,7 @@ interface Props {
 
 export function DexDetail({pokemon: p, rank, cutoff, roster, moves, items, possibleAbilities, onSelect}: Props) {
   const noData = p.source === 'none';
+  const types = p.forms[0]?.types ?? [];
   const ability = mainAbility(p);
   const speed = metaSpeedSummary(p);
   const byName = new Map(roster.map(r => [r.name, r]));
@@ -120,13 +121,16 @@ export function DexDetail({pokemon: p, rank, cutoff, roster, moves, items, possi
 
   return (
     <div className="dex-detail">
-      <header className="dex-head">
-        <div>
-          <h2>{p.name}</h2>
-          <div className="types">
-            {(p.forms[0]?.types ?? []).map(t => (
-              <TypeBadge key={t} type={t} />
-            ))}
+      <header className="dex-head" style={typingVars(types)}>
+        <div className="dex-identity">
+          <Sprite key={p.id} sprite={p.sprite} baseSprite={p.baseSprite} size={88} />
+          <div>
+            <h2>{p.name}</h2>
+            <div className="types">
+              {types.map(t => (
+                <TypeBadge key={t} type={t} />
+              ))}
+            </div>
           </div>
         </div>
         <dl className="dex-facts">

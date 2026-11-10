@@ -1,5 +1,6 @@
 import type {TeamMember} from '../lib/paste';
 import type {DefensiveRow} from '../lib/team';
+import {Icon} from './Icon';
 import {TypeBadge} from './TypeBadge';
 import {Panel} from './Panel';
 
@@ -28,7 +29,9 @@ export function DefensiveChart({team, rows}: {team: TeamMember[]; rows: Defensiv
           ))}
         </div>
       ) : (
-        <p className="muted">No shared weaknesses. 🎉</p>
+        <p className="legal-ok callout-ok">
+          <Icon name="check" /> No shared weaknesses.
+        </p>
       )}
       <div className="table-wrap">
         <table className="def-chart">

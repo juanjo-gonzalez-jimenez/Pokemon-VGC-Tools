@@ -1,5 +1,6 @@
 import {useMemo} from 'react';
 import {DefensiveChart} from '../components/DefensiveChart';
+import {Icon} from '../components/Icon';
 import {Panel} from '../components/Panel';
 import {RolesChecklist} from '../components/RolesChecklist';
 import {SpeedTiers} from '../components/SpeedTiers';
@@ -147,7 +148,10 @@ export function TeamPage({roster, weighted, mod}: Props) {
               ))}
             </ul>
           ) : (
-            <p className="legal-ok">✓ No rule problems found (stat points, items, species, abilities, moves, availability).</p>
+            <p className="legal-ok">
+              <Icon name="check" /> No rule problems found (stat points, items, species, abilities, moves,
+              availability).
+            </p>
           ))}
       </Panel>
 

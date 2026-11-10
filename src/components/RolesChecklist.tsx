@@ -1,4 +1,5 @@
 import type {RoleCheck} from '../lib/roles';
+import {Icon} from './Icon';
 import {Panel} from './Panel';
 
 export function RolesChecklist({roles}: {roles: RoleCheck[]}) {
@@ -7,8 +8,8 @@ export function RolesChecklist({roles}: {roles: RoleCheck[]}) {
       <ul className="roles">
         {roles.map(r => (
           <li key={r.role} className={r.ok ? 'ok' : 'missing'}>
-            <span className="role-icon" aria-hidden>
-              {r.ok ? '✓' : '!'}
+            <span className="role-icon">
+              <Icon name={r.ok ? 'check' : 'alert'} />
             </span>
             <strong>{r.role}</strong>
             <span className="muted">

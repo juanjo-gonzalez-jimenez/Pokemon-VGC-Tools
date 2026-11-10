@@ -6,22 +6,14 @@
 .opponents { display: grid; gap: 10px; }
 .opponent-slots { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .opponent-slots:empty { display: none; }
-.opponent { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 4px 6px 4px 8px; }
+.opponent { display: inline-flex; align-items: center; gap: 6px; background: var(--inset); border: 1px solid var(--border); border-radius: 10px; padding: 4px 6px 4px 8px; }
 .opponent-name { font-weight: 600; }
 .opponent select { font-weight: 600; padding: 3px 6px; }
 .opponent .remove { border: 0; background: none; color: var(--muted); font-size: 1.1rem; line-height: 1; padding: 2px 6px; border-radius: 6px; }
 .opponent .remove:hover { color: var(--immune); background: var(--panel); }
 
 .opponent-search { position: relative; max-width: 360px; }
-.opponent-search input {
-  width: 100%;
-  font: inherit;
-  color: var(--text);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 7px 10px;
-}
+.opponent-search input { width: 100%; }
 .opponent-results {
   list-style: none;
   margin: 4px 0 0;
@@ -33,17 +25,19 @@
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 10px;
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  box-shadow: var(--shadow-lift);
 }
 .opponent-results button { width: 100%; display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 8px; text-align: left; background: none; border: 0; border-radius: 6px; padding: 4px 8px; color: var(--text); }
-.opponent-results button:hover, .opponent-results li:first-child button { background: var(--bg); }
+.opponent-results button:hover, .opponent-results li:first-child button { background: var(--inset); }
 
 .mode-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
 .mode-row .segmented { margin: 0; }
 
 .lineups { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
-.lineup { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: grid; gap: 8px; align-content: start; }
-.lineup.best { border-color: var(--super); }
+.lineup { background: var(--inset); border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: grid; gap: 8px; align-content: start; }
+.lineup.best { border-color: color-mix(in srgb, var(--super) 70%, var(--border)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--super) 35%, transparent), var(--shadow); }
+.lineup strong { font-family: var(--font-display); }
+.lineup.best header strong::after { content: 'recommended'; margin-left: 8px; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--super); background: color-mix(in srgb, var(--super) 14%, transparent); border-radius: 999px; padding: 1px 8px; vertical-align: middle; }
 .lineup header { display: grid; gap: 6px; }
 .lineup dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; align-items: center; }
 .lineup dt { color: var(--muted); font-size: 0.8rem; }
@@ -56,7 +50,9 @@
 .matchup-grid thead .pokemon-link { flex-direction: column; gap: 0; font-size: 0.75rem; }
 .mu { font-variant-numeric: tabular-nums; }
 .mu span { display: block; line-height: 1.25; }
-.mu-out { font-weight: 700; }
+.mu-out { font-family: var(--font-display); font-weight: 700; }
+.matchup-grid tbody tr:hover { background: none; }
+.matchup-grid td.mu { border-left: 2px solid var(--panel); }
 .mu-in, .mu-speed { font-size: 0.75rem; opacity: 0.8; }
 .mu-good { background: color-mix(in srgb, var(--super) 24%, transparent); }
 .mu-ok { background: color-mix(in srgb, var(--super) 9%, transparent); }

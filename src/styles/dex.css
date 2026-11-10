@@ -18,20 +18,13 @@ main.wide {
   min-height: 0;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 .dex-filters { padding: 14px; display: grid; gap: 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.field { display: grid; gap: 4px; font-size: 0.8rem; color: var(--muted); }
-.field input[type="search"], .field select {
-  font: inherit;
-  font-size: 0.9rem;
-  color: var(--text);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 6px 8px;
-}
+.field { display: grid; gap: 4px; font-size: 0.74rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.field input[type="search"], .field select { font-size: 0.92rem; font-weight: 400; letter-spacing: 0; text-transform: none; }
 .dex-count { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.8rem; }
 
 .dex-list { list-style: none; margin: 0; padding: 6px; overflow-y: auto; flex: 1; min-height: 120px; }
@@ -50,11 +43,16 @@ main.wide {
   padding: 7px 8px;
   color: var(--text);
 }
-.dex-row:hover { background: var(--bg); }
-.dex-row.selected { background: color-mix(in srgb, var(--accent) 14%, transparent); border-color: var(--accent); }
-.dex-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.dex-row:hover { background: var(--inset); }
+.dex-row.selected {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--accent) 5%, transparent));
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.dex-row:focus-visible { outline-offset: -2px; }
 .dex-row .poke-icon { grid-area: sprite; align-self: center; }
 .dex-row-name { grid-area: name; font-weight: 600; }
+.dex-row.selected .dex-row-name { color: var(--accent); }
 .dex-row-usage { grid-area: usage; }
 .dex-row-bst { grid-area: bst; }
 .sprite { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
@@ -70,21 +68,32 @@ main.wide {
 
 .dex-main { min-height: 0; overflow-y: auto; }
 .dex-detail { display: grid; gap: 14px; align-content: start; }
+/* The header takes on the Pokémon's type colours: first type from the left, second from the right. */
 .dex-head {
+  position: relative;
+  overflow: hidden;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-  background: var(--panel);
+  background:
+    radial-gradient(520px 220px at 0% 50%, color-mix(in srgb, var(--type-color) 24%, transparent), transparent 72%),
+    radial-gradient(420px 200px at 100% 50%, color-mix(in srgb, var(--type-color-2) 14%, transparent), transparent 72%),
+    var(--panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 18px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 10px 22px 10px 12px;
 }
-.dex-head h2 { font-size: 1.5rem; margin-bottom: 4px; }
-.dex-facts { display: flex; gap: 28px; margin: 0; }
-.dex-facts dt { font-size: 0.75rem; color: var(--muted); }
-.dex-facts dd { margin: 0; font-size: 1.3rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dex-head::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, var(--type-color), var(--type-color-2)); }
+.dex-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.dex-identity .sprite { filter: drop-shadow(0 6px 8px rgb(0 0 0 / 0.22)); }
+.dex-head h2 { font-size: 1.7rem; font-weight: 700; line-height: 1.15; margin-bottom: 6px; }
+.dex-facts { display: flex; gap: 10px; margin: 0; }
+.dex-facts > div { background: color-mix(in srgb, var(--panel) 72%, transparent); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 14px; min-width: 92px; }
+.dex-facts dt { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.dex-facts dd { margin: 0; font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* Every tile is the same height; long content scrolls inside its tile. */
 .tiles {
@@ -101,10 +110,11 @@ main.wide {
   min-height: 0;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   padding: 14px 14px 10px;
 }
-.tile header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 10px; flex-shrink: 0; }
+.tile header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .tile-body {
   flex: 1;
   min-height: 0;
@@ -115,21 +125,21 @@ main.wide {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
-.tile-body:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 .tile-body::-webkit-scrollbar { width: 8px; }
 .tile-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-.tile h3 { margin: 0; font-size: 0.95rem; }
+.tile h3 { margin: 0; font-size: 0.98rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.tile h3::before { content: ''; width: 4px; height: 14px; border-radius: 2px; background: linear-gradient(180deg, var(--accent), var(--accent-2-bright)); }
 .tile header .muted { font-size: 0.75rem; text-align: right; }
 
 .base-stats { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .base-stats li { display: grid; grid-template-columns: 34px 34px 1fr; align-items: center; gap: 8px; font-size: 0.875rem; }
-.base-stats strong { text-align: right; font-variant-numeric: tabular-nums; }
-.stat-track { height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
-.stat-fill { display: block; height: 100%; border-radius: 5px; }
+.base-stats strong { text-align: right; font-family: var(--font-display); font-variant-numeric: tabular-nums; }
+.stat-track { height: 10px; background: var(--inset); border: 1px solid var(--border); border-radius: 5px; overflow: hidden; }
+.stat-fill { display: block; height: 100%; border-radius: 5px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3); }
 .stat-fill.low { background: var(--immune); }
 .stat-fill.mid { background: var(--resisted); }
 .stat-fill.good { background: var(--super); }
-.stat-fill.great { background: var(--accent); }
+.stat-fill.great { background: linear-gradient(90deg, var(--accent-fill), var(--accent)); }
 
 .share-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .share-row {
@@ -147,13 +157,13 @@ main.wide {
   border-radius: 6px;
   color: var(--text);
 }
-.share-row.clickable:hover { background: var(--bg); }
-.share-row.clickable:focus-visible { outline: 2px solid var(--accent); }
+.share-row.clickable:hover { background: var(--inset); }
+.share-row.clickable:hover .share-label { color: var(--accent); }
 .share-label { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; min-width: 0; }
 .share-label .type-badge { min-width: 0; font-size: 0.65rem; }
 .share-detail { width: 100%; font-size: 0.75rem; color: var(--muted); }
-.share-value { font-variant-numeric: tabular-nums; font-weight: 600; }
-.share-bar { position: absolute; left: 6px; bottom: 2px; height: 3px; max-width: calc(100% - 12px); border-radius: 2px; background: var(--accent); opacity: 0.55; }
+.share-value { font-family: var(--font-display); font-variant-numeric: tabular-nums; font-weight: 600; }
+.share-bar { position: absolute; left: 6px; bottom: 2px; height: 3px; max-width: calc(100% - 12px); border-radius: 2px; background: linear-gradient(90deg, var(--accent-fill), var(--accent)); opacity: 0.75; }
 
 @media (max-width: 800px) {
   main.wide { height: auto; }
@@ -164,5 +174,5 @@ main.wide {
   .tiles { grid-auto-rows: auto; }
   .tile { max-height: 320px; }
 }
-.dex-source { margin: 0; padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; background: color-mix(in srgb, var(--resisted) 14%, transparent); }
+.dex-source { margin: 0; padding: 10px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--resisted); font-size: 0.85rem; background: color-mix(in srgb, var(--resisted) 12%, transparent); }
 .dex-row-usage .tag { margin-left: 4px; font-size: 0.6rem; }

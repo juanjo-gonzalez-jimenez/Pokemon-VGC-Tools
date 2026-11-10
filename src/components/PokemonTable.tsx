@@ -81,7 +81,7 @@ export function PokemonTable({results, title = 'Roster', defaultWallsOnly = fals
             })}
           </tbody>
         </table>
-        {!rows.length && <p className="muted empty">Nothing walls this selection. 🎉</p>}
+        {!rows.length && <p className="muted empty">Nothing walls this selection.</p>}
       </div>
     </Panel>
   );

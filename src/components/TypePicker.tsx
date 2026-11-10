@@ -1,6 +1,6 @@
 import type {ReactNode} from 'react';
 import {TYPES, type TypeName} from '../lib/typechart';
-import {TYPE_COLORS} from './TypeBadge';
+import {typeVars} from './TypeBadge';
 import {Panel} from './Panel';
 
 export const MAX_TYPES = 4;
@@ -37,7 +37,7 @@ export function TypePicker({selected, onChange, footer}: Props) {
             <button
               key={t}
               className={`type-button${on ? ' on' : ''}`}
-              style={{'--type-color': TYPE_COLORS[t]} as React.CSSProperties}
+              style={typeVars(t)}
               disabled={!on && full}
               aria-pressed={on}
               onClick={() => toggle(t)}

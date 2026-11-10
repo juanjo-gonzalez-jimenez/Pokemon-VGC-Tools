@@ -1,6 +1,7 @@
 import {useEffect, useMemo, useState} from 'react';
 import {usePersistentState} from './hooks/usePersistentState';
 import {boolean, oneOf} from './lib/storage';
+import {Icon, Logo} from './components/Icon';
 import {ThemeToggle} from './components/ThemeToggle';
 import indexJson from './data/index.json';
 import type {RegulationData, RegulationIndex} from './data/types';
@@ -89,11 +90,19 @@ export function App() {
     <main className={page === 'dex' ? 'wide' : undefined}>
       <header>
         <div className="title-row">
-          <h1>VGC Tools</h1>
+          <h1>
+            <a className="brand" href="#/coverage">
+              <Logo />
+              <span>
+                VGC <span className="brand-accent">Tools</span>
+              </span>
+            </a>
+          </h1>
           <div className="header-actions">
             <nav className="tabs">
               {(Object.keys(PAGES) as PageId[]).map(id => (
                 <a key={id} href={`#/${id}`} className={page === id ? 'active' : ''} aria-current={page === id ? 'page' : undefined}>
+                  <Icon name={id} />
                   {PAGES[id].label}
                 </a>
               ))}

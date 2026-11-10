@@ -1,5 +1,6 @@
 import {useId, useState, type ReactNode} from 'react';
 import {COLLAPSED_KEY, parseCollapsed, toggleCollapsed} from '../lib/collapsed';
+import {Icon} from './Icon';
 
 function readCollapsed(): string[] {
   try {
@@ -44,8 +45,8 @@ export function Panel({id, title, note, actions, children}: Props) {
       <div className="panel-head">
         <h2>
           <button className="panel-toggle" aria-expanded={!collapsed} aria-controls={bodyId} onClick={toggle}>
-            <span className="chevron" aria-hidden>
-              ▸
+            <span className="chevron">
+              <Icon name="chevron" size={14} />
             </span>
             {title}
           </button>
