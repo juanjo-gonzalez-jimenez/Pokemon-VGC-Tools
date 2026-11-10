@@ -51,7 +51,7 @@ export function teamAttackTypes(team: readonly TeamMember[]): TypeName[] {
 // ---------------------------------------------------------------- speed
 
 export function memberSpeed(member: TeamMember): number {
-  const speed = calcStat('spe', member.species.baseStats.spe, member.sp.spe, member.nature);
+  const speed = member.stats?.spe ?? calcStat('spe', member.species.baseStats.spe, member.sp.spe, member.nature);
   return member.item === SCARF ? Math.floor(speed * 1.5) : speed;
 }
 
@@ -86,11 +86,12 @@ export interface SpeedMatchup {
   slower: number;
 }
 
-export function speedMatchup(speed: number, p: MetaPokemon, mode: SpeedMode = 'normal'): SpeedMatchup {
+/** `theirFactor` scales the opponent's Speed (e.g. 2 for Swift Swim in rain). */
+export function speedMatchup(speed: number, p: MetaPokemon, mode: SpeedMode = 'normal', theirFactor = 1): SpeedMatchup {
   const r: SpeedMatchup = {faster: 0, tie: 0, slower: 0};
   const mine = mySpeedIn(speed, mode);
   for (const [s, share] of metaSpeeds(p)) {
-    const theirs = theirSpeedIn(s, mode);
+    const theirs = theirSpeedIn(Math.floor(s * theirFactor), mode);
     if (mine === theirs) r.tie += share;
     else if (mode === 'trickRoom' ? mine < theirs : mine > theirs) r.faster += share;
     else r.slower += share;

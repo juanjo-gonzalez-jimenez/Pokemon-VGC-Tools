@@ -1,20 +1,25 @@
 import type {MetaPokemon} from '../../data/types';
-import type {PairScore} from '../../lib/matchup';
+import {koLabel} from '../../lib/damage';
+import {approx, type PairScore} from '../../lib/matchup';
 import type {TeamMember} from '../../lib/paste';
 import {Panel} from '../Panel';
 import {PokemonLink} from '../PokemonLink';
 import {PokemonIcon} from '../Sprite';
 
-const FRACTIONS: Record<number, string> = {0.25: '¼', 0.5: '½', 0.125: '⅛'};
-const mult = (m: number) => `${FRACTIONS[m] ?? Number(m.toFixed(2))}×`;
-
 /** Colour band of a matchup: how much it favours you. */
 const band = (total: number) => (total >= 0.65 ? 'good' : total >= 0.5 ? 'ok' : total >= 0.35 ? 'risky' : 'bad');
 
+const order = (first: number) => (first > 0.5 ? '▲' : first < 0.5 ? '▼' : '=');
+
 function describe(member: TeamMember, opp: MetaPokemon, s: PairScore): string {
-  const speed =
-    s.faster === null ? 'Speed unknown' : s.faster > 0.5 ? 'you move first' : s.faster < 0.5 ? 'it moves first' : 'Speed is even';
-  return `${member.label} hits ${opp.name} for ${mult(s.myMult)}; ${opp.name}'s common moves hit back for ${mult(s.theirMult)}; ${speed}.`;
+  const mine = s.mine
+    ? `${member.label}'s ${s.mine.move.name}${s.mine.priority > 0 ? ' (priority)' : ''} does ${approx(s.mine.percent)} (${koLabel(s.mine.percent)})`
+    : `${member.label} can't damage ${opp.name}`;
+  const theirs = s.theirs
+    ? `${opp.name}'s ${s.theirs.move.name}${s.theirs.assumed ? ' (assumed, no usage data)' : ''} does ${approx(s.theirs.percent)} (${koLabel(s.theirs.percent)})`
+    : `${opp.name} can't damage ${member.label}`;
+  const first = s.first > 0.5 ? `${member.label} usually acts first` : s.first < 0.5 ? `${opp.name} usually acts first` : 'Speed is even';
+  return `${mine}. ${theirs}. ${first}.`;
 }
 
 interface Props {
@@ -52,9 +57,9 @@ export function MatchupGrid({team, opponents, grid, iconOf}: Props) {
                   const s = grid[i][j];
                   return (
                     <td key={o.id} className={`mu mu-${band(s.total)}`} title={describe(m, o, s)}>
-                      <span className="mu-out">{mult(s.myMult)}</span>
-                      <span className="mu-in">{mult(s.theirMult)}</span>
-                      <span className="mu-speed">{s.faster === null ? '?' : s.faster > 0.5 ? '▲' : s.faster < 0.5 ? '▼' : '='}</span>
+                      <span className="mu-out">{s.mine ? approx(s.mine.percent) : '—'}</span>
+                      <span className="mu-in">{s.theirs ? approx(s.theirs.percent) : '—'}</span>
+                      <span className="mu-speed">{order(s.first)}</span>
                     </td>
                   );
                 })}
@@ -64,9 +69,9 @@ export function MatchupGrid({team, opponents, grid, iconOf}: Props) {
         </table>
       </div>
       <p className="muted small">
-        In each cell: <strong>your best hit on it</strong>, then its best common hit on you (moves on 50%+ of its
-        sets), then ▲ if you usually move first or ▼ if it does. Green favours you, red favours them. Hover a cell for
-        the sentence.
+        In each cell: <strong>your best hit on it</strong> and its expected best hit on you (estimated % of HP, its
+        moves weighted by how many sets run them), then ▲ if you usually act first (priority, then Speed) or ▼ if it
+        does. Green means you win the one-on-one, red means it does. Hover a cell for the moves.
       </p>
     </Panel>
   );

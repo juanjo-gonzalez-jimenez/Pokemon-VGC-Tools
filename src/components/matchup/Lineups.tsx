@@ -54,8 +54,9 @@ export function Lineups({lineups, iconOf, note}: Props) {
         ))}
       </ol>
       <p className="muted small">
-        A heuristic over types, abilities, Speed and roles (Fake Out, Intimidate, speed control, spread moves). It
-        doesn't calculate damage, so treat it as a starting point, not the answer.
+        Built from estimated damage (who KOs whom first, priority included) plus roles (Fake Out, Intimidate, speed
+        control, spread moves). Estimates ignore stat boosts, crits and partner support, so treat this as a starting
+        point, not the answer.
       </p>
     </Panel>
   );

@@ -1,0 +1,1477 @@
+{
+ "source": "Reg M-C, Smogon 2026-10 @1760, frozen for the Rillaboom vs Mega Swampert regression test",
+ "opponents": [
+  {
+   "id": "swampertmega",
+   "name": "Swampert-Mega",
+   "usage": 0.03436,
+   "sprite": "swampert-mega",
+   "baseSprite": "swampert",
+   "icon": 1343,
+   "forms": [
+    {
+     "name": "Swampert-Mega",
+     "types": [
+      "Water",
+      "Ground"
+     ],
+     "weight": 1,
+     "abilities": {
+      "Swift Swim": 1
+     }
+    }
+   ],
+   "baseStats": {
+    "hp": 100,
+    "atk": 150,
+    "def": 110,
+    "spa": 95,
+    "spd": 110,
+    "spe": 70
+   },
+   "speeds": {
+    "90": 0.0203,
+    "92": 0.0053,
+    "98": 0.0077,
+    "101": 0.0083,
+    "102": 0.0056,
+    "103": 0.1192,
+    "107": 0.0058,
+    "108": 0.1117,
+    "109": 0.0074,
+    "110": 0.0057,
+    "112": 0.0744,
+    "113": 0.0122,
+    "114": 0.0192,
+    "116": 0.0278,
+    "118": 0.0457,
+    "120": 0.007,
+    "122": 0.5054,
+    "134": 0.0111
+   },
+   "stats": {
+    "hp": 186,
+    "atk": 217,
+    "def": 131,
+    "spa": 104,
+    "spd": 130,
+    "spe": 115
+   },
+   "items": {
+    "Swampertite": 1
+   },
+   "moves": {
+    "Protect": 0.9843,
+    "Wave Crash": 0.9722,
+    "Ice Punch": 0.8817,
+    "Earthquake": 0.727,
+    "High Horsepower": 0.2675,
+    "Knock Off": 0.0361,
+    "Flip Turn": 0.0265,
+    "Rock Slide": 0.0146,
+    "Ice Beam": 0.0116,
+    "Liquidation": 0.0115,
+    "Stomping Tantrum": 0.0105,
+    "Earth Power": 0.0093,
+    "Muddy Water": 0.0082,
+    "Yawn": 0.0076,
+    "Waterfall": 0.0064,
+    "Bulk Up": 0.0057
+   },
+   "teammates": {
+    "Archaludon": 0.8477,
+    "Pelipper": 0.8434,
+    "Golisopod-Mega": 0.3623,
+    "Sneasler": 0.2985,
+    "Basculegion-F": 0.2775,
+    "Grimmsnarl": 0.1927,
+    "Sinistcha": 0.1451,
+    "Charizard-Mega-Y": 0.1329,
+    "Incineroar": 0.1101,
+    "Farigiraf": 0.0978,
+    "Rillaboom": 0.09,
+    "Venusaur": 0.0888,
+    "Indeedee-F": 0.086,
+    "Gholdengo": 0.0857,
+    "Gengar-Mega": 0.0803,
+    "Staraptor-Mega": 0.0777,
+    "Basculegion": 0.0725,
+    "Politoed": 0.0618,
+    "Gardevoir-Mega": 0.0558,
+    "Whimsicott": 0.0492,
+    "Annihilape": 0.0475,
+    "Sableye": 0.0381,
+    "Garchomp-Mega-Z": 0.0278,
+    "Floette-Mega": 0.0276,
+    "Metagross-Mega": 0.0193,
+    "Maushold": 0.0175,
+    "Milotic": 0.0166,
+    "Kingambit": 0.0164,
+    "Tsareena": 0.0164,
+    "Bellibolt": 0.0148,
+    "Indeedee": 0.0147,
+    "Glimmora": 0.0139,
+    "Kommo-o": 0.0139,
+    "Salamence-Mega": 0.0124,
+    "Mawile-Mega": 0.0109
+   },
+   "spreads": {
+    "Adamant:2/32/0/0/0/32": 0.3979,
+    "Adamant:32/16/5/0/0/13": 0.0612,
+    "Adamant:18/30/0/0/0/18": 0.0463,
+    "Adamant:32/16/0/0/0/18": 0.0336,
+    "Adamant:0/30/4/0/0/32": 0.0299,
+    "Adamant:20/32/0/0/1/13": 0.0289,
+    "Adamant:12/32/0/0/0/22": 0.027,
+    "Adamant:27/10/0/0/1/28": 0.0173,
+    "Adamant:0/32/0/0/2/32": 0.0155,
+    "Adamant:8/30/1/0/1/26": 0.0151
+   },
+   "natures": {
+    "Adamant": 0.9728,
+    "Jolly": 0.0121,
+    "Modest": 0.0089
+   }
+  },
+  {
+   "id": "pelipper",
+   "name": "Pelipper",
+   "usage": 0.12576,
+   "sprite": "pelipper",
+   "icon": 279,
+   "forms": [
+    {
+     "name": "Pelipper",
+     "types": [
+      "Water",
+      "Flying"
+     ],
+     "weight": 1,
+     "abilities": {
+      "Drizzle": 0.9992
+     }
+    }
+   ],
+   "baseStats": {
+    "hp": 60,
+    "atk": 50,
+    "def": 100,
+    "spa": 95,
+    "spd": 70,
+    "spe": 65
+   },
+   "speeds": {
+    "76": 0.0136,
+    "85": 0.266,
+    "86": 0.0191,
+    "87": 0.041,
+    "88": 0.0266,
+    "91": 0.0279,
+    "92": 0.0492,
+    "94": 0.0159,
+    "95": 0.0682,
+    "96": 0.0913,
+    "97": 0.017,
+    "101": 0.0087,
+    "102": 0.0108,
+    "103": 0.0165,
+    "104": 0.0627,
+    "108": 0.0055,
+    "117": 0.1217,
+    "128": 0.1383
+   },
+   "stats": {
+    "hp": 158,
+    "atk": 63,
+    "def": 130,
+    "spa": 135,
+    "spd": 100,
+    "spe": 99
+   },
+   "items": {
+    "Sitrus Berry": 0.3491,
+    "Damp Rock": 0.3064,
+    "Focus Sash": 0.2272,
+    "Choice Scarf": 0.0552,
+    "Life Orb": 0.037,
+    "Eject Button": 0.0055
+   },
+   "moves": {
+    "Hurricane": 0.9812,
+    "Weather Ball": 0.8428,
+    "Wide Guard": 0.7334,
+    "Tailwind": 0.5835,
+    "Helping Hand": 0.3798,
+    "Protect": 0.2019,
+    "Muddy Water": 0.1184,
+    "U-turn": 0.0484,
+    "Rain Dance": 0.0435,
+    "Ice Beam": 0.0285,
+    "Icy Wind": 0.0177,
+    "Soak": 0.0118
+   },
+   "teammates": {
+    "Archaludon": 0.8329,
+    "Golisopod-Mega": 0.443,
+    "Sneasler": 0.3858,
+    "Basculegion-F": 0.3449,
+    "Grimmsnarl": 0.2754,
+    "Charizard-Mega-Y": 0.236,
+    "Swampert-Mega": 0.2308,
+    "Raichu-Mega-X": 0.1588,
+    "Venusaur": 0.1339,
+    "Garchomp-Mega-Z": 0.1155,
+    "Garchomp": 0.1097,
+    "Metagross-Mega": 0.1057,
+    "Farigiraf": 0.0918,
+    "Basculegion": 0.0876,
+    "Indeedee-F": 0.0703,
+    "Floette-Mega": 0.0678,
+    "Sinistcha": 0.0662,
+    "Rillaboom": 0.0615,
+    "Incineroar": 0.06,
+    "Raichu-Mega-Y": 0.0532,
+    "Gholdengo": 0.0366,
+    "Gardevoir-Mega": 0.0322,
+    "Dragonite-Mega": 0.0319,
+    "Whimsicott": 0.0318,
+    "Gengar-Mega": 0.0317,
+    "Staraptor-Mega": 0.0289,
+    "Kingambit": 0.0234,
+    "Blastoise-Mega": 0.0232,
+    "Milotic": 0.0212,
+    "Indeedee": 0.0205,
+    "Annihilape": 0.0199,
+    "Salamence-Mega": 0.0187,
+    "Mawile-Mega": 0.0166,
+    "Meganium-Mega": 0.0159,
+    "Scovillain-Mega": 0.0153,
+    "Glimmora": 0.0145,
+    "Grapploct": 0.0141,
+    "Kangaskhan-Mega": 0.0128,
+    "Starmie-Mega": 0.0113,
+    "Maushold": 0.0112
+   },
+   "spreads": {
+    "Bold:32/0/10/17/7/0": 0.1072,
+    "Timid:2/0/0/32/0/32": 0.0795,
+    "Modest:2/0/0/32/0/32": 0.0786,
+    "Bold:31/0/0/0/16/19": 0.0518,
+    "Timid:0/0/0/32/2/32": 0.0322,
+    "Modest:32/0/0/32/2/0": 0.0303,
+    "Bold:32/0/10/17/0/7": 0.0251,
+    "Modest:32/0/12/10/10/2": 0.0204,
+    "Bold:32/0/11/1/15/7": 0.0189,
+    "Bold:32/0/32/2/0/0": 0.0153
+   },
+   "natures": {
+    "Bold": 0.4286,
+    "Modest": 0.3361,
+    "Timid": 0.1413,
+    "Calm": 0.0756,
+    "Quiet": 0.011
+   }
+  },
+  {
+   "id": "rillaboom",
+   "name": "Rillaboom",
+   "usage": 0.27398,
+   "sprite": "rillaboom",
+   "icon": 812,
+   "forms": [
+    {
+     "name": "Rillaboom",
+     "types": [
+      "Grass"
+     ],
+     "weight": 1,
+     "abilities": {
+      "Grassy Surge": 0.9989
+     }
+    }
+   ],
+   "baseStats": {
+    "hp": 100,
+    "atk": 125,
+    "def": 90,
+    "spa": 60,
+    "spd": 70,
+    "spe": 85
+   },
+   "speeds": {
+    "94": 0.0981,
+    "105": 0.1867,
+    "106": 0.0664,
+    "107": 0.0746,
+    "108": 0.0863,
+    "109": 0.0236,
+    "110": 0.0417,
+    "111": 0.0084,
+    "112": 0.0362,
+    "113": 0.0848,
+    "114": 0.0476,
+    "115": 0.0268,
+    "116": 0.0139,
+    "118": 0.0711,
+    "119": 0.0403,
+    "120": 0.0104,
+    "122": 0.0057,
+    "124": 0.0101,
+    "125": 0.0118,
+    "131": 0.0094,
+    "137": 0.0279,
+    "150": 0.018
+   },
+   "stats": {
+    "hp": 201,
+    "atk": 179,
+    "def": 111,
+    "spa": 73,
+    "spd": 103,
+    "spe": 111
+   },
+   "items": {
+    "Miracle Seed": 0.7402,
+    "Life Orb": 0.0804,
+    "Eject Button": 0.0615,
+    "Occa Berry": 0.0501,
+    "Sitrus Berry": 0.0373,
+    "Grassy Seed": 0.0088,
+    "Leftovers": 0.0057,
+    "Expert Belt": 0.0054
+   },
+   "moves": {
+    "Grassy Glide": 0.993,
+    "Fake Out": 0.9923,
+    "Wood Hammer": 0.8704,
+    "U-turn": 0.5135,
+    "High Horsepower": 0.4319,
+    "Protect": 0.1338,
+    "Knock Off": 0.0142,
+    "Superpower": 0.0113,
+    "Low Kick": 0.0106,
+    "Drum Beating": 0.0082,
+    "Taunt": 0.0051
+   },
+   "teammates": {
+    "Incineroar": 0.5061,
+    "Sneasler": 0.2859,
+    "Basculegion": 0.2753,
+    "Raichu-Mega-Y": 0.2601,
+    "Kingambit": 0.233,
+    "Gholdengo": 0.2208,
+    "Floette-Mega": 0.2199,
+    "Salamence-Mega": 0.2012,
+    "Volcarona": 0.1822,
+    "Garchomp-Mega-Z": 0.1629,
+    "Gengar-Mega": 0.1401,
+    "Garchomp": 0.1115,
+    "Arcanine-Hisui": 0.107,
+    "Farigiraf": 0.0932,
+    "Primarina": 0.0927,
+    "Sylveon": 0.0898,
+    "Kommo-o": 0.0882,
+    "Milotic": 0.0839,
+    "Dragonite-Mega": 0.0808,
+    "Archaludon": 0.0769,
+    "Metagross-Mega": 0.0642,
+    "Politoed": 0.0634,
+    "Staraptor-Mega": 0.0578,
+    "Froslass-Mega": 0.054,
+    "Charizard-Mega-Y": 0.0437,
+    "Indeedee-F": 0.0421,
+    "Delphox-Mega": 0.0401,
+    "Annihilape": 0.0397,
+    "Tyranitar-Mega": 0.0374,
+    "Vivillon": 0.0363,
+    "Blastoise-Mega": 0.0362,
+    "Camerupt-Mega": 0.032,
+    "Pelipper": 0.0284,
+    "Golisopod-Mega": 0.028,
+    "Lucario-Mega-Z": 0.0254,
+    "Excadrill": 0.0249,
+    "Glimmora-Mega": 0.019,
+    "Ninetales-Alola": 0.0181,
+    "Blaziken-Mega": 0.0169,
+    "Espathra": 0.0156
+   },
+   "spreads": {
+    "Adamant:32/32/0/0/0/2": 0.0491,
+    "Adamant:26/5/1/0/31/3": 0.046,
+    "Adamant:32/32/0/0/2/0": 0.0407,
+    "Sassy:32/0/2/0/32/0": 0.0233,
+    "Adamant:26/30/1/0/4/5": 0.022,
+    "Adamant:2/32/0/0/0/32": 0.0188,
+    "Adamant:32/9/1/0/23/1": 0.0172,
+    "Jolly:2/32/0/0/0/32": 0.0146,
+    "Sassy:32/2/0/0/32/0": 0.0143,
+    "Brave:32/32/0/0/2/0": 0.0142
+   },
+   "natures": {
+    "Adamant": 0.8511,
+    "Sassy": 0.0573,
+    "Brave": 0.0374,
+    "Careful": 0.0232,
+    "Jolly": 0.0195
+   }
+  },
+  {
+   "id": "archaludon",
+   "name": "Archaludon",
+   "usage": 0.15369,
+   "sprite": "archaludon",
+   "icon": 1018,
+   "forms": [
+    {
+     "name": "Archaludon",
+     "types": [
+      "Steel",
+      "Dragon"
+     ],
+     "weight": 1,
+     "abilities": {
+      "Stamina": 0.9607,
+      "Sturdy": 0.0337,
+      "Stalwart": 0.0056
+     }
+    }
+   ],
+   "baseStats": {
+    "hp": 90,
+    "atk": 105,
+    "def": 130,
+    "spa": 125,
+    "spd": 65,
+    "spe": 85
+   },
+   "speeds": {
+    "94": 0.0109,
+    "105": 0.2111,
+    "106": 0.0326,
+    "107": 0.0695,
+    "108": 0.0654,
+    "109": 0.0505,
+    "110": 0.0064,
+    "112": 0.0353,
+    "113": 0.041,
+    "114": 0.0451,
+    "115": 0.0241,
+    "116": 0.0816,
+    "117": 0.0194,
+    "118": 0.0391,
+    "119": 0.0055,
+    "120": 0.1202,
+    "121": 0.0236,
+    "122": 0.0068,
+    "123": 0.0158,
+    "124": 0.007,
+    "125": 0.0051,
+    "129": 0.0095,
+    "137": 0.051,
+    "150": 0.0237
+   },
+   "stats": {
+    "hp": 193,
+    "atk": 112,
+    "def": 157,
+    "spa": 154,
+    "spd": 110,
+    "spe": 114
+   },
+   "items": {
+    "Leftovers": 0.928,
+    "Sitrus Berry": 0.0215,
+    "Choice Scarf": 0.0137,
+    "Bright Powder": 0.0066,
+    "White Herb": 0.0064,
+    "Chople Berry": 0.0057
+   },
+   "moves": {
+    "Protect": 0.9743,
+    "Electro Shot": 0.9722,
+    "Dragon Pulse": 0.8391,
+    "Flash Cannon": 0.5054,
+    "Snarl": 0.3544,
+    "Aura Sphere": 0.1917,
+    "Draco Meteor": 0.1405,
+    "Thunderbolt": 0.0112
+   },
+   "teammates": {
+    "Pelipper": 0.6843,
+    "Golisopod-Mega": 0.3909,
+    "Sneasler": 0.3208,
+    "Basculegion-F": 0.2767,
+    "Charizard-Mega-Y": 0.2539,
+    "Grimmsnarl": 0.2413,
+    "Politoed": 0.1938,
+    "Swampert-Mega": 0.1906,
+    "Raichu-Mega-X": 0.1717,
+    "Rillaboom": 0.1367,
+    "Incineroar": 0.1355,
+    "Venusaur": 0.1243,
+    "Garchomp-Mega-Z": 0.1115,
+    "Farigiraf": 0.106,
+    "Garchomp": 0.0935,
+    "Gengar-Mega": 0.0918,
+    "Basculegion": 0.085,
+    "Metagross-Mega": 0.0813,
+    "Floette-Mega": 0.0622,
+    "Whimsicott": 0.0533,
+    "Sinistcha": 0.0532,
+    "Indeedee-F": 0.0517,
+    "Raichu-Mega-Y": 0.0493,
+    "Espathra": 0.0429,
+    "Salamence-Mega": 0.0391,
+    "Staraptor-Mega": 0.0338,
+    "Vivillon": 0.0336,
+    "Annihilape": 0.0291,
+    "Gholdengo": 0.0282,
+    "Dragonite-Mega": 0.0241,
+    "Kingambit": 0.0202,
+    "Dragapult": 0.0185,
+    "Gardevoir-Mega": 0.0181,
+    "Scovillain-Mega": 0.0179,
+    "Sableye": 0.0164,
+    "Indeedee": 0.0148,
+    "Volcarona": 0.0139,
+    "Mawile-Mega": 0.0137,
+    "Meganium-Mega": 0.0132,
+    "Sylveon": 0.0122
+   },
+   "spreads": {
+    "Bold:30/0/1/1/19/15": 0.078,
+    "Calm:32/0/1/1/21/11": 0.0449,
+    "Calm:32/0/8/1/25/0": 0.0409,
+    "Bold:31/0/1/5/29/0": 0.0237,
+    "Timid:2/0/0/32/0/32": 0.0198,
+    "Bold:30/0/0/0/4/32": 0.0194,
+    "Calm:32/0/2/0/32/0": 0.017,
+    "Modest:2/0/0/32/0/32": 0.0168,
+    "Bold:32/0/1/0/18/15": 0.0145,
+    "Calm:30/0/8/1/25/2": 0.0142
+   },
+   "natures": {
+    "Bold": 0.3377,
+    "Calm": 0.3321,
+    "Modest": 0.247,
+    "Timid": 0.0611,
+    "Quiet": 0.0091,
+    "Careful": 0.0051,
+    "Hardy": 0.005
+   }
+  },
+  {
+   "id": "grimmsnarl",
+   "name": "Grimmsnarl",
+   "usage": 0.05412,
+   "sprite": "grimmsnarl",
+   "icon": 861,
+   "forms": [
+    {
+     "name": "Grimmsnarl",
+     "types": [
+      "Dark",
+      "Fairy"
+     ],
+     "weight": 1,
+     "abilities": {
+      "Prankster": 0.9991
+     }
+    }
+   ],
+   "baseStats": {
+    "hp": 95,
+    "atk": 120,
+    "def": 65,
+    "spa": 95,
+    "spd": 75,
+    "spe": 60
+   },
+   "speeds": {
+    "72": 0.3044,
+    "73": 0.0128,
+    "80": 0.4466,
+    "81": 0.0959,
+    "82": 0.0508,
+    "85": 0.0109,
+    "87": 0.0786
+   },
+   "stats": {
+    "hp": 201,
+    "atk": 141,
+    "def": 106,
+    "spa": 108,
+    "spd": 117,
+    "spe": 79
+   },
+   "items": {
+    "Light Clay": 0.9336,
+    "Roseli Berry": 0.0298,
+    "Black Glasses": 0.0171
+   },
+   "moves": {
+    "Parting Shot": 0.9789,
+    "Light Screen": 0.9408,
+    "Reflect": 0.9257,
+    "Spirit Break": 0.8274,
+    "Fake Out": 0.1558,
+    "Protect": 0.041,
+    "Sucker Punch": 0.0281,
+    "Scary Face": 0.0276,
+    "Foul Play": 0.0247,
+    "Fake Tears": 0.014,
+    "Misty Terrain": 0.0072,
+    "Taunt": 0.0062,
+    "Lash Out": 0.0058
+   },
+   "teammates": {
+    "Archaludon": 0.6922,
+    "Pelipper": 0.649,
+    "Charizard-Mega-Y": 0.531,
+    "Venusaur": 0.3136,
+    "Garchomp": 0.2595,
+    "Garchomp-Mega-Z": 0.2132,
+    "Golisopod-Mega": 0.1914,
+    "Metagross-Mega": 0.1736,
+    "Sinistcha": 0.1449,
+    "Swampert-Mega": 0.1243,
+    "Incineroar": 0.1066,
+    "Floette-Mega": 0.1005,
+    "Politoed": 0.0984,
+    "Milotic": 0.0924,
+    "Farigiraf": 0.0914,
+    "Staraptor-Mega": 0.0747,
+    "Rillaboom": 0.0648,
+    "Gholdengo": 0.0595,
+    "Volcarona": 0.0591,
+    "Basculegion-F": 0.0443,
+    "Gengar-Mega": 0.0406,
+    "Whimsicott": 0.0377,
+    "Sneasler": 0.033,
+    "Raichu-Mega-X": 0.0311,
+    "Basculegion": 0.0297,
+    "Raichu-Mega-Y": 0.0269,
+    "Kingambit": 0.0263,
+    "Salamence-Mega": 0.0223,
+    "Indeedee-F": 0.0156,
+    "Venusaur-Mega": 0.0155,
+    "Kleavor": 0.0134,
+    "Talonflame": 0.0127,
+    "Arcanine-Hisui": 0.0119,
+    "Starmie-Mega": 0.0114,
+    "Tyranitar-Mega": 0.0103
+   },
+   "spreads": {
+    "Sassy:29/0/22/0/15/0": 0.1259,
+    "Careful:32/0/19/0/15/0": 0.1171,
+    "Careful:31/0/23/0/5/7": 0.0775,
+    "Sassy:32/0/19/0/15/0": 0.0499,
+    "Bold:32/0/28/0/6/0": 0.0367,
+    "Impish:31/0/20/0/14/1": 0.028,
+    "Sassy:32/0/16/0/18/0": 0.0263,
+    "Sassy:31/0/20/0/15/0": 0.0258,
+    "Calm:32/0/17/0/15/2": 0.0257,
+    "Impish:30/0/25/0/10/1": 0.0239
+   },
+   "natures": {
+    "Careful": 0.3696,
+    "Sassy": 0.3036,
+    "Impish": 0.1925,
+    "Calm": 0.0454,
+    "Bold": 0.0404,
+    "Adamant": 0.0334,
+    "Relaxed": 0.008
+   }
+  },
+  {
+   "id": "kommoo",
+   "name": "Kommo-o",
+   "usage": 0.08066,
+   "sprite": "kommoo",
+   "icon": 784,
+   "forms": [
+    {
+     "name": "Kommo-o",
+     "types": [
+      "Dragon",
+      "Fighting"
+     ],
+     "weight": 1,
+     "abilities": {
+      "Soundproof": 0.8397,
+      "Bulletproof": 0.1513,
+      "Overcoat": 0.009
+     }
+    }
+   ],
+   "baseStats": {
+    "hp": 75,
+    "atk": 110,
+    "def": 125,
+    "spa": 100,
+    "spd": 105,
+    "spe": 85
+   },
+   "speeds": {
+    "94": 0.018,
+    "105": 0.0136,
+    "107": 0.0059,
+    "112": 0.4241,
+    "118": 0.0077,
+    "127": 0.0182,
+    "128": 0.0077,
+    "134": 0.0077,
+    "136": 0.0086,
+    "137": 0.4133,
+    "150": 0.0752
+   },
+   "stats": {
+    "hp": 166,
+    "atk": 117,
+    "def": 146,
+    "spa": 161,
+    "spd": 126,
+    "spe": 126
+   },
+   "items": {
+    "Life Orb": 0.5947,
+    "Leftovers": 0.3747,
+    "Sitrus Berry": 0.0111,
+    "Dragon Fang": 0.0069
+   },
+   "moves": {
+    "Protect": 0.9915,
+    "Clanging Scales": 0.9754,
+    "Aura Sphere": 0.8783,
+    "Flamethrower": 0.5817,
+    "Clangorous Soul": 0.3971,
+    "Vacuum Wave": 0.0994,
+    "Body Press": 0.0209,
+    "Draco Meteor": 0.0142,
+    "Iron Defense": 0.0128,
+    "Drain Punch": 0.0089,
+    "Dragon Pulse": 0.0067
+   },
+   "teammates": {
+    "Indeedee-F": 0.5321,
+    "Sneasler": 0.4754,
+    "Gardevoir-Mega": 0.4336,
+    "Armarouge": 0.3949,
+    "Charizard-Mega-Y": 0.3894,
+    "Rillaboom": 0.2997,
+    "Incineroar": 0.2818,
+    "Kingambit": 0.2132,
+    "Gengar-Mega": 0.2017,
+    "Raichu-Mega-Y": 0.143,
+    "Whimsicott": 0.1111,
+    "Basculegion": 0.105,
+    "Blastoise-Mega": 0.071,
+    "Glimmora-Mega": 0.048,
+    "Delphox-Mega": 0.0464,
+    "Politoed": 0.0442,
+    "Annihilape": 0.0412,
+    "Volcarona": 0.0381,
+    "Indeedee": 0.0379,
+    "Primarina": 0.0356,
+    "Metagross-Mega": 0.0351,
+    "Vivillon": 0.0333,
+    "Aerodactyl-Mega": 0.033,
+    "Aegislash": 0.0315,
+    "Sinistcha": 0.0312,
+    "Meowstic-F-Mega": 0.0309,
+    "Floette-Mega": 0.0242,
+    "Pyroar-Mega": 0.0237,
+    "Tyranitar-Mega": 0.0213,
+    "Froslass-Mega": 0.0209,
+    "Farigiraf": 0.0194,
+    "Gholdengo": 0.0193,
+    "Talonflame": 0.0182,
+    "Absol-Mega-Z": 0.0175,
+    "Arcanine-Hisui": 0.0157,
+    "Excadrill": 0.0146,
+    "Kangaskhan-Mega": 0.0122,
+    "Salamence-Mega": 0.012,
+    "Milotic": 0.0113,
+    "Clefable": 0.0112
+   },
+   "spreads": {
+    "Modest:27/0/0/32/0/7": 0.3997,
+    "Modest:2/0/0/32/0/32": 0.1365,
+    "Modest:3/0/0/30/1/32": 0.032,
+    "Modest:1/0/1/32/0/32": 0.0309,
+    "Modest:14/0/0/20/0/32": 0.0298,
+    "Modest:11/0/1/20/2/32": 0.0287,
+    "Modest:1/0/0/32/1/32": 0.0271,
+    "Timid:10/0/0/24/0/32": 0.0247,
+    "Modest:10/0/1/22/1/32": 0.0237,
+    "Timid:2/0/0/32/0/32": 0.0205
+   },
+   "natures": {
+    "Modest": 0.8808,
+    "Timid": 0.0803,
+    "Bold": 0.013,
+    "Quiet": 0.0108,
+    "Sassy": 0.0063
+   }
+  }
+ ],
+ "moves": {
+  "zapcannon": {
+   "name": "Zap Cannon",
+   "type": "Electric",
+   "category": "Special",
+   "basePower": 120,
+   "target": "normal",
+   "priority": 0
+  },
+  "focusblast": {
+   "name": "Focus Blast",
+   "type": "Fighting",
+   "category": "Special",
+   "basePower": 120,
+   "target": "normal",
+   "priority": 0
+  },
+  "fakeout": {
+   "name": "Fake Out",
+   "type": "Normal",
+   "category": "Physical",
+   "basePower": 40,
+   "target": "normal",
+   "priority": 3
+  },
+  "protect": {
+   "name": "Protect",
+   "type": "Normal",
+   "category": "Status",
+   "basePower": 0,
+   "target": "self",
+   "priority": 4
+  },
+  "closecombat": {
+   "name": "Close Combat",
+   "type": "Fighting",
+   "category": "Physical",
+   "basePower": 120,
+   "target": "normal",
+   "priority": 0
+  },
+  "direclaw": {
+   "name": "Dire Claw",
+   "type": "Poison",
+   "category": "Physical",
+   "basePower": 80,
+   "target": "normal",
+   "priority": 0
+  },
+  "swordsdance": {
+   "name": "Swords Dance",
+   "type": "Normal",
+   "category": "Status",
+   "basePower": 0,
+   "target": "self",
+   "priority": 0
+  },
+  "flamethrower": {
+   "name": "Flamethrower",
+   "type": "Fire",
+   "category": "Special",
+   "basePower": 90,
+   "target": "normal",
+   "priority": 0
+  },
+  "hypervoice": {
+   "name": "Hyper Voice",
+   "type": "Normal",
+   "category": "Special",
+   "basePower": 90,
+   "target": "allAdjacentFoes",
+   "priority": 0,
+   "sound": true
+  },
+  "tailwind": {
+   "name": "Tailwind",
+   "type": "Flying",
+   "category": "Status",
+   "basePower": 0,
+   "target": "allySide",
+   "priority": 0
+  },
+  "icepunch": {
+   "name": "Ice Punch",
+   "type": "Ice",
+   "category": "Physical",
+   "basePower": 75,
+   "target": "normal",
+   "priority": 0
+  },
+  "shadowclaw": {
+   "name": "Shadow Claw",
+   "type": "Ghost",
+   "category": "Physical",
+   "basePower": 70,
+   "target": "normal",
+   "priority": 0
+  },
+  "rockslide": {
+   "name": "Rock Slide",
+   "type": "Rock",
+   "category": "Physical",
+   "basePower": 75,
+   "target": "allAdjacentFoes",
+   "priority": 0
+  },
+  "kowtowcleave": {
+   "name": "Kowtow Cleave",
+   "type": "Dark",
+   "category": "Physical",
+   "basePower": 85,
+   "target": "normal",
+   "priority": 0
+  },
+  "suckerpunch": {
+   "name": "Sucker Punch",
+   "type": "Dark",
+   "category": "Physical",
+   "basePower": 70,
+   "target": "normal",
+   "priority": 1
+  },
+  "woodhammer": {
+   "name": "Wood Hammer",
+   "type": "Grass",
+   "category": "Physical",
+   "basePower": 120,
+   "target": "normal",
+   "priority": 0
+  },
+  "grassyglide": {
+   "name": "Grassy Glide",
+   "type": "Grass",
+   "category": "Physical",
+   "basePower": 55,
+   "target": "normal",
+   "priority": 0
+  },
+  "highhorsepower": {
+   "name": "High Horsepower",
+   "type": "Ground",
+   "category": "Physical",
+   "basePower": 95,
+   "target": "normal",
+   "priority": 0
+  },
+  "wavecrash": {
+   "name": "Wave Crash",
+   "type": "Water",
+   "category": "Physical",
+   "basePower": 120,
+   "target": "normal",
+   "priority": 0
+  },
+  "earthquake": {
+   "name": "Earthquake",
+   "type": "Ground",
+   "category": "Physical",
+   "basePower": 100,
+   "target": "allAdjacent",
+   "priority": 0
+  },
+  "knockoff": {
+   "name": "Knock Off",
+   "type": "Dark",
+   "category": "Physical",
+   "basePower": 65,
+   "target": "normal",
+   "priority": 0
+  },
+  "flipturn": {
+   "name": "Flip Turn",
+   "type": "Water",
+   "category": "Physical",
+   "basePower": 60,
+   "target": "normal",
+   "priority": 0
+  },
+  "icebeam": {
+   "name": "Ice Beam",
+   "type": "Ice",
+   "category": "Special",
+   "basePower": 90,
+   "target": "normal",
+   "priority": 0
+  },
+  "liquidation": {
+   "name": "Liquidation",
+   "type": "Water",
+   "category": "Physical",
+   "basePower": 85,
+   "target": "normal",
+   "priority": 0
+  },
+  "stompingtantrum": {
+   "name": "Stomping Tantrum",
+   "type": "Ground",
+   "category": "Physical",
+   "basePower": 75,
+   "target": "normal",
+   "priority": 0
+  },
+  "earthpower": {
+   "name": "Earth Power",
+   "type": "Ground",
+   "category": "Special",
+   "basePower": 90,
+   "target": "normal",
+   "priority": 0
+  },
+  "muddywater": {
+   "name": "Muddy Water",
+   "type": "Water",
+   "category": "Special",
+   "basePower": 90,
+   "target": "allAdjacentFoes",
+   "priority": 0
+  },
+  "yawn": {
+   "name": "Yawn",
+   "type": "Normal",
+   "category": "Status",
+   "basePower": 0,
+   "target": "normal",
+   "priority": 0
+  },
+  "waterfall": {
+   "name": "Waterfall",
+   "type": "Water",
+   "category": "Physical",
+   "basePower": 80,
+   "target": "normal",
+   "priority": 0
+  },
+  "bulkup": {
+   "name": "Bulk Up",
+   "type": "Fighting",
+   "category": "Status",
+   "basePower": 0,
+   "target": "self",
+   "priority": 0
+  },
+  "hurricane": {
+   "name": "Hurricane",
+   "type": "Flying",
+   "category": "Special",
+   "basePower": 110,
+   "target": "any",
+   "priority": 0
+  },
+  "weatherball": {
+   "name": "Weather Ball",
+   "type": "Normal",
+   "category": "Special",
+   "basePower": 50,
+   "target": "normal",
+   "priority": 0
+  },
+  "wideguard": {
+   "name": "Wide Guard",
+   "type": "Rock",
+   "category": "Status",
+   "basePower": 0,
+   "target": "allySide",
+   "priority": 3
+  },
+  "helpinghand": {
+   "name": "Helping Hand",
+   "type": "Normal",
+   "category": "Status",
+   "basePower": 0,
+   "target": "adjacentAlly",
+   "priority": 5
+  },
+  "uturn": {
+   "name": "U-turn",
+   "type": "Bug",
+   "category": "Physical",
+   "basePower": 70,
+   "target": "normal",
+   "priority": 0
+  },
+  "raindance": {
+   "name": "Rain Dance",
+   "type": "Water",
+   "category": "Status",
+   "basePower": 0,
+   "target": "all",
+   "priority": 0
+  },
+  "icywind": {
+   "name": "Icy Wind",
+   "type": "Ice",
+   "category": "Special",
+   "basePower": 55,
+   "target": "allAdjacentFoes",
+   "priority": 0
+  },
+  "soak": {
+   "name": "Soak",
+   "type": "Water",
+   "category": "Status",
+   "basePower": 0,
+   "target": "normal",
+   "priority": 0
+  },
+  "superpower": {
+   "name": "Superpower",
+   "type": "Fighting",
+   "category": "Physical",
+   "basePower": 120,
+   "target": "normal",
+   "priority": 0
+  },
+  "lowkick": {
+   "name": "Low Kick",
+   "type": "Fighting",
+   "category": "Physical",
+   "basePower": 0,
+   "target": "normal",
+   "priority": 0
+  },
+  "drumbeating": {
+   "name": "Drum Beating",
+   "type": "Grass",
+   "category": "Physical",
+   "basePower": 80,
+   "target": "normal",
+   "priority": 0
+  },
+  "taunt": {
+   "name": "Taunt",
+   "type": "Dark",
+   "category": "Status",
+   "basePower": 0,
+   "target": "normal",
+   "priority": 0
+  },
+  "electroshot": {
+   "name": "Electro Shot",
+   "type": "Electric",
+   "category": "Special",
+   "basePower": 130,
+   "target": "normal",
+   "priority": 0
+  },
+  "dragonpulse": {
+   "name": "Dragon Pulse",
+   "type": "Dragon",
+   "category": "Special",
+   "basePower": 85,
+   "target": "any",
+   "priority": 0
+  },
+  "flashcannon": {
+   "name": "Flash Cannon",
+   "type": "Steel",
+   "category": "Special",
+   "basePower": 80,
+   "target": "normal",
+   "priority": 0
+  },
+  "snarl": {
+   "name": "Snarl",
+   "type": "Dark",
+   "category": "Special",
+   "basePower": 55,
+   "target": "allAdjacentFoes",
+   "priority": 0,
+   "sound": true
+  },
+  "aurasphere": {
+   "name": "Aura Sphere",
+   "type": "Fighting",
+   "category": "Special",
+   "basePower": 80,
+   "target": "any",
+   "priority": 0
+  },
+  "dracometeor": {
+   "name": "Draco Meteor",
+   "type": "Dragon",
+   "category": "Special",
+   "basePower": 130,
+   "target": "normal",
+   "priority": 0
+  },
+  "thunderbolt": {
+   "name": "Thunderbolt",
+   "type": "Electric",
+   "category": "Special",
+   "basePower": 90,
+   "target": "normal",
+   "priority": 0
+  },
+  "partingshot": {
+   "name": "Parting Shot",
+   "type": "Dark",
+   "category": "Status",
+   "basePower": 0,
+   "target": "normal",
+   "priority": 0,
+   "sound": true
+  },
+  "lightscreen": {
+   "name": "Light Screen",
+   "type": "Psychic",
+   "category": "Status",
+   "basePower": 0,
+   "target": "allySide",
+   "priority": 0
+  },
+  "reflect": {
+   "name": "Reflect",
+   "type": "Psychic",
+   "category": "Status",
+   "basePower": 0,
+   "target": "allySide",
+   "priority": 0
+  },
+  "spiritbreak": {
+   "name": "Spirit Break",
+   "type": "Fairy",
+   "category": "Physical",
+   "basePower": 75,
+   "target": "normal",
+   "priority": 0
+  },
+  "scaryface": {
+   "name": "Scary Face",
+   "type": "Normal",
+   "category": "Status",
+   "basePower": 0,
+   "target": "normal",
+   "priority": 0
+  },
+  "foulplay": {
+   "name": "Foul Play",
+   "type": "Dark",
+   "category": "Physical",
+   "basePower": 95,
+   "target": "normal",
+   "priority": 0,
+   "offensive": "target"
+  },
+  "faketears": {
+   "name": "Fake Tears",
+   "type": "Dark",
+   "category": "Status",
+   "basePower": 0,
+   "target": "normal",
+   "priority": 0
+  },
+  "mistyterrain": {
+   "name": "Misty Terrain",
+   "type": "Fairy",
+   "category": "Status",
+   "basePower": 0,
+   "target": "all",
+   "priority": 0
+  },
+  "lashout": {
+   "name": "Lash Out",
+   "type": "Dark",
+   "category": "Physical",
+   "basePower": 75,
+   "target": "normal",
+   "priority": 0
+  },
+  "clangingscales": {
+   "name": "Clanging Scales",
+   "type": "Dragon",
+   "category": "Special",
+   "basePower": 110,
+   "target": "allAdjacentFoes",
+   "priority": 0,
+   "sound": true
+  },
+  "clangoroussoul": {
+   "name": "Clangorous Soul",
+   "type": "Dragon",
+   "category": "Status",
+   "basePower": 0,
+   "target": "self",
+   "priority": 0,
+   "sound": true
+  },
+  "vacuumwave": {
+   "name": "Vacuum Wave",
+   "type": "Fighting",
+   "category": "Special",
+   "basePower": 40,
+   "target": "normal",
+   "priority": 1
+  },
+  "bodypress": {
+   "name": "Body Press",
+   "type": "Fighting",
+   "category": "Physical",
+   "basePower": 80,
+   "target": "normal",
+   "priority": 0,
+   "offensive": "def"
+  },
+  "irondefense": {
+   "name": "Iron Defense",
+   "type": "Steel",
+   "category": "Status",
+   "basePower": 0,
+   "target": "self",
+   "priority": 0
+  },
+  "drainpunch": {
+   "name": "Drain Punch",
+   "type": "Fighting",
+   "category": "Physical",
+   "basePower": 75,
+   "target": "normal",
+   "priority": 0
+  }
+ },
+ "species": {
+  "raichumegay": {
+   "name": "Raichu-Mega-Y",
+   "types": [
+    "Electric"
+   ],
+   "baseStats": {
+    "hp": 60,
+    "atk": 100,
+    "def": 55,
+    "spa": 160,
+    "spd": 80,
+    "spe": 130
+   },
+   "abilities": [
+    "No Guard"
+   ],
+   "baseSpecies": "Raichu",
+   "requiredItem": "Raichunite Y"
+  },
+  "sneasler": {
+   "name": "Sneasler",
+   "types": [
+    "Fighting",
+    "Poison"
+   ],
+   "baseStats": {
+    "hp": 80,
+    "atk": 130,
+    "def": 60,
+    "spa": 40,
+    "spd": 80,
+    "spe": 120
+   },
+   "abilities": [
+    "Pressure",
+    "Unburden",
+    "Poison Touch"
+   ]
+  },
+  "salamence": {
+   "name": "Salamence",
+   "types": [
+    "Dragon",
+    "Flying"
+   ],
+   "baseStats": {
+    "hp": 95,
+    "atk": 135,
+    "def": 80,
+    "spa": 110,
+    "spd": 80,
+    "spe": 100
+   },
+   "abilities": [
+    "Intimidate",
+    "Moxie"
+   ]
+  },
+  "salamencemega": {
+   "name": "Salamence-Mega",
+   "types": [
+    "Dragon",
+    "Flying"
+   ],
+   "baseStats": {
+    "hp": 95,
+    "atk": 145,
+    "def": 130,
+    "spa": 120,
+    "spd": 90,
+    "spe": 120
+   },
+   "abilities": [
+    "Aerilate"
+   ],
+   "baseSpecies": "Salamence",
+   "requiredItem": "Salamencite"
+  },
+  "annihilape": {
+   "name": "Annihilape",
+   "types": [
+    "Fighting",
+    "Ghost"
+   ],
+   "baseStats": {
+    "hp": 110,
+    "atk": 115,
+    "def": 80,
+    "spa": 50,
+    "spd": 90,
+    "spe": 90
+   },
+   "abilities": [
+    "Vital Spirit",
+    "Inner Focus",
+    "Defiant"
+   ]
+  },
+  "kingambit": {
+   "name": "Kingambit",
+   "types": [
+    "Dark",
+    "Steel"
+   ],
+   "baseStats": {
+    "hp": 100,
+    "atk": 135,
+    "def": 120,
+    "spa": 60,
+    "spd": 85,
+    "spe": 50
+   },
+   "abilities": [
+    "Defiant",
+    "Supreme Overlord",
+    "Pressure"
+   ]
+  },
+  "rillaboom": {
+   "name": "Rillaboom",
+   "types": [
+    "Grass"
+   ],
+   "baseStats": {
+    "hp": 100,
+    "atk": 125,
+    "def": 90,
+    "spa": 60,
+    "spd": 70,
+    "spe": 85
+   },
+   "abilities": [
+    "Overgrow",
+    "Grassy Surge"
+   ]
+  }
+ }
+}

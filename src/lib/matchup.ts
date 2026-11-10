@@ -1,18 +1,20 @@
 /**
  * Team-preview helper: how each of your Pokémon fares against each of the opponent's, and which
- * four to bring (two leads, two in the back). A heuristic over types, abilities, Speed and
- * common VGC roles; it does not calculate damage.
+ * four to bring (two leads, two in the back). Each pairing is scored from estimated damage
+ * (src/lib/damage.ts): who knocks the other out in fewer hits, and who moves first. Line-ups add
+ * common VGC roles on top. Estimates, not exact calculations.
  */
 import type {MetaPokemon, MoveTable} from '../data/types';
-import {bestHit, coverPokemon} from './coverage';
+import type {Field} from './damage';
+import {mainAbility} from './combatant';
+import {duel, type Duel} from './exchange';
+import {fieldOf, resolveField, type FieldChoice, type FieldContext} from './field';
 import {toID} from './ids';
 import type {TeamMember} from './paste';
 import {teamRoles} from './roles';
-import {memberAttacks, memberSpeed, speedMatchup, type SpeedMode} from './team';
-import {commonAttacks, RELIABLE_MOVE_SHARE} from './threats';
-import type {TypeName} from './typechart';
+import type {SpeedMode} from './team';
+import {RELIABLE_MOVE_SHARE} from './threats';
 
-const PAIR_WEIGHTS = {offence: 0.4, defence: 0.4, speed: 0.2};
 const LINEUP_WEIGHTS = {answers: 0.6, leads: 0.4};
 const ANSWER_WEIGHTS = {bestTwo: 0.6, everyone: 0.4};
 const BONUS = {fakeOut: 0.03, intimidate: 0.02, speedControl: 0.03, spread: 0.02, redirection: 0.02};
@@ -20,56 +22,47 @@ const SHARED_WEAKNESS_PENALTY = 0.03;
 const MAX_SHARED_WEAKNESSES = 3;
 export const BRING = 4;
 
-export interface PairScore {
-  /** Best multiplier your moves get on it (its most likely ability) and the types that do it. */
-  myMult: number;
-  myTypes: TypeName[];
-  /** Best multiplier its common moves get on you. */
-  theirMult: number;
-  theirTypes: TypeName[];
-  /** Share of its sets you move before (null when it has no Speed data). */
-  faster: number | null;
-  /** 0..1 parts and the weighted total; above 0.5 favours you. */
-  offence: number;
-  defence: number;
-  speed: number;
-  total: number;
-}
-
-/** How safe you are against a hit of this multiplier (1 = takes nothing, 0 = takes 4×). */
-function safety(mult: number): number {
-  if (mult >= 4) return 0;
-  if (mult >= 2) return 0.2;
-  if (mult >= 1) return 0.6;
-  if (mult > 0) return 0.9;
-  return 1;
-}
-
-export function pairScore(member: TeamMember, opp: MetaPokemon, moves: MoveTable, mode: SpeedMode = 'normal'): PairScore {
-  const mine = coverPokemon(memberAttacks(member), opp);
-  const offence = mine.buckets.super + mine.buckets.neutral * 0.5 + mine.buckets.resisted * 0.15;
-
-  const theirAttacks = commonAttacks(opp, moves, RELIABLE_MOVE_SHARE);
-  const theirs = bestHit(theirAttacks, member.species.types, member.ability);
-  // Without move data, assume it can at least hit neutrally.
-  const defence = theirAttacks.length ? safety(theirs.mult) : safety(1);
-
-  const hasSpeeds = Object.keys(opp.speeds).length > 0;
-  const race = speedMatchup(memberSpeed(member), opp, mode);
-  const speed = hasSpeeds ? race.faster + race.tie * 0.5 : 0.5;
-
-  return {
-    myMult: mine.main.mult,
-    myTypes: mine.main.bestTypes,
-    theirMult: theirAttacks.length ? theirs.mult : 1,
-    theirTypes: theirs.bestTypes,
-    faster: hasSpeeds ? race.faster : null,
-    offence,
-    defence,
-    speed,
-    total: PAIR_WEIGHTS.offence * offence + PAIR_WEIGHTS.defence * defence + PAIR_WEIGHTS.speed * speed,
+/** Short description of what Auto picks for a whole matchup, e.g. "Rain (Pelipper's Drizzle)". */
+export function describeAutoField(team: readonly TeamMember[], opponents: readonly MetaPokemon[]): string {
+  const parts: string[] = [];
+  const setterOf = (field: 'weather' | 'terrain') => {
+    for (const o of opponents) {
+      const f = fieldOf([mainAbility(o)]);
+      if (f[field]) return `${f[field]} from ${o.name} (their ${mainAbility(o)})`;
+    }
+    for (const m of team) {
+      const f = fieldOf([m.ability]);
+      if (f[field]) return `${f[field]} from your ${m.label} (${m.ability})`;
+    }
+    return '';
   };
+  for (const f of ['weather', 'terrain'] as const) {
+    const s = setterOf(f);
+    if (s) parts.push(s);
+  }
+  return parts.length ? parts.join('; ') : 'no weather or terrain';
 }
+
+// ---------------------------------------------------------------- pairs
+
+/** One of your Pokémon against one of theirs. `total` above 0.5 favours you. */
+export interface PairScore extends Duel {
+  field: Field;
+}
+
+export function pairScore(
+  member: TeamMember,
+  opp: MetaPokemon,
+  moves: MoveTable,
+  mode: SpeedMode = 'normal',
+  ctx?: FieldContext,
+): PairScore {
+  const field = resolveField(member.ability, mainAbility(opp), ctx);
+  return {...duel(member, opp, moves, field, mode), field};
+}
+
+/** "~85%" style label for an estimated percentage. */
+export const approx = (percent: number) => `~${Math.round(percent)}%`;
 
 /** grid[i][j]: your member i against their Pokémon j. */
 export function matchupGrid(
@@ -77,8 +70,10 @@ export function matchupGrid(
   opponents: readonly MetaPokemon[],
   moves: MoveTable,
   mode: SpeedMode = 'normal',
+  choice: FieldChoice = 'auto',
 ): PairScore[][] {
-  return team.map(m => opponents.map(o => pairScore(m, o, moves, mode)));
+  const ctx: FieldContext = {choice, theirs: opponents.map(mainAbility), yours: team.map(m => m.ability)};
+  return team.map(m => opponents.map(o => pairScore(m, o, moves, mode, ctx)));
 }
 
 export interface Lineup {
@@ -115,6 +110,21 @@ function isPhysical(opp: MetaPokemon, moves: MoveTable): boolean {
 
 const names = (list: string[], max = 3) => (list.length > max ? `${list.slice(0, max).join(', ')}…` : list.join(', '));
 
+/** "Rillaboom: Grassy Glide (priority) likely OHKOs Swampert-Mega; wins 5 of 6 one-on-ones". */
+function leadReason(m: TeamMember, opponents: readonly MetaPokemon[], score: (j: number) => PairScore): string {
+  const kos = new Map<string, string[]>();
+  opponents.forEach((o, j) => {
+    const s = score(j);
+    if (!s.mine || s.myHits > 1) return;
+    const move = s.mine.priority > 0 ? `${s.mine.move.name} (priority)` : s.mine.move.name;
+    kos.set(move, [...(kos.get(move) ?? []), o.name]);
+  });
+  const wins = opponents.filter((_, j) => score(j).win > 0.5).length;
+  const parts = [...kos].map(([move, targets]) => `${move} likely OHKOs ${names(targets)}`);
+  parts.push(`wins ${wins} of ${opponents.length} one-on-ones`);
+  return `${m.label}: ${parts.join('; ')}`;
+}
+
 /**
  * The best ways to bring four of your Pokémon against the opponent's six: one entry per group of
  * four (with its best pair of leads), best first.
@@ -125,10 +135,11 @@ export function suggestBrings(
   moves: MoveTable,
   mode: SpeedMode = 'normal',
   limit = 3,
+  choice: FieldChoice = 'auto',
 ): Lineup[] {
   if (!team.length || !opponents.length) return [];
   const index = new Map(team.map((m, i) => [m, i]));
-  const grid = matchupGrid(team, opponents, moves, mode);
+  const grid = matchupGrid(team, opponents, moves, mode, choice);
   const score = (m: TeamMember, j: number) => grid[index.get(m)!][j];
   const physicalHeavy = opponents.filter(o => isPhysical(o, moves)).length >= opponents.length / 2;
 
@@ -158,18 +169,26 @@ export function suggestBrings(
       fourBonus += BONUS.redirection;
       fourReasons.push(`Redirection from ${names(roles['Redirection'])}`);
     }
+    // Same numbers as the score: an opponent that likely OHKOs three or more of the four.
     const shared = opponents
-      .map((o, j) => ({name: o.name, weak: four.filter(m => score(m, j).theirMult > 1).length}))
-      .filter(x => x.weak >= 3)
+      .map((o, j) => ({name: o.name, ko: four.filter(m => score(m, j).theirHits <= 1).length}))
+      .filter(x => x.ko >= 3)
       .slice(0, MAX_SHARED_WEAKNESSES);
-    for (const s of shared) warnings.push(`${s.weak} of these four are weak to ${s.name}'s common moves`);
+    for (const s of shared) warnings.push(`${s.name} can likely OHKO ${s.ko} of these four`);
     const penalty = shared.length * SHARED_WEAKNESS_PENALTY;
 
     const bench = team.filter(m => !four.includes(m));
     for (const m of bench) {
-      const threats = opponents.filter((_, j) => score(m, j).theirMult > 1).map(o => o.name);
+      // Matchups it loses, worst first, with the move and estimate that decide them.
+      const losses = opponents
+        .map((o, j) => ({o, s: score(m, j)}))
+        .filter(x => x.s.win < 0.5 && x.s.theirs)
+        .sort((a, b) => a.s.total - b.s.total)
+        .map(({o, s}) => `${o.name} (${s.theirs!.move.name} ${approx(s.theirs!.percent)})`);
       fourReasons.push(
-        threats.length ? `${m.label} stays out: weak to ${names(threats)}` : `${m.label} stays out: fewest good matchups`,
+        losses.length
+          ? `${m.label} stays out: loses to ${names(losses, 2)}`
+          : `${m.label} stays out: fewest winning matchups`,
       );
     }
 
@@ -188,15 +207,7 @@ export function suggestBrings(
         bonus += BONUS.spread;
         reasons.push(`Spread damage from ${names(spread.map(m => m.label))}`);
       }
-      for (const m of leads) {
-        const hits = opponents.filter((_, j) => score(m, j).myMult > 1).map(o => o.name);
-        const faster = opponents.filter((_, j) => (score(m, j).faster ?? 0) > 0.5).length;
-        const parts = [
-          hits.length ? `hits ${names(hits)} super effectively` : '',
-          `moves before ${faster} of their ${opponents.length}`,
-        ].filter(Boolean);
-        reasons.unshift(`${m.label} ${parts.join(' and ')}`);
-      }
+      for (const m of [...leads].reverse()) reasons.unshift(leadReason(m, opponents, j => score(m, j)));
       const total = LINEUP_WEIGHTS.answers * answers + LINEUP_WEIGHTS.leads * leadQuality + bonus - penalty;
       if (!best || total > best.score) {
         best = {

@@ -17,6 +17,8 @@ export interface TeamMember {
   baseSpecies: SpeciesData;
   /** Number of move lines pasted, including unknown moves. */
   moveLines: number;
+  /** Known final stats that replace the ones from `sp` and `nature` (a meta Pokémon's averages). */
+  stats?: StatsTable;
   nature: string;
   /** Stat points (Champions' replacement for EVs). */
   sp: StatsTable;

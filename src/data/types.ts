@@ -30,6 +30,8 @@ export interface MetaPokemon extends Pokemon {
   moves: Record<string, number>;
   /** Most common teammates: name -> share of this Pokémon's teams that also have it (0..1). */
   teammates: Record<string, number>;
+  /** Usage-weighted mean final stats at Lv. 50 over all spreads (assumed spread when unused). */
+  stats: StatsTable;
   /** Most common spreads, "Nature:hp/atk/def/spa/spd/spe" (stat points) -> share (0..1). */
   spreads: Record<string, number>;
   /** Nature -> share of sets (0..1). */
@@ -73,6 +75,12 @@ export interface MoveData {
   priority: number;
   /** Sound-based move (Liquid Voice turns these into Water moves). */
   sound?: true;
+  /** Hits per use: a number, or [min, max] for 2–5 hit moves. */
+  multihit?: number | number[];
+  /** Attacking stat: the target's Attack (Foul Play) or the user's Defense (Body Press). */
+  offensive?: 'target' | 'def';
+  /** Defending stat: the target's Defense even for a special move (Psyshock). */
+  defensive?: 'def';
   /** Set by applyMod(): the move doesn't exist in the regulation's game. */
   unavailable?: true;
 }

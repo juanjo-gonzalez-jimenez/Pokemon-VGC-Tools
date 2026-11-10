@@ -16,7 +16,7 @@ export function ThreatList({
   teamSize,
   id = 'threats',
   title = 'Biggest threats',
-  note = 'type + speed heuristic, no damage calc',
+  note = 'estimated damage, usual sets',
 }: Props) {
   return (
     <Panel id={id} title={title} note={note}>
@@ -27,9 +27,9 @@ export function ThreatList({
               <th>Pokémon</th>
               <th className="num">Usage</th>
               <th>Threat</th>
-              <th>Hits super effectively</th>
-              <th>Your answers</th>
-              <th className="num">Faster than</th>
+              <th>Likely KOs (2 hits or fewer)</th>
+              <th>Beaten by</th>
+              <th className="num">Acts before</th>
             </tr>
           </thead>
           <tbody>
@@ -50,14 +50,20 @@ export function ThreatList({
                       <strong>
                         {t.hits.length}/{teamSize}
                       </strong>{' '}
-                      {t.hits.map(h => h.label).join(', ')}
+                      {t.hits.map((h, k) => (
+                        <span key={h.label} title={`${h.move} ~${Math.round(h.percent)}%`}>
+                          {k > 0 && ', '}
+                          {h.label}
+                          <span className="muted"> ({h.hitsToKO === 1 ? 'OHKO' : '2HKO'})</span>
+                        </span>
+                      ))}
                     </>
                   ) : (
                     <span className="muted">none</span>
                   )}
                 </td>
                 <td className={`notes ${t.answers.length ? '' : 'no-answer'}`}>
-                  {t.answers.length ? t.answers.join(', ') : 'Nobody hits it super effectively'}
+                  {t.answers.length ? t.answers.join(', ') : 'Nobody wins the one-on-one'}
                 </td>
                 <td className="num">
                   {t.fasterThan.length}/{teamSize}
@@ -68,8 +74,9 @@ export function ThreatList({
         </table>
       </div>
       <p className="muted small">
-        Ranked by how many of your Pokémon it hits super effectively with moves most of its sets run (50%+), how few of yours hit it super effectively, and how many it outspeeds in the current speed mode,
-        weighted by usage.
+        From estimated damage with its usual sets: how many of your Pokémon it likely KOs in two hits or fewer, how
+        few of yours beat it one-on-one, and how many it acts before (priority, then Speed, in the current speed mode),
+        weighted by usage. Hover a name for the move and estimate.
       </p>
     </Panel>
   );

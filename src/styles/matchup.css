@@ -58,3 +58,7 @@
 .mu-ok { background: color-mix(in srgb, var(--super) 9%, transparent); }
 .mu-risky { background: color-mix(in srgb, var(--resisted) 16%, transparent); }
 .mu-bad { background: color-mix(in srgb, var(--immune) 22%, transparent); }
+
+.field-select { display: inline-flex; align-items: center; gap: 8px; }
+.field-select select { font-size: 0.88rem; padding: 5px 8px; }
+.field-note { margin: 0; flex-basis: 100%; }

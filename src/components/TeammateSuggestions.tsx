@@ -73,8 +73,8 @@ export function TeammateSuggestions({suggestions, teamSize}: Props) {
       </div>
       <p className="muted small">
         "Paired with X 40%" means 40% of X's teams in the stats also run this Pokémon. The fit score mixes how often
-        top players pair it with your team, which of your weak types it resists, which of your biggest threats it hits
-        super effectively with moves most of its sets run (50%+), and which missing roles its usual set fills.
+        top players pair it with your team, which of your weak types it resists, which of your biggest threats it beats
+        one-on-one with its usual set (estimated damage), and which missing roles its usual set fills.
       </p>
     </Panel>
   );

@@ -1,29 +1,34 @@
 import type {MetaPokemon, MoveTable} from '../data/types';
-import {bestHit, coverPokemon} from './coverage';
-import {toID} from './ids';
 import {attackOf, typesOf, uniqueAttacks, type Attack} from './attack';
+import {mainAbility} from './combatant';
+import {duel} from './exchange';
+import {resolveField, type FieldContext} from './field';
+import {toID} from './ids';
 import type {TeamMember} from './paste';
-import {memberAttacks, memberSpeed, speedMatchup, type SpeedMode} from './team';
+import type {SpeedMode} from './team';
 import type {TypeName} from './typechart';
 
 /** A move counts as part of a Pokémon's kit when at least this share of its sets run it. */
 export const COMMON_MOVE_SHARE = 0.15;
 /**
- * A Pokémon only counts as hitting something super effectively when at least this share of its
- * sets carry a move of that type, so a move on a third of sets doesn't count as "always there".
+ * Share of sets a move needs to count as part of the usual kit for type-level summaries
+ * (`attackTypes`) and the "mostly physical" check; damage threats weight every move by share instead.
  */
 export const RELIABLE_MOVE_SHARE = 0.5;
 const WEIGHTS = {hits: 0.4, unanswered: 0.4, faster: 0.2};
+
+/** It threatens a member when its expected best hit KOs that member in this many hits or fewer. */
+export const THREAT_HITS = 2;
 
 export interface Threat {
   pokemon: MetaPokemon;
   /** Damaging types carried by most of its sets (RELIABLE_MOVE_SHARE). */
   attackTypes: TypeName[];
-  /** Your members it hits super effectively, with the types that do it. */
-  hits: Array<{label: string; types: TypeName[]}>;
-  /** Your members that hit it super effectively in most of its ability scenarios. */
+  /** Your members it likely OHKOs or 2HKOs, with the move behind it and the estimate. */
+  hits: Array<{label: string; move: string; percent: number; hitsToKO: number}>;
+  /** Your members that win the one-on-one against it. */
   answers: string[];
-  /** Your members it moves before in most of its spreads. */
+  /** Your members it acts before (priority, then Speed). */
   fasterThan: string[];
   /** 0..1: how badly it matches up against your team. */
   severity: number;
@@ -31,11 +36,7 @@ export interface Threat {
   score: number;
 }
 
-/** The meta Pokémon's most common ability (decides e.g. Weather Ball's type). */
-export function mainAbility(p: MetaPokemon): string {
-  const abilities = Object.entries(p.forms[0]?.abilities ?? {});
-  return abilities.length ? abilities.reduce((a, b) => (b[1] > a[1] ? b : a))[0] : '';
-}
+export {mainAbility} from './combatant';
 
 /**
  * Attacking types from damaging moves run on at least `minShare` of its sets. A type's share is
@@ -56,23 +57,32 @@ export function commonAttackTypes(p: MetaPokemon, moves: MoveTable, minShare = C
   return typesOf(commonAttacks(p, moves, minShare));
 }
 
+/**
+ * How dangerous a meta Pokémon is to your team, from estimated damage: whom it likely 2HKOs (or
+ * better), who wins the one-on-one against it, and whom it acts before. `ctx` sets the field
+ * (Matchup tab); without it, weather and terrain come only from the two Pokémon involved.
+ */
 export function assessThreat(
   p: MetaPokemon,
   team: readonly TeamMember[],
   moves: MoveTable,
   mode: SpeedMode = 'normal',
+  ctx?: FieldContext,
 ): Threat {
-  const attacks = commonAttacks(p, moves, RELIABLE_MOVE_SHARE);
   const hits: Threat['hits'] = [];
   const answers: string[] = [];
   const fasterThan: string[] = [];
 
   for (const m of team) {
-    const hit = bestHit(attacks, m.species.types, m.ability);
-    if (hit.mult > 1) hits.push({label: m.label, types: hit.bestTypes});
-    if (coverPokemon(memberAttacks(m), p).buckets.super >= 0.5) answers.push(m.label);
-    if (speedMatchup(memberSpeed(m), p, mode).slower > 0.5) fasterThan.push(m.label);
+    const d = duel(m, p, moves, resolveField(m.ability, mainAbility(p), ctx), mode);
+    if (d.theirs && d.theirHits <= THREAT_HITS) {
+      hits.push({label: m.label, move: d.theirs.move.name, percent: d.theirs.percent, hitsToKO: d.theirHits});
+    }
+    if (d.win > 0.5) answers.push(m.label);
+    if (d.first < 0.5) fasterThan.push(m.label);
   }
+  hits.sort((a, b) => a.hitsToKO - b.hitsToKO || b.percent - a.percent);
+  const attacks = commonAttacks(p, moves, RELIABLE_MOVE_SHARE);
 
   const n = team.length || 1;
   const severity =

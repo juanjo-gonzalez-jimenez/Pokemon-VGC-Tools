@@ -12,11 +12,29 @@ import {useLookupTables} from '../data/useLookupTables';
 import {usePersistentState} from '../hooks/usePersistentState';
 import {useSavedTeam} from '../hooks/useSavedTeam';
 import {toID} from '../lib/ids';
-import {matchupGrid, previewForms, suggestBrings} from '../lib/matchup';
+import {mainAbility} from '../lib/combatant';
+import {FIELD_CHOICES, type FieldChoice, type FieldContext} from '../lib/field';
+import {describeAutoField, matchupGrid, previewForms, suggestBrings} from '../lib/matchup';
 import {MAX_TEAM_SIZE, parseTeam, type TeamMember} from '../lib/paste';
 import {anyString, oneOf} from '../lib/storage';
 import {SPEED_MODE_IDS, type SpeedMode} from '../lib/team';
 import {assessThreat} from '../lib/threats';
+
+const FIELD_LABELS: Record<FieldChoice, string> = {
+  auto: 'Auto (from abilities)',
+  none: 'No weather or terrain',
+  rain: 'Rain',
+  sun: 'Sun',
+  sand: 'Sand',
+  snow: 'Snow',
+  grassy: 'Grassy Terrain',
+};
+
+const fieldContext = (choice: FieldChoice, team: TeamMember[], opponents: MetaPokemon[]): FieldContext => ({
+  choice,
+  theirs: opponents.map(mainAbility),
+  yours: team.map(m => m.ability),
+});
 
 interface Props {
   regId: string;
@@ -31,6 +49,7 @@ export function MatchupPage({regId, mod}: Props) {
   // Opposing Pokémon ids, comma separated, remembered per regulation.
   const [stored, setStored] = usePersistentState(`vgc-tools:opponents:${regId}`, '', anyString);
   const [mode, setMode] = usePersistentState<SpeedMode>('vgc-tools:speed-mode', 'normal', oneOf(SPEED_MODE_IDS));
+  const [fieldChoice, setFieldChoice] = usePersistentState<FieldChoice>('vgc-tools:field', 'auto', oneOf(FIELD_CHOICES));
 
   const team = useMemo(
     () => (tables ? parseTeam(teamText, tables.species, tables.moves).members : []),
@@ -49,19 +68,21 @@ export function MatchupPage({regId, mod}: Props) {
   const setOpponents = (ids: string[]) => setStored(ids.join(','));
 
   const grid = useMemo(
-    () => (tables ? matchupGrid(team, opponents, tables.moves, mode) : []),
-    [team, opponents, tables, mode],
+    () => (tables ? matchupGrid(team, opponents, tables.moves, mode, fieldChoice) : []),
+    [team, opponents, tables, mode, fieldChoice],
   );
   const lineups = useMemo(
-    () => (tables ? suggestBrings(team, opponents, tables.moves, mode) : []),
-    [team, opponents, tables, mode],
+    () => (tables ? suggestBrings(team, opponents, tables.moves, mode, 3, fieldChoice) : []),
+    [team, opponents, tables, mode, fieldChoice],
   );
   const threats = useMemo(
     () =>
       tables
-        ? opponents.map(o => assessThreat(o, team, tables.moves, mode)).sort((a, b) => b.severity - a.severity)
+        ? opponents
+            .map(o => assessThreat(o, team, tables.moves, mode, fieldContext(fieldChoice, team, opponents)))
+            .sort((a, b) => b.severity - a.severity)
         : [],
-    [team, opponents, tables, mode],
+    [team, opponents, tables, mode, fieldChoice],
   );
 
   if (!tables || !dex) return <p className="muted">Loading Pokémon data…</p>;
@@ -126,8 +147,9 @@ export function MatchupPage({regId, mod}: Props) {
       >
         <OpponentPicker dex={dex} opponents={opponents} onChange={setOpponents} />
         <p className="muted small">
-          Their sets are assumed from usage stats: most common ability, moves on 50%+ of sets, and real Speed spreads.
-          A Pokémon with a Mega form starts as its most used form; change it with the dropdown.
+          Their sets come from usage stats: most common ability, average stats over all spreads, the item most sets
+          hold, and every move weighted by how many sets run it. A Pokémon with a Mega form starts as its most used
+          form; change it with the dropdown.
         </p>
       </Panel>
 
@@ -136,6 +158,17 @@ export function MatchupPage({regId, mod}: Props) {
           <section className="panel mode-row">
             <span className="muted">Speed control in play</span>
             <SpeedModeToggle mode={mode} onChange={setMode} />
+            <label className="field-select">
+              <span className="muted">Field</span>
+              <select value={fieldChoice} onChange={e => setFieldChoice(e.target.value as FieldChoice)}>
+                {FIELD_CHOICES.map(c => (
+                  <option key={c} value={c}>
+                    {FIELD_LABELS[c]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {fieldChoice === 'auto' && <span className="muted small field-note">Auto: {describeAutoField(team, opponents)}</span>}
           </section>
           <Lineups lineups={lineups} iconOf={iconOf} note={speedModeNote(mode)} />
           <MatchupGrid team={team} opponents={opponents} grid={grid} iconOf={iconOf} />

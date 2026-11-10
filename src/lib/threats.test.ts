@@ -33,14 +33,17 @@ describe('threatList', () => {
     expect(second.answers).toEqual(['A', 'B', 'C']);
     expect(second.severity).toBeCloseTo(0);
   });
-  it('only counts a super-effective hit when most sets run the move', () => {
+  it('weights a move by how many sets run it, so a rare coverage move is not a threat', () => {
     const dragons = [member(species('Chomp', ['Dragon', 'Ground'], 80), '', {moves: [move('Flare Blitz', 'Fire')]})];
     const moveTable: MoveTable = {...moves, dragonpulse: move('Dragon Pulse', 'Dragon', {category: 'Special'})};
+    const strong = {hp: 155, atk: 100, def: 100, spa: 200, spd: 100, spe: 100};
     const zard = (share: number) =>
-      meta('Zard', 0.3, {'100': 1}, {forms: [{name: 'Zard', types: ['Fire', 'Flying'], weight: 1, abilities: {}}], moves: {'Dragon Pulse': share}});
-    // Dragon Pulse on 31% of sets: most Zards can't hit Chomp super effectively.
+      meta('Zard', 0.3, {'100': 1}, {forms: [{name: 'Zard', types: ['Fire', 'Flying'], weight: 1, abilities: {}}], moves: {'Dragon Pulse': share}, stats: strong});
+    // Dragon Pulse on 31% of sets: the expected hit is too small to 2HKO.
     expect(threatList(dragons, [zard(0.31)], moveTable)[0].hits).toEqual([]);
-    expect(threatList(dragons, [zard(0.6)], moveTable)[0].hits.map(h => h.label)).toEqual(['Chomp']);
+    // On every set it 2HKOs.
+    const [t] = threatList(dragons, [zard(1)], moveTable);
+    expect(t.hits).toEqual([expect.objectContaining({label: 'Chomp', move: 'Dragon Pulse', hitsToKO: 2})]);
   });
   it('types Weather Ball by the user\'s weather ability', () => {
     const grass = [member(species('Leaf', ['Grass'], 80))];

@@ -4,7 +4,10 @@ import {toID} from './ids';
 import type {TeamMember} from './paste';
 import {teamRoles} from './roles';
 import {defensiveChart, type SpeedMode} from './team';
-import {commonAttacks, mainAbility, RELIABLE_MOVE_SHARE, threatList} from './threats';
+import {MAIN_ITEM_SHARE} from './combatant';
+import {duel} from './exchange';
+import {resolveField} from './field';
+import {mainAbility, threatList} from './threats';
 import type {TypeName} from './typechart';
 
 /** A move is treated as part of a candidate's usual set when this share of its sets run it. */
@@ -22,7 +25,7 @@ export interface TeammateSuggestion {
   pairing: number;
   /** Your team's problem types this Pokémon resists or is immune to. */
   covers: TypeName[];
-  /** Your biggest threats it hits super effectively with moves most of its sets run. */
+  /** Your biggest threats it beats one-on-one with its usual set (estimated damage). */
   checks: string[];
   /** Roles your team is missing that its usual set fills. */
   roles: string[];
@@ -36,7 +39,10 @@ const speciesKey = (name: string, species: SpeciesTable) => {
   return toID(entry?.baseSpecies ?? entry?.name ?? name);
 };
 
-/** The candidate's usual set as a team member, so the roles checklist can be reused. */
+/**
+ * The candidate's usual set as a team member (common moves, average stats over all spreads, item
+ * held by most sets), so the roles checklist and the damage estimate can be reused.
+ */
 function usualSet(p: MetaPokemon, species: SpeciesTable, moves: MoveTable): TeamMember | null {
   const s = species[p.id];
   if (!s) return null;
@@ -45,9 +51,11 @@ function usualSet(p: MetaPokemon, species: SpeciesTable, moves: MoveTable): Team
     .map(([name]) => moves[toID(name)])
     .filter((m): m is MoveData => Boolean(m));
   const ability = mainAbility(p) || (s.abilities[0] ?? '');
+  const [item, itemShare] = Object.entries(p.items).reduce<[string, number]>((a, b) => (b[1] > a[1] ? b : a), ['', 0]);
   return {
-    label: p.name, species: s, baseSpecies: s, isMega: false, item: '', ability, pastedAbility: ability,
-    nature: 'Serious', sp: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0}, moves: setMoves, moveLines: setMoves.length,
+    label: p.name, species: s, baseSpecies: s, isMega: false, item: itemShare >= MAIN_ITEM_SHARE ? item : '',
+    ability, pastedAbility: ability, nature: 'Serious', sp: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
+    stats: p.stats, moves: setMoves, moveLines: setMoves.length,
   };
 }
 
@@ -91,12 +99,13 @@ export function suggestTeammates(
         return b.resisted + b.immune >= 0.5;
       });
 
-      const attacks = commonAttacks(p, moves, RELIABLE_MOVE_SHARE);
-      const checks = threats
-        .filter(t => coverPokemon(attacks, t.pokemon).buckets.super >= 0.5)
-        .map(t => t.pokemon.name);
-
       const set = usualSet(p, species, moves);
+      const checks = set
+        ? threats
+            .filter(t => duel(set, t.pokemon, moves, resolveField(set.ability, mainAbility(t.pokemon)), mode).win > 0.5)
+            .map(t => t.pokemon.name)
+        : [];
+
       const filled = set ? teamRoles([set]).filter(r => r.members.length > 0).map(r => r.role) : [];
       const roles = missingRoles.filter(r => filled.includes(r));
 

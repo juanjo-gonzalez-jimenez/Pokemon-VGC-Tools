@@ -25,5 +25,5 @@ export const meta = (
   speeds: Record<string, number>,
   extra: Partial<MetaPokemon> = {},
 ): MetaPokemon => ({
-  id: name.toLowerCase(), name, usage, forms: [], baseStats: stats(80), speeds, items: {}, moves: {}, teammates: {}, spreads: {}, natures: {}, ...extra,
+  id: name.toLowerCase(), name, usage, forms: [], baseStats: stats(80), speeds, items: {}, moves: {}, teammates: {}, spreads: {}, natures: {}, stats: {hp: 155, atk: 100, def: 100, spa: 100, spd: 100, spe: 100}, ...extra,
 });

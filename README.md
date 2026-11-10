@@ -29,14 +29,13 @@ tab to see:
   spread damage, priority attacks
 - Legality checks: stat points (66 total, 32 per stat), Item Clause, Species Clause (Megas and
   forms count as their base species), impossible abilities, more than 4 moves
-- Threat list: the top-usage Pokémon your team struggles with most, scored on how many of your
-  Pokémon its common moves (15%+ of sets) hit super effectively, how few of yours hit it super
-  effectively, and how many it outspeeds; weighted by usage. A type + speed heuristic, not a
-  damage calc.
+- Threat list: the top-usage Pokémon your team struggles with most, from estimated damage: how
+  many of your Pokémon it likely KOs in two hits or fewer, how few of yours beat it one-on-one,
+  and how many it acts before (priority, then Speed); weighted by usage
 - Teammate suggestions (swap ideas when the team is full): meta Pokémon scored on how often top
   players pair them with your members (Smogon teammate stats), which of your weak types they
-  resist, which of your biggest threats their common moves hit super effectively, and which
-  missing roles their usual set fills
+  resist, which of your biggest threats their usual set beats one-on-one (estimated damage), and
+  which missing roles their usual set fills
 
 Champions Speed formula: `trunc((base + SP + 20) × nature)`; HP is `base + SP + 75`.
 The team is saved in the browser's local storage.
@@ -49,12 +48,25 @@ with Mega forms starts as its most used form) against your saved team:
 - **Suggested line-ups**: every group of four and pair of leads is scored; the top three are
   shown with reasons (who hits what, who moves first, Fake Out, Intimidate, speed control,
   spread moves, who stays out and why) and warnings about shared weaknesses
-- **Matchup grid**: each of your Pokémon against each of theirs: your best hit, its best
-  common hit on you, and who moves first
+- **Matchup grid**: each of your Pokémon against each of theirs: your best hit and its expected
+  best hit as estimated % of HP, and who acts first (priority, then Speed)
 - **Their biggest threats to you**, with Tailwind / Trick Room modes
 
-Their sets are assumed from usage stats (most common ability, moves on 50%+ of sets, real
-Speed spreads). It is a type / ability / Speed / role heuristic, not a damage calculator.
+Their sets come from usage stats: most common ability, mean stats over all spreads, the item
+most sets hold, and every move weighted by how many sets run it. Weather and terrain come from
+the abilities in play (Auto) or a fixed choice.
+
+### Damage estimates
+
+The Matchup tab and the Team tab's threats and teammate suggestions score each pairing from
+estimated damage (`src/lib/damage.ts`, the Gen 9 formula Champions uses): who knocks the other
+out in fewer hits, and who acts first. Numbers are shown as estimates (`~70%`, "likely OHKO").
+Modelled: STAB and Adaptability, Huge/Pure Power, Technician, -ate abilities, multi-hit moves,
+Foul Play / Body Press / Psyshock, Life Orb, Choice Band/Specs, type-boosting items, Expert Belt,
+Assault Vest, resist berries, Multiscale, spread moves, rain/sun/sand/snow, Grassy Terrain
+(including Grassy Glide's priority) and weather Speed abilities. Not modelled: stat boosts
+(Swords Dance, Intimidate drops), accuracy, crits, burns, screens, Helping Hand, Unburden,
+weight-based and other 0-power moves, recoil.
 
 ## Pokémon searcher
 
@@ -119,4 +131,4 @@ species, moves, items or legal Pokémon, or a list that shrank by more than 30%)
 ### Not modelled (yet)
 
 Lightning Rod / Storm Drain redirection in doubles, learnsets (whether a Pokémon can learn a
-move), actual damage.
+move), and the damage effects listed under "Damage estimates".

@@ -21,23 +21,23 @@ describe('pairScore', () => {
   const grass = attacker('Grass', ['Grass'], 'Grass', 50);
   const opp = fireOpp('Blaze');
 
-  it('favours the Pokémon that hits super effectively, resists and is faster', () => {
+  it('favours the Pokémon that hits harder, takes less and acts first', () => {
     const good = pairScore(water, opp, moves);
     const bad = pairScore(grass, opp, moves);
-    expect(good.myMult).toBe(2);
-    expect(good.theirMult).toBe(0.5);
-    expect(good.faster).toBe(1);
-    expect(bad.myMult).toBe(0.5);
-    expect(bad.theirMult).toBe(2);
+    expect(good.mine!.mult).toBe(2);
+    expect(good.theirs!.estimate.mult).toBe(0.5);
+    expect(good.first).toBe(1);
+    expect(good.win).toBe(1);
+    expect(bad.theirs!.estimate.mult).toBe(2);
     expect(good.total).toBeGreaterThan(0.8);
     expect(bad.total).toBeLessThan(0.3);
   });
-  it('assumes a neutral hit and even Speed when the opponent has no usage data', () => {
+  it('assumes STAB attacks and even Speed when the opponent has no usage data', () => {
     const unknown = meta('Unknown', 0, {}, {forms: form('Unknown', ['Fire'])});
     const s = pairScore(water, unknown, moves);
-    expect(s.theirMult).toBe(1);
-    expect(s.faster).toBeNull();
-    expect(s.speed).toBe(0.5);
+    expect(s.theirs!.assumed).toBe(true);
+    expect(s.theirs!.move.type).toBe('Fire');
+    expect(s.first).toBe(0.5);
   });
   it('builds a grid of your team against theirs', () => {
     const grid = matchupGrid([water, grass], [opp, fireOpp('Other')], moves);
@@ -62,7 +62,7 @@ describe('suggestBrings', () => {
     expect(best.leads.map(m => m.label).sort()).toEqual(['Water1', 'Water2']);
     expect(best.bench.map(m => m.label).sort()).toEqual(['Grass1', 'Grass2']);
     expect(best.back.map(m => m.label).sort()).toEqual(['Normal1', 'Normal2']);
-    expect(best.reasons.some(r => r.includes('Grass1 stays out: weak to'))).toBe(true);
+    expect(best.reasons.some(r => r.includes('Grass1 stays out: loses to'))).toBe(true);
   });
   it('returns one entry per group of four, best first', () => {
     const all = suggestBrings(team, opponents, moves, 'normal', 99);
@@ -83,8 +83,10 @@ describe('suggestBrings', () => {
   });
   it('warns when most of the four share a weakness', () => {
     const grassTeam = ['G1', 'G2', 'G3', 'G4'].map(n => attacker(n, ['Grass'], 'Grass', 50));
-    const [only] = suggestBrings(grassTeam, [fireOpp('Blaze')], moves);
-    expect(only.warnings[0]).toContain("4 of these four are weak to Blaze's common moves");
+    // Strong enough to OHKO each of them with Flamethrower.
+    const blaze = fireOpp('Blaze', {stats: {hp: 155, atk: 100, def: 100, spa: 200, spd: 100, spe: 100}});
+    const [only] = suggestBrings(grassTeam, [blaze], moves);
+    expect(only.warnings[0]).toMatch(/Blaze can likely OHKO \d of these four/);
   });
   it('handles small teams and empty input', () => {
     expect(suggestBrings([], opponents, moves)).toEqual([]);

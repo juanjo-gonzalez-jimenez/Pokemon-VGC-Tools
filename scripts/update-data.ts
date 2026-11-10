@@ -94,6 +94,10 @@ interface DexMove {
   priority: number;
   flags?: Record<string, number>;
   isNonstandard?: string | null;
+  multihit?: number | [number, number];
+  overrideOffensivePokemon?: 'target';
+  overrideOffensiveStat?: 'def';
+  overrideDefensiveStat?: 'def';
 }
 
 interface ChaosPokemon {
@@ -195,6 +199,28 @@ function spreadSummary(spreads: Record<string, number>) {
   return {spreads: top, natures: natureShares};
 }
 
+/** Usage-weighted mean final stats over every spread (the stored top spreads cover too few sets). */
+function meanStats(spreads: Record<string, number>, base: StatsTable): StatsTable | null {
+  const sums: StatsTable = {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0};
+  let total = 0;
+  for (const [key, w] of Object.entries(spreads)) {
+    const spread = parseSpread(key);
+    if (!spread) continue;
+    for (const s of STATS) sums[s] += calcStat(s, base[s], spread.sp[s], spread.nature) * w;
+    total += w;
+  }
+  if (!total) return null;
+  return Object.fromEntries(STATS.map(s => [s, Math.round(sums[s] / total)])) as StatsTable;
+}
+
+/** Stats for a Pokémon without usage data: neutral nature, 32 points in its better attacking stat and Speed. */
+function assumedStats(base: StatsTable): StatsTable {
+  const physical = base.atk >= base.spa;
+  return Object.fromEntries(
+    STATS.map(s => [s, calcStat(s, base[s], s === 'spe' || s === (physical ? 'atk' : 'spa') ? 32 : 0)]),
+  ) as StatsTable;
+}
+
 /** Usage-weighted distribution of final Speed stats over the Pokémon's spreads. */
 function speedDistribution(spreads: Record<string, number>, baseSpe: number) {
   const bySpeed = new Map<number, number>();
@@ -243,6 +269,7 @@ function buildEntry(id: string, entry: DexEntry, stats: ChaosPokemon, dex: Recor
     forms: [{name: entry.name, types: entry.types, weight: 1, abilities}],
     baseStats: entry.baseStats,
     speeds: speedDistribution(stats.Spreads, entry.baseStats.spe),
+    stats: meanStats(stats.Spreads, entry.baseStats) ?? assumedStats(entry.baseStats),
     items: topShares(stats.Items, itemTotal, names.items, TOP_ITEMS),
     // Move weights are per set, so divide by the number of sets (the ability total).
     moves: topShares(stats.Moves, total, names.moves, TOP_MOVES),
@@ -263,6 +290,7 @@ function emptyEntry(id: string, entry: DexEntry): MetaPokemon {
     forms: [{name: entry.name, types: entry.types, weight: 1, abilities: {}}],
     baseStats: entry.baseStats,
     speeds: {},
+    stats: assumedStats(entry.baseStats),
     items: {},
     moves: {},
     teammates: {},
@@ -345,6 +373,10 @@ function buildLookupTables(dex: Record<string, DexEntry>, moves: Record<string, 
       target: m.target,
       priority: m.priority,
       ...(m.flags?.sound ? {sound: true as const} : {}),
+      ...(m.multihit ? {multihit: m.multihit} : {}),
+      ...(m.overrideOffensivePokemon === 'target' ? {offensive: 'target' as const} : {}),
+      ...(m.overrideOffensiveStat === 'def' ? {offensive: 'def' as const} : {}),
+      ...(m.overrideDefensiveStat === 'def' ? {defensive: 'def' as const} : {}),
     };
   }
   return {species, moveTable};

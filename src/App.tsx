@@ -172,8 +172,8 @@ export function App() {
 
       {page !== 'dex' && (
         <footer className="muted">
-          Types, abilities, Speed and usage stats only. Not modelled: Lightning Rod / Storm Drain redirection,
-          learnsets, actual damage.
+          Built on Smogon usage stats. Damage figures are estimates: no stat boosts, accuracy, crits, screens or
+          partner support; no Lightning Rod / Storm Drain redirection or learnset checks.
         </footer>
       )}
     </main>
