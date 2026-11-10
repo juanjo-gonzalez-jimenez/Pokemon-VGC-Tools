@@ -1,3 +1,4 @@
+import type {ReactNode} from 'react';
 import {TYPES, type TypeName} from '../lib/typechart';
 import {TYPE_COLORS} from './TypeBadge';
 import {Panel} from './Panel';
@@ -7,9 +8,11 @@ export const MAX_TYPES = 4;
 interface Props {
   selected: TypeName[];
   onChange: (types: TypeName[]) => void;
+  /** Extra content under the type buttons. */
+  footer?: ReactNode;
 }
 
-export function TypePicker({selected, onChange}: Props) {
+export function TypePicker({selected, onChange, footer}: Props) {
   const full = selected.length >= MAX_TYPES;
   const toggle = (t: TypeName) =>
     onChange(selected.includes(t) ? selected.filter(s => s !== t) : [...selected, t]);
@@ -44,6 +47,7 @@ export function TypePicker({selected, onChange}: Props) {
           );
         })}
       </div>
+      {footer}
     </Panel>
   );
 }

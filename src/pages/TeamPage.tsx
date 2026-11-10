@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react';
+import {useMemo} from 'react';
 import {DefensiveChart} from '../components/DefensiveChart';
 import {Panel} from '../components/Panel';
 import {RolesChecklist} from '../components/RolesChecklist';
@@ -9,14 +9,15 @@ import {ThreatList} from '../components/ThreatList';
 import {TypeBadge} from '../components/TypeBadge';
 import type {MetaPokemon} from '../data/types';
 import {useLookupTables} from '../data/useLookupTables';
+import {usePersistentState} from '../hooks/usePersistentState';
+import {useSavedTeam} from '../hooks/useSavedTeam';
 import {checkLegality} from '../lib/legality';
 import {parseTeam} from '../lib/paste';
 import {teamRoles} from '../lib/roles';
-import {defensiveChart, teamAttackTypes, teamSpeeds, type SpeedMode} from '../lib/team';
+import {oneOf} from '../lib/storage';
+import {defensiveChart, SPEED_MODE_IDS, teamAttackTypes, teamSpeeds, type SpeedMode} from '../lib/team';
 import {suggestTeammates} from '../lib/teammates';
 import {threatList} from '../lib/threats';
-
-const STORAGE_KEY = 'vgc-tools:team';
 
 const EXAMPLE_TEAM = `Sneasler @ White Herb
 Ability: Unburden
@@ -72,22 +73,6 @@ Careful Nature
 - Flare Blitz
 - Darkest Lariat`;
 
-function loadSaved(): string {
-  try {
-    return localStorage.getItem(STORAGE_KEY) ?? '';
-  } catch {
-    return '';
-  }
-}
-
-function save(text: string) {
-  try {
-    localStorage.setItem(STORAGE_KEY, text);
-  } catch {
-    // Storage can be unavailable (private mode); the team just won't persist.
-  }
-}
-
 interface Props {
   roster: MetaPokemon[];
   weighted: boolean;
@@ -96,10 +81,10 @@ interface Props {
 }
 
 export function TeamPage({roster, weighted, mod}: Props) {
-  const [text, setText] = useState(loadSaved);
+  const [text, update] = useSavedTeam();
   const tables = useLookupTables(mod);
   // Shared by the speed tiers and the threat list.
-  const [speedMode, setSpeedMode] = useState<SpeedMode>('normal');
+  const [speedMode, setSpeedMode] = usePersistentState<SpeedMode>('vgc-tools:speed-mode', 'normal', oneOf(SPEED_MODE_IDS));
 
   const parsed = useMemo(
     () => (tables ? parseTeam(text, tables.species, tables.moves) : {members: [], warnings: []}),
@@ -119,11 +104,6 @@ export function TeamPage({roster, weighted, mod}: Props) {
     () => (tables ? suggestTeammates(team, roster, tables.species, tables.moves, speedMode) : []),
     [team, roster, tables, speedMode],
   );
-
-  const update = (value: string) => {
-    setText(value);
-    save(value);
-  };
 
   return (
     <>

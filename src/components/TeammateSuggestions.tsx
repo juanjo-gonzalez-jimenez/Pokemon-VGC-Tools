@@ -1,6 +1,7 @@
 import {MAX_TEAM_SIZE} from '../lib/paste';
 import type {TeammateSuggestion} from '../lib/teammates';
 import {pct} from './CoverageSummary';
+import {PokemonLink} from './PokemonLink';
 import {TypeBadge} from './TypeBadge';
 import {Panel} from './Panel';
 
@@ -21,7 +22,9 @@ export function TeammateSuggestions({suggestions, teamSize}: Props) {
         {suggestions.map(s => (
           <article key={s.pokemon.id} className="mate-card">
             <header>
-              <strong>{s.pokemon.name}</strong>
+              <strong>
+                <PokemonLink pokemon={s.pokemon} />
+              </strong>
               <span className="muted">{pct(s.pokemon.usage)} usage</span>
             </header>
             <div className="types">

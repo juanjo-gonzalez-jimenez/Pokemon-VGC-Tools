@@ -3,6 +3,7 @@ import {bucketOf, type PokemonCoverage} from '../lib/coverage';
 import {pct} from './CoverageSummary';
 import {TypeBadge} from './TypeBadge';
 import {Panel} from './Panel';
+import {PokemonLink} from './PokemonLink';
 
 const multLabel = (m: number) => `${Number(m.toFixed(3))}×`;
 
@@ -46,7 +47,9 @@ export function PokemonTable({results, title = 'Roster', defaultWallsOnly = fals
               const types = r.pokemon.forms.find(f => f.name === main.form)?.types ?? [];
               return (
                 <tr key={r.pokemon.id}>
-                  <td>{r.pokemon.name}</td>
+                  <td>
+                    <PokemonLink pokemon={r.pokemon} />
+                  </td>
                   <td className="types">
                     {types.map(t => (
                       <TypeBadge key={t} type={t} />

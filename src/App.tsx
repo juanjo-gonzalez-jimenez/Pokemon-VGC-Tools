@@ -1,4 +1,6 @@
 import {useEffect, useMemo, useState} from 'react';
+import {usePersistentState} from './hooks/usePersistentState';
+import {boolean, oneOf} from './lib/storage';
 import {ThemeToggle} from './components/ThemeToggle';
 import indexJson from './data/index.json';
 import type {RegulationData, RegulationIndex} from './data/types';
@@ -48,10 +50,15 @@ function routeFromHash(): Route {
 export function App() {
   const [route, setRoute] = useState<Route>(routeFromHash);
   const {page} = route;
-  const [regId, setRegId] = useState(index.regulations[0]?.id ?? '');
+  // Settings are remembered; a stored regulation that no longer exists falls back to the newest.
+  const [regId, setRegId] = usePersistentState(
+    'vgc-tools:regulation',
+    index.regulations[0]?.id ?? '',
+    oneOf(index.regulations.map(r => r.id)),
+  );
   const [reg, setReg] = useState<RegulationData | null>(null);
-  const [weighted, setWeighted] = useState(true);
-  const [topN, setTopN] = useState(50);
+  const [weighted, setWeighted] = usePersistentState('vgc-tools:weighted', true, boolean);
+  const [topN, setTopN] = usePersistentState('vgc-tools:meta-size', 50, oneOf(TOP_N_OPTIONS));
   // Kept here so switching tabs doesn't lose the selection.
   const [types, setTypes] = useState<TypeName[]>([]);
 
@@ -136,7 +143,7 @@ export function App() {
           }}
         />
       ) : page === 'coverage' ? (
-        <CoveragePage roster={roster} weighted={weighted} types={types} onTypesChange={setTypes} />
+        <CoveragePage roster={roster} weighted={weighted} types={types} onTypesChange={setTypes} mod={summary?.mod} />
       ) : (
         <TeamPage roster={roster} weighted={weighted} mod={summary?.mod} />
       )}

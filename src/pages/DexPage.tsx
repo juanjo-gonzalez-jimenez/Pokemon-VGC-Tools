@@ -3,8 +3,10 @@ import {DexDetail} from '../components/dex/DexDetail';
 import {DexSidebar} from '../components/dex/DexSidebar';
 import type {MetaPokemon, RegulationSummary} from '../data/types';
 import {useLookupTables} from '../data/useLookupTables';
-import {searchRoster, sortRoster, type SortKey} from '../lib/dex';
-import type {TypeName} from '../lib/typechart';
+import {usePersistentState} from '../hooks/usePersistentState';
+import {searchRoster, SORT_KEYS, sortRoster, type SortKey} from '../lib/dex';
+import {oneOf} from '../lib/storage';
+import {TYPES, type TypeName} from '../lib/typechart';
 
 // Every legal Pokémon per regulation, one lazy chunk each.
 const dexLoaders = import.meta.glob<MetaPokemon[]>('../data/regulations/*-dex.json', {import: 'default'});
@@ -34,8 +36,8 @@ export function DexPage({regulations, regId, onRegChange, selectedId, onSelect}:
   const regulation = regulations.find(r => r.id === regId);
   const tables = useLookupTables(regulation?.mod);
   const [query, setQuery] = useState('');
-  const [sort, setSort] = useState<SortKey>('usage');
-  const [type, setType] = useState<TypeName | ''>('');
+  const [sort, setSort] = usePersistentState<SortKey>('vgc-tools:dex-sort', 'usage', oneOf(SORT_KEYS));
+  const [type, setType] = usePersistentState<TypeName | ''>('vgc-tools:dex-type', '', oneOf(['', ...TYPES]));
 
   const dexList = useDexList(regId);
   const roster = useMemo(() => dexList ?? [], [dexList]);

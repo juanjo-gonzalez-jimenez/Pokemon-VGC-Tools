@@ -6,7 +6,8 @@ import {calcStat, parseSpread, STAT_LABELS, STATS, type StatName, type StatsTabl
 /** A base stat or the base stat total. */
 export type StatKey = StatName | 'bst';
 /** 'bstNoMega' sorts by base stat total and leaves Mega forms out of the list. */
-export type SortKey = 'usage' | 'name' | 'bstNoMega' | StatKey;
+export const SORT_KEYS = ['usage', 'name', 'bst', 'bstNoMega', ...STATS] as const;
+export type SortKey = (typeof SORT_KEYS)[number];
 
 /** Mega forms: "Charizard-Mega-Y", "Floette-Mega". */
 export const isMega = (p: MetaPokemon) => /-Mega(-|$)/.test(p.name);

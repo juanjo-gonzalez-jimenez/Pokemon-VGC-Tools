@@ -10,6 +10,11 @@ Pick a Pokémon Champions VGC regulation and up to four attacking move types to 
 - Mega Evolutions count as their own entries (as Smogon reports them)
 - "Best type to add" ranking
 
+The tabs are connected: Pokémon names in the threat list, teammate suggestions, speed tiers and
+coverage table open that Pokémon on the Pokémon tab, and the Coverage tab offers one button per
+member of your saved team to load its attacking types. Regulation, meta size, weighting, speed
+mode, searcher sort and type filter are remembered in the browser.
+
 ## Team analysis
 
 Paste a Showdown / Pokepaste export (the `EVs:` line holds Champions stat points) on the **Team**

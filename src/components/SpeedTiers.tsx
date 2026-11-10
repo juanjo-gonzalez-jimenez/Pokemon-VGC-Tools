@@ -2,6 +2,7 @@ import {useMemo} from 'react';
 import type {MetaPokemon} from '../data/types';
 import {metaSpeeds, metaSpeedSummary, theirSpeedIn, type MemberSpeed, type SpeedMode} from '../lib/team';
 import {pct} from './CoverageSummary';
+import {PokemonLink} from './PokemonLink';
 import {Panel} from './Panel';
 
 export const SPEED_MODES: Array<{id: SpeedMode; label: string; note: string}> = [
@@ -100,7 +101,9 @@ export function SpeedTiers({speeds, roster, mode, onModeChange}: Props) {
               ) : (
                 <tr key={r.summary.pokemon.id} title={spreadTitle(r.summary.pokemon)}>
                   <td className="num">{r.speed}</td>
-                  <td>{r.summary.pokemon.name}</td>
+                  <td>
+                    <PokemonLink pokemon={r.summary.pokemon} />
+                  </td>
                   <td className="num muted">{range(their(r.summary.min), their(r.summary.max))}</td>
                   <td className="num muted">
                     {r.summary.scarf >= 0.05 &&

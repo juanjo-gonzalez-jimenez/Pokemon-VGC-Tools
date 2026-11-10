@@ -71,7 +71,8 @@ export function metaSpeeds(p: MetaPokemon): Array<[speed: number, share: number]
 }
 
 /** Speed-control situation: Tailwind doubles one side's Speed; Trick Room makes slower move first. */
-export type SpeedMode = 'normal' | 'myTailwind' | 'theirTailwind' | 'trickRoom';
+export const SPEED_MODE_IDS = ['normal', 'myTailwind', 'theirTailwind', 'trickRoom'] as const;
+export type SpeedMode = (typeof SPEED_MODE_IDS)[number];
 
 /** Your effective Speed under the mode. */
 export const mySpeedIn = (speed: number, mode: SpeedMode) => (mode === 'myTailwind' ? speed * 2 : speed);

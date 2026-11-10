@@ -1,6 +1,7 @@
 import type {Threat} from '../lib/threats';
 import {pct} from './CoverageSummary';
 import {Panel} from './Panel';
+import {PokemonLink} from './PokemonLink';
 
 export function ThreatList({threats, teamSize}: {threats: Threat[]; teamSize: number}) {
   return (
@@ -20,7 +21,9 @@ export function ThreatList({threats, teamSize}: {threats: Threat[]; teamSize: nu
           <tbody>
             {threats.map(t => (
               <tr key={t.pokemon.id}>
-                <td>{t.pokemon.name}</td>
+                <td>
+                  <PokemonLink pokemon={t.pokemon} />
+                </td>
                 <td className="num">{pct(t.pokemon.usage)}</td>
                 <td>
                   <div className="severity" title={`Severity ${pct(t.severity, 0)}`}>

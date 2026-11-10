@@ -1,4 +1,4 @@
-import {useRef, type KeyboardEvent} from 'react';
+import {useEffect, useRef, type KeyboardEvent} from 'react';
 import type {MetaPokemon, RegulationSummary} from '../../data/types';
 import {bst, type SortKey} from '../../lib/dex';
 import {TYPES, type TypeName} from '../../lib/typechart';
@@ -37,6 +37,18 @@ interface Props {
 export function DexSidebar(props: Props) {
   const {list, selectedId, onSelect} = props;
   const listRef = useRef<HTMLUListElement>(null);
+
+  // Keep the selected row visible (e.g. after following a link from another tab). Only the list
+  // itself is scrolled, never the page.
+  useEffect(() => {
+    const ul = listRef.current;
+    if (!ul || !list.some(p => p.id === selectedId)) return;
+    const row = ul.querySelector<HTMLElement>(`[data-id="${selectedId}"]`);
+    if (!row) return;
+    const top = row.offsetTop - ul.offsetTop;
+    if (top < ul.scrollTop) ul.scrollTop = top;
+    else if (top + row.offsetHeight > ul.scrollTop + ul.clientHeight) ul.scrollTop = top + row.offsetHeight - ul.clientHeight;
+  }, [selectedId, list]);
 
   // ↑/↓ move the selection through the visible list.
   const onKeyDown = (e: KeyboardEvent) => {
