@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from 'react';
+import {useMemo, useState} from 'react';
 import {DefensiveChart} from '../components/DefensiveChart';
 import {Panel} from '../components/Panel';
 import {RolesChecklist} from '../components/RolesChecklist';
@@ -7,7 +7,8 @@ import {TeamCards} from '../components/TeamCards';
 import {TeammateSuggestions} from '../components/TeammateSuggestions';
 import {ThreatList} from '../components/ThreatList';
 import {TypeBadge} from '../components/TypeBadge';
-import type {MetaPokemon, MoveTable, SpeciesTable} from '../data/types';
+import type {MetaPokemon} from '../data/types';
+import {useLookupTables} from '../data/useLookupTables';
 import {checkLegality} from '../lib/legality';
 import {parseTeam} from '../lib/paste';
 import {teamRoles} from '../lib/roles';
@@ -85,17 +86,6 @@ function save(text: string) {
   } catch {
     // Storage can be unavailable (private mode); the team just won't persist.
   }
-}
-
-/** Species and move tables are only needed here, so they load as a separate chunk. */
-function useLookupTables() {
-  const [tables, setTables] = useState<{species: SpeciesTable; moves: MoveTable} | null>(null);
-  useEffect(() => {
-    Promise.all([import('../data/species.json'), import('../data/moves.json')]).then(([s, m]) =>
-      setTables({species: s.default as SpeciesTable, moves: m.default as MoveTable}),
-    );
-  }, []);
-  return tables;
 }
 
 export function TeamPage({roster, weighted}: {roster: MetaPokemon[]; weighted: boolean}) {
@@ -177,7 +167,7 @@ export function TeamPage({roster, weighted}: {roster: MetaPokemon[]; weighted: b
       {team.length > 0 && (
         <>
           <Panel id="team-members" title="Team members" note={`${team.length} Pokémon`}>
-            <TeamCards team={team} />
+            <TeamCards team={team} items={tables?.items ?? null} />
           </Panel>
           <RolesChecklist roles={roles} />
           <DefensiveChart team={team} rows={defense} />

@@ -36,6 +36,18 @@ tab to see:
 Champions Speed formula: `trunc((base + SP + 20) × nature)`; HP is `base + SP + 75`.
 The team is saved in the browser's local storage.
 
+## Pokémon searcher
+
+The searcher lists **every legal Pokémon** in the regulation (from Showdown's Champions
+`formats-data.ts`, minus Flat Rules bans), not just the meta. Pokémon too rare at the rating
+cutoff use all-ratings stats (labelled "all"); legal Pokémon nobody used show base data only.
+
+The **Pokémon** tab uses the full screen: a sidebar with the regulation, a name search, sorting
+(usage, name, base stat total or any single stat) and the list of Pokémon.
+The selected Pokémon shows base stats, moves, items, abilities, natures, the most common
+stat-point spreads (with resulting Lv. 50 stats) and common teammates (click one to open it).
+Links like `#/dex/garchomp` open a Pokémon directly.
+
 ### Setup
 
 Node 20+ is required (installed in WSL via nvm: `source ~/.nvm/nvm.sh`).

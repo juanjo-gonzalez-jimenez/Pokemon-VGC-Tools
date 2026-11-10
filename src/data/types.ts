@@ -27,6 +27,21 @@ export interface MetaPokemon extends Pokemon {
   moves: Record<string, number>;
   /** Most common teammates: name -> share of this Pokémon's teams that also have it (0..1). */
   teammates: Record<string, number>;
+  /** Most common spreads, "Nature:hp/atk/def/spa/spd/spe" (stat points) -> share (0..1). */
+  spreads: Record<string, number>;
+  /** Nature -> share of sets (0..1). */
+  natures: Record<string, number>;
+  /** Showdown sprite file name, e.g. "charizard-megay". */
+  sprite?: string;
+  /** Sprite of the base species, used when a form has no sprite yet. */
+  baseSprite?: string;
+  /** Index on Showdown's 40×30 icon sheet. */
+  icon?: number;
+  /**
+   * Searcher only: where the usage data comes from. Omitted = the regulation's rating cutoff;
+   * 'all' = all-ratings stats (too rare at the cutoff); 'none' = no usage data at all.
+   */
+  source?: 'all' | 'none';
 }
 
 export interface RegulationData extends RegulationSummary {
@@ -55,5 +70,12 @@ export interface MoveData {
   priority: number;
 }
 
+export interface ItemData {
+  name: string;
+  /** Index on Showdown's 24×24 item icon sheet (0 = none). */
+  sprite: number;
+}
+
 export type SpeciesTable = Record<string, SpeciesData>;
+export type ItemTable = Record<string, ItemData>;
 export type MoveTable = Record<string, MoveData>;
