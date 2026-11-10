@@ -7,6 +7,7 @@ import type {RegulationData, RegulationIndex} from './data/types';
 import type {TypeName} from './lib/typechart';
 import {CoveragePage} from './pages/CoveragePage';
 import {DexPage} from './pages/DexPage';
+import {MatchupPage} from './pages/MatchupPage';
 import {TeamPage} from './pages/TeamPage';
 
 const index = indexJson as RegulationIndex;
@@ -27,6 +28,10 @@ const PAGES = {
     intro:
       'Paste a Showdown export of your team to see its weaknesses and speed against the Pokémon Champions VGC meta.',
   },
+  matchup: {
+    label: 'Matchup',
+    intro: 'At team preview, enter the opponent’s six to see how your team matches up and which four to bring.',
+  },
   dex: {
     label: 'Pokémon',
     intro: 'Browse every Pokémon in the regulation: stats, moves, items, abilities, spreads, natures and teammates.',
@@ -43,6 +48,7 @@ interface Route {
 function routeFromHash(): Route {
   const [page, id] = window.location.hash.replace(/^#\/?/, '').split('/');
   if (page === 'team') return {page: 'team'};
+  if (page === 'matchup') return {page: 'matchup'};
   if (page === 'dex') return {page: 'dex', id: id || undefined};
   return {page: 'coverage'};
 }
@@ -110,20 +116,25 @@ export function App() {
               ))}
             </select>
           </label>
-          <label>
-            Meta
-            <select value={topN} onChange={e => setTopN(Number(e.target.value))}>
-              {TOP_N_OPTIONS.map(n => (
-                <option key={n} value={n}>
-                  {n ? `Top ${n} by usage` : 'Everything with ≥0.1% usage'}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="check">
-            <input type="checkbox" checked={weighted} onChange={e => setWeighted(e.target.checked)} /> Weight by
-            usage
-          </label>
+          {/* The Matchup tab compares against the opponent's six, not the meta. */}
+          {page !== 'matchup' && (
+            <>
+              <label>
+                Meta
+                <select value={topN} onChange={e => setTopN(Number(e.target.value))}>
+                  {TOP_N_OPTIONS.map(n => (
+                    <option key={n} value={n}>
+                      {n ? `Top ${n} by usage` : 'Everything with ≥0.1% usage'}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="check">
+                <input type="checkbox" checked={weighted} onChange={e => setWeighted(e.target.checked)} /> Weight by
+                usage
+              </label>
+            </>
+          )}
           {summary && (
             <p className="muted source">
               Smogon stats {summary.month}, {summary.cutoff}+ rating, {summary.battles.toLocaleString()} battles
@@ -144,14 +155,16 @@ export function App() {
         />
       ) : page === 'coverage' ? (
         <CoveragePage roster={roster} weighted={weighted} types={types} onTypesChange={setTypes} mod={summary?.mod} />
+      ) : page === 'matchup' ? (
+        <MatchupPage key={regId} regId={regId} mod={summary?.mod} />
       ) : (
         <TeamPage roster={roster} weighted={weighted} mod={summary?.mod} />
       )}
 
       {page !== 'dex' && (
         <footer className="muted">
-          Type chart, defensive abilities and Speed only. Not modelled: special moves (Freeze-Dry, Scrappy,
-          Thousand Arrows…), Lightning Rod/Storm Drain redirection, damage.
+          Types, abilities, Speed and usage stats only. Not modelled: Lightning Rod / Storm Drain redirection,
+          learnsets, actual damage.
         </footer>
       )}
     </main>

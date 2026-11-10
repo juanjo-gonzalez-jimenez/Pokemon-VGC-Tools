@@ -3,9 +3,23 @@ import {pct} from './CoverageSummary';
 import {Panel} from './Panel';
 import {PokemonLink} from './PokemonLink';
 
-export function ThreatList({threats, teamSize}: {threats: Threat[]; teamSize: number}) {
+interface Props {
+  threats: Threat[];
+  teamSize: number;
+  id?: string;
+  title?: string;
+  note?: string;
+}
+
+export function ThreatList({
+  threats,
+  teamSize,
+  id = 'threats',
+  title = 'Biggest threats',
+  note = 'type + speed heuristic, no damage calc',
+}: Props) {
   return (
-    <Panel id="threats" title="Biggest threats" note="type + speed heuristic, no damage calc">
+    <Panel id={id} title={title} note={note}>
       <div className="table-wrap">
         <table className="threats">
           <thead>

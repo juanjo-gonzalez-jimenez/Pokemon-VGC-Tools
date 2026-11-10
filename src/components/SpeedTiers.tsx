@@ -4,13 +4,7 @@ import {metaSpeeds, metaSpeedSummary, theirSpeedIn, type MemberSpeed, type Speed
 import {pct} from './CoverageSummary';
 import {PokemonLink} from './PokemonLink';
 import {Panel} from './Panel';
-
-export const SPEED_MODES: Array<{id: SpeedMode; label: string; note: string}> = [
-  {id: 'normal', label: 'Normal', note: 'no speed control'},
-  {id: 'myTailwind', label: 'My Tailwind', note: 'your Speed ×2'},
-  {id: 'theirTailwind', label: 'Their Tailwind', note: 'opponents’ Speed ×2'},
-  {id: 'trickRoom', label: 'Trick Room', note: 'slowest moves first'},
-];
+import {SpeedModeToggle, speedModeNote} from './SpeedModeToggle';
 
 type Row =
   | {kind: 'team'; speed: number; entry: MemberSpeed}
@@ -50,20 +44,8 @@ export function SpeedTiers({speeds, roster, mode, onModeChange}: Props) {
       .join('\n');
 
   return (
-    <Panel id="speed" title="Speed tiers" note={SPEED_MODES.find(m => m.id === mode)?.note}>
-      <div className="segmented" role="radiogroup" aria-label="Speed control">
-        {SPEED_MODES.map(m => (
-          <button
-            key={m.id}
-            role="radio"
-            aria-checked={mode === m.id}
-            className={mode === m.id ? 'on' : ''}
-            onClick={() => onModeChange(m.id)}
-          >
-            {m.label}
-          </button>
-        ))}
-      </div>
+    <Panel id="speed" title="Speed tiers" note={speedModeNote(mode)}>
+      <SpeedModeToggle mode={mode} onChange={onModeChange} />
       <div className="speed-summary">
         {[...speeds]
           .sort((a, b) => b.outspeeds - a.outspeeds)

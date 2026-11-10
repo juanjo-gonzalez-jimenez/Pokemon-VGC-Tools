@@ -1,27 +1,13 @@
-import {useEffect, useMemo, useState} from 'react';
+import {useMemo, useState} from 'react';
 import {DexDetail} from '../components/dex/DexDetail';
 import {DexSidebar} from '../components/dex/DexSidebar';
-import type {MetaPokemon, RegulationSummary} from '../data/types';
+import type {RegulationSummary} from '../data/types';
+import {useDexList} from '../data/useDexList';
 import {useLookupTables} from '../data/useLookupTables';
 import {usePersistentState} from '../hooks/usePersistentState';
 import {searchRoster, SORT_KEYS, sortRoster, type SortKey} from '../lib/dex';
 import {oneOf} from '../lib/storage';
 import {TYPES, type TypeName} from '../lib/typechart';
-
-// Every legal Pokémon per regulation, one lazy chunk each.
-const dexLoaders = import.meta.glob<MetaPokemon[]>('../data/regulations/*-dex.json', {import: 'default'});
-
-function useDexList(regId: string) {
-  const [state, setState] = useState<{regId: string; list: MetaPokemon[]} | null>(null);
-  useEffect(() => {
-    let live = true;
-    dexLoaders[`../data/regulations/${regId}-dex.json`]?.().then(list => live && setState({regId, list}));
-    return () => {
-      live = false;
-    };
-  }, [regId]);
-  return state?.regId === regId ? state.list : null;
-}
 
 interface Props {
   regulations: RegulationSummary[];

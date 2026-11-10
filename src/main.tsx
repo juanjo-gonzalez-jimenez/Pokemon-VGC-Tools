@@ -4,6 +4,7 @@ import {App} from './App';
 import './styles/base.css';
 import './styles/team.css';
 import './styles/dex.css';
+import './styles/matchup.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -41,6 +41,21 @@ tab to see:
 Champions Speed formula: `trunc((base + SP + 20) × nature)`; HP is `base + SP + 75`.
 The team is saved in the browser's local storage.
 
+## Matchup (lead / bring-4 suggester)
+
+On the **Matchup** tab, enter the opponent's six from team preview (search by name; a species
+with Mega forms starts as its most used form) against your saved team:
+
+- **Suggested line-ups**: every group of four and pair of leads is scored; the top three are
+  shown with reasons (who hits what, who moves first, Fake Out, Intimidate, speed control,
+  spread moves, who stays out and why) and warnings about shared weaknesses
+- **Matchup grid**: each of your Pokémon against each of theirs: your best hit, its best
+  common hit on you, and who moves first
+- **Their biggest threats to you**, with Tailwind / Trick Room modes
+
+Their sets are assumed from usage stats (most common ability, moves on 50%+ of sets, real
+Speed spreads). It is a type / ability / Speed / role heuristic, not a damage calculator.
+
 ## Pokémon searcher
 
 The searcher lists **every legal Pokémon** in the regulation (from Showdown's Champions
