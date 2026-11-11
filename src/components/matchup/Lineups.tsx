@@ -11,11 +11,14 @@ interface Props {
 }
 
 export function Lineups({lineups, iconOf, note}: Props) {
-  const members = (list: TeamMember[]) =>
+  // A stone holder that doesn't Mega Evolve shows as its base form, whatever name was pasted.
+  const nameOf = (m: TeamMember) => (!m.isMega && /-Mega(-|$)/.test(m.label) ? m.species.name : m.label);
+  const members = (list: TeamMember[], mega: TeamMember | null) =>
     list.map((m, i) => (
       <span key={i} className="lineup-member">
         <PokemonIcon icon={iconOf(m)} />
-        {m.label}
+        {nameOf(m)}
+        {m === mega && <span className="tag">Mega</span>}
       </span>
     ));
 
@@ -32,11 +35,11 @@ export function Lineups({lineups, iconOf, note}: Props) {
             </header>
             <dl>
               <dt>Lead</dt>
-              <dd>{members(l.leads)}</dd>
+              <dd>{members(l.leads, l.mega)}</dd>
               {l.back.length > 0 && (
                 <>
                   <dt>Back</dt>
-                  <dd>{members(l.back)}</dd>
+                  <dd>{members(l.back, l.mega)}</dd>
                 </>
               )}
             </dl>

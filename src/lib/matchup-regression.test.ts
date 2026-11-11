@@ -31,6 +31,20 @@ describe('Rillaboom against Mega Swampert (reported case)', () => {
     expect(s.theirHits).toBeGreaterThan(1);
     expect(s.win).toBe(1);
   });
+  it('lets only one of the two Mega Stone holders Mega Evolve', () => {
+    expect(team.filter(m => m.isMega).map(m => m.label)).toEqual(['Raichu-Mega-Y', 'Salamence']);
+    for (const l of suggestBrings(team, opponents, moves, 'normal', 15)) {
+      const four = [...l.leads, ...l.back];
+      expect(four.filter(m => m.isMega).length).toBeLessThanOrEqual(1);
+      if (four.filter(m => m.label === 'Raichu-Mega-Y' || m.label === 'Salamence').length === 2) {
+        expect(l.mega).not.toBeNull();
+        const other = four.find(m => (m.label === 'Raichu-Mega-Y' || m.label === 'Salamence') && m !== l.mega)!;
+        expect(other.isMega).toBe(false);
+        expect(other.species.name).toBe(other.label === 'Salamence' ? 'Salamence' : 'Raichu');
+        expect(l.reasons.some(r => r.startsWith(`Mega Evolve ${l.mega!.label}`))).toBe(true);
+      }
+    }
+  });
   it('brings Rillaboom in every suggested line-up and never calls it weak to Rillaboom', () => {
     const lineups = suggestBrings(team, opponents, moves);
     expect(lineups).toHaveLength(3);

@@ -1472,6 +1472,24 @@
     "Overgrow",
     "Grassy Surge"
    ]
+  },
+  "raichu": {
+   "name": "Raichu",
+   "types": [
+    "Electric"
+   ],
+   "baseStats": {
+    "hp": 60,
+    "atk": 90,
+    "def": 55,
+    "spa": 90,
+    "spd": 80,
+    "spe": 110
+   },
+   "abilities": [
+    "Static",
+    "Lightning Rod"
+   ]
   }
  }
 }

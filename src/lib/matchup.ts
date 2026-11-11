@@ -10,7 +10,7 @@ import {mainAbility} from './combatant';
 import {duel, type Duel} from './exchange';
 import {fieldOf, resolveField, type FieldChoice, type FieldContext} from './field';
 import {toID} from './ids';
-import type {TeamMember} from './paste';
+import {withoutMega, type TeamMember} from './paste';
 import {teamRoles} from './roles';
 import type {SpeedMode} from './team';
 import {RELIABLE_MOVE_SHARE} from './threats';
@@ -77,9 +77,12 @@ export function matchupGrid(
 }
 
 export interface Lineup {
+  /** The four brought, as they fight: only `mega` is in Mega form, other stone holders aren't. */
   leads: TeamMember[];
   back: TeamMember[];
   bench: TeamMember[];
+  /** The one Pokémon that Mega Evolves, if any of the four can. */
+  mega: TeamMember | null;
   /** Roughly 0..1; higher is better. */
   score: number;
   reasons: string[];
@@ -138,89 +141,111 @@ export function suggestBrings(
   choice: FieldChoice = 'auto',
 ): Lineup[] {
   if (!team.length || !opponents.length) return [];
-  const index = new Map(team.map((m, i) => [m, i]));
   const grid = matchupGrid(team, opponents, moves, mode, choice);
-  const score = (m: TeamMember, j: number) => grid[index.get(m)!][j];
+  const rows = new Map(team.map((m, i) => [m, grid[i]]));
+  // Only one Pokémon can Mega Evolve per battle. When a four holds more than one stone, each
+  // choice of Mega is scored with the others in base form, and the best choice is kept.
+  const unMega = new Map(team.filter(m => m.isMega).map(m => [m, withoutMega(m)]));
+  if (unMega.size > 1) {
+    const ctx: FieldContext = {choice, theirs: opponents.map(mainAbility), yours: team.map(m => m.ability)};
+    for (const base of unMega.values()) rows.set(base, opponents.map(o => pairScore(base, o, moves, mode, ctx)));
+  }
+  const score = (m: TeamMember, j: number) => rows.get(m)![j];
   const physicalHeavy = opponents.filter(o => isPhysical(o, moves)).length >= opponents.length / 2;
 
   const lineups: Lineup[] = [];
-  for (const four of combinations(team, Math.min(BRING, team.length))) {
-    // Against each of their Pokémon: mostly "do we have two good answers", but the other two
-    // count as well, so nobody in the back is a liability.
-    const answers = mean(
-      opponents.map((_, j) => {
-        const totals = four.map(m => score(m, j).total).sort((a, b) => b - a);
-        return ANSWER_WEIGHTS.bestTwo * mean(totals.slice(0, 2)) + ANSWER_WEIGHTS.everyone * mean(totals);
-      }),
-    );
-    const roles = Object.fromEntries(teamRoles(four).map(r => [r.role, r.members]));
-    const fourReasons: string[] = [];
-    const warnings: string[] = [];
-    let fourBonus = 0;
-    if (roles['Speed control']?.length) {
-      fourBonus += BONUS.speedControl;
-      fourReasons.push(`Speed control from ${names(roles['Speed control'])}`);
-    }
-    if (physicalHeavy && roles['Intimidate']?.length) {
-      fourBonus += BONUS.intimidate;
-      fourReasons.push(`Intimidate from ${names(roles['Intimidate'])} against their mostly physical team`);
-    }
-    if (roles['Redirection']?.length) {
-      fourBonus += BONUS.redirection;
-      fourReasons.push(`Redirection from ${names(roles['Redirection'])}`);
-    }
-    // Same numbers as the score: an opponent that likely OHKOs three or more of the four.
-    const shared = opponents
-      .map((o, j) => ({name: o.name, ko: four.filter(m => score(m, j).theirHits <= 1).length}))
-      .filter(x => x.ko >= 3)
-      .slice(0, MAX_SHARED_WEAKNESSES);
-    for (const s of shared) warnings.push(`${s.name} can likely OHKO ${s.ko} of these four`);
-    const penalty = shared.length * SHARED_WEAKNESS_PENALTY;
-
-    const bench = team.filter(m => !four.includes(m));
-    for (const m of bench) {
-      // Matchups it loses, worst first, with the move and estimate that decide them.
-      const losses = opponents
-        .map((o, j) => ({o, s: score(m, j)}))
-        .filter(x => x.s.win < 0.5 && x.s.theirs)
-        .sort((a, b) => a.s.total - b.s.total)
-        .map(({o, s}) => `${o.name} (${s.theirs!.move.name} ${approx(s.theirs!.percent)})`);
-      fourReasons.push(
-        losses.length
-          ? `${m.label} stays out: loses to ${names(losses, 2)}`
-          : `${m.label} stays out: fewest winning matchups`,
+  for (const picked of combinations(team, Math.min(BRING, team.length))) {
+    const holders = picked.filter(m => m.isMega);
+    // [Mega, four as they fight] for each possible Mega (or none needed).
+    const variants: Array<[TeamMember | null, TeamMember[]]> =
+      holders.length > 1
+        ? holders.map(mega => [mega, picked.map(m => (m.isMega && m !== mega ? unMega.get(m)! : m))])
+        : [[holders[0] ?? null, picked]];
+    let bestForFour: Lineup | null = null;
+    for (const [mega, four] of variants) {
+      // Against each of their Pokémon: mostly "do we have two good answers", but the other two
+      // count as well, so nobody in the back is a liability.
+      const answers = mean(
+        opponents.map((_, j) => {
+          const totals = four.map(m => score(m, j).total).sort((a, b) => b - a);
+          return ANSWER_WEIGHTS.bestTwo * mean(totals.slice(0, 2)) + ANSWER_WEIGHTS.everyone * mean(totals);
+        }),
       );
-    }
+      const roles = Object.fromEntries(teamRoles(four).map(r => [r.role, r.members]));
+      const fourReasons: string[] = [];
+      const warnings: string[] = [];
+      let fourBonus = 0;
+      if (roles['Speed control']?.length) {
+        fourBonus += BONUS.speedControl;
+        fourReasons.push(`Speed control from ${names(roles['Speed control'])}`);
+      }
+      if (physicalHeavy && roles['Intimidate']?.length) {
+        fourBonus += BONUS.intimidate;
+        fourReasons.push(`Intimidate from ${names(roles['Intimidate'])} against their mostly physical team`);
+      }
+      if (roles['Redirection']?.length) {
+        fourBonus += BONUS.redirection;
+        fourReasons.push(`Redirection from ${names(roles['Redirection'])}`);
+      }
+      // Same numbers as the score: an opponent that likely OHKOs three or more of the four.
+      const shared = opponents
+        .map((o, j) => ({name: o.name, ko: four.filter(m => score(m, j).theirHits <= 1).length}))
+        .filter(x => x.ko >= 3)
+        .slice(0, MAX_SHARED_WEAKNESSES);
+      for (const s of shared) warnings.push(`${s.name} can likely OHKO ${s.ko} of these four`);
+      const penalty = shared.length * SHARED_WEAKNESS_PENALTY;
 
-    let best: Lineup | null = null;
-    for (const leads of combinations(four, Math.min(2, four.length))) {
-      const leadQuality = mean(leads.map(m => mean(opponents.map((_, j) => score(m, j).total))));
-      const reasons: string[] = [];
-      let bonus = fourBonus;
-      const fakeOut = leads.filter(m => roles['Fake Out']?.includes(m.label));
-      if (fakeOut.length) {
-        bonus += BONUS.fakeOut;
-        reasons.push(`Fake Out pressure from ${names(fakeOut.map(m => m.label))}`);
+      const bench = team.filter(m => !picked.includes(m));
+      if (holders.length > 1 && mega) {
+        const stay = holders.filter(m => m !== mega).map(m => `${m.label} stays as ${unMega.get(m)!.species.name}`);
+        fourReasons.unshift(`Mega Evolve ${mega.label}; ${stay.join(', ')} (one Mega per battle)`);
       }
-      const spread = leads.filter(m => roles['Spread damage']?.includes(m.label));
-      if (spread.length) {
-        bonus += BONUS.spread;
-        reasons.push(`Spread damage from ${names(spread.map(m => m.label))}`);
+      for (const m of bench) {
+        // Matchups it loses, worst first, with the move and estimate that decide them.
+        const losses = opponents
+          .map((o, j) => ({o, s: score(m, j)}))
+          .filter(x => x.s.win < 0.5 && x.s.theirs)
+          .sort((a, b) => a.s.total - b.s.total)
+          .map(({o, s}) => `${o.name} (${s.theirs!.move.name} ${approx(s.theirs!.percent)})`);
+        fourReasons.push(
+          losses.length
+            ? `${m.label} stays out: loses to ${names(losses, 2)}`
+            : `${m.label} stays out: fewest winning matchups`,
+        );
       }
-      for (const m of [...leads].reverse()) reasons.unshift(leadReason(m, opponents, j => score(m, j)));
-      const total = LINEUP_WEIGHTS.answers * answers + LINEUP_WEIGHTS.leads * leadQuality + bonus - penalty;
-      if (!best || total > best.score) {
-        best = {
-          leads,
-          back: four.filter(m => !leads.includes(m)),
-          bench,
-          score: total,
-          reasons: [...reasons, ...fourReasons],
-          warnings,
-        };
+
+      let best: Lineup | null = null;
+      for (const leads of combinations(four, Math.min(2, four.length))) {
+        const leadQuality = mean(leads.map(m => mean(opponents.map((_, j) => score(m, j).total))));
+        const reasons: string[] = [];
+        let bonus = fourBonus;
+        const fakeOut = leads.filter(m => roles['Fake Out']?.includes(m.label));
+        if (fakeOut.length) {
+          bonus += BONUS.fakeOut;
+          reasons.push(`Fake Out pressure from ${names(fakeOut.map(m => m.label))}`);
+        }
+        const spread = leads.filter(m => roles['Spread damage']?.includes(m.label));
+        if (spread.length) {
+          bonus += BONUS.spread;
+          reasons.push(`Spread damage from ${names(spread.map(m => m.label))}`);
+        }
+        for (const m of [...leads].reverse()) reasons.unshift(leadReason(m, opponents, j => score(m, j)));
+        const total = LINEUP_WEIGHTS.answers * answers + LINEUP_WEIGHTS.leads * leadQuality + bonus - penalty;
+        if (!best || total > best.score) {
+          best = {
+            leads,
+            back: four.filter(m => !leads.includes(m)),
+            bench,
+            mega,
+            score: total,
+            reasons: [...reasons, ...fourReasons],
+            warnings,
+          };
+        }
       }
+      if (best && (!bestForFour || best.score > bestForFour.score)) bestForFour = best;
     }
-    if (best) lineups.push(best);
+    if (bestForFour) lineups.push(bestForFour);
   }
   return lineups.sort((a, b) => b.score - a.score).slice(0, limit);
 }

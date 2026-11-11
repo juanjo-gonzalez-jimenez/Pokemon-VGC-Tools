@@ -36,6 +36,15 @@ const STAT_BY_LABEL = new Map(STATS.map(s => [STAT_LABELS[s].toLowerCase(), s] a
 
 const emptyStats = (): StatsTable => ({hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0});
 
+/**
+ * A Mega Stone holder that doesn't Mega Evolve this battle (only one Pokémon can): its base form,
+ * with the ability that was pasted. Members without a Mega form are returned unchanged.
+ */
+export function withoutMega(m: TeamMember): TeamMember {
+  if (!m.isMega) return m;
+  return {...m, species: m.baseSpecies, isMega: false, ability: m.pastedAbility || (m.baseSpecies.abilities[0] ?? '')};
+}
+
 /** "Nickname (Species) (M) @ Item" -> parts. */
 export function parseHeader(line: string): {label: string; species: string; item: string} {
   const [namePart, ...itemParts] = line.split(' @ ');
@@ -79,12 +88,16 @@ export function parseTeam(text: string, species: SpeciesTable, moves: MoveTable)
 
   for (const [header, ...lines] of blocks) {
     const {label, species: speciesName, item} = parseHeader(header);
-    const base = species[toID(speciesName)];
-    if (!base) {
+    const pasted = species[toID(speciesName)];
+    if (!pasted) {
       warnings.push(`Unknown Pokémon "${speciesName}" — skipped.`);
       continue;
     }
-    const mega = item ? megas.get(`${toID(base.name)}:${toID(item)}`) : undefined;
+    // A Mega form may be pasted by name ("Raichu-Mega-Y @ Raichunite Y"): it's still the base
+    // species until it Mega Evolves.
+    const pastedMega = pasted.requiredItem && pasted.baseSpecies ? pasted : undefined;
+    const base = (pastedMega && species[toID(pastedMega.baseSpecies!)]) || pasted;
+    const mega = pastedMega ?? (item ? megas.get(`${toID(base.name)}:${toID(item)}`) : undefined);
     let ability = '';
     let moveLines = 0;
     let nature = 'Serious';

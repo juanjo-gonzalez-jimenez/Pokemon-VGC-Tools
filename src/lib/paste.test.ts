@@ -69,6 +69,14 @@ Ability: Blaze
     expect(zard.species.name).toBe('Charizard-Mega-Y');
     expect(zard.ability).toBe('Drought');
   });
+  it('treats a Mega form pasted by name as its base species holding the stone', () => {
+    const r = parseTeam('Charizard-Mega-Y @ Charizardite Y\nAbility: Blaze\n- Heat Wave', species, moves);
+    const [zard] = r.members;
+    expect(zard.isMega).toBe(true);
+    expect(zard.species.name).toBe('Charizard-Mega-Y');
+    expect(zard.baseSpecies.name).toBe('Charizard');
+    expect(zard.pastedAbility).toBe('Blaze');
+  });
   it('skips unknown Pokémon', () => {
     const r = parseTeam('Fakemon @ Leftovers\n- Earthquake', species, moves);
     expect(r.members).toEqual([]);
