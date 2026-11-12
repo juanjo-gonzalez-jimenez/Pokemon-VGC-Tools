@@ -7,7 +7,6 @@ import {SpeedTiers} from '../components/SpeedTiers';
 import {TeamCards} from '../components/TeamCards';
 import {TeammateSuggestions} from '../components/TeammateSuggestions';
 import {ThreatList} from '../components/ThreatList';
-import {TypeBadge} from '../components/TypeBadge';
 import type {MetaPokemon} from '../data/types';
 import {useLookupTables} from '../data/useLookupTables';
 import {usePersistentState} from '../hooks/usePersistentState';
@@ -16,7 +15,7 @@ import {checkLegality} from '../lib/legality';
 import {parseTeam} from '../lib/paste';
 import {teamRoles} from '../lib/roles';
 import {oneOf} from '../lib/storage';
-import {defensiveChart, SPEED_MODE_IDS, teamAttackTypes, teamSpeeds, type SpeedMode} from '../lib/team';
+import {defensiveChart, SPEED_MODE_IDS, teamSpeeds, type SpeedMode} from '../lib/team';
 import {suggestTeammates} from '../lib/teammates';
 import {threatList} from '../lib/threats';
 import {TeamSwitcher} from '../components/TeamSwitcher';
@@ -94,7 +93,6 @@ export function TeamPage({roster, weighted, mod}: Props) {
   );
   const team = parsed.members;
   const defense = useMemo(() => defensiveChart(team), [team]);
-  const attackTypes = useMemo(() => teamAttackTypes(team), [team]);
   const speeds = useMemo(() => teamSpeeds(team, roster, weighted, speedMode), [team, roster, weighted, speedMode]);
   const legality = useMemo(() => checkLegality(team, tables?.items, tables?.learnsets), [team, tables]);
   const roles = useMemo(() => teamRoles(team), [team]);
@@ -166,12 +164,6 @@ export function TeamPage({roster, weighted, mod}: Props) {
           <DefensiveChart team={team} rows={defense} />
           <ThreatList threats={threats} teamSize={team.length} />
           <TeammateSuggestions suggestions={teammates} teamSize={team.length} />
-
-          <Panel id="attack-types" title="Your attacking types" note="from damaging moves">
-            <div className="types">
-              {attackTypes.length ? attackTypes.map(t => <TypeBadge key={t} type={t} />) : 'No damaging moves.'}
-            </div>
-          </Panel>
 
           <SpeedTiers speeds={speeds} roster={roster} mode={speedMode} onModeChange={setSpeedMode} />
         </>

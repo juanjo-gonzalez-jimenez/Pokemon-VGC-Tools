@@ -30,7 +30,7 @@ export function PokemonTable({results, title = 'Roster', defaultWallsOnly = fals
       }
     >
       <div className="table-wrap">
-        <table>
+        <table className="roster-table">
           <thead>
             <tr>
               <th>Pokémon</th>

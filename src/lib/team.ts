@@ -42,12 +42,6 @@ export function attackTypes(member: TeamMember): TypeName[] {
   return typesOf(memberAttacks(member));
 }
 
-/** Distinct attacking types across the whole team, in type-chart order. */
-export function teamAttackTypes(team: readonly TeamMember[]): TypeName[] {
-  const all = new Set(team.flatMap(attackTypes));
-  return TYPES.filter(t => all.has(t));
-}
-
 // ---------------------------------------------------------------- speed
 
 export function memberSpeed(member: TeamMember): number {

@@ -233,8 +233,12 @@ tbody tr { transition: background-color var(--ease); }
 tbody tr:hover { background: color-mix(in srgb, var(--accent) 5%, transparent); }
 tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
 .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-td.types { white-space: nowrap; }
+/* A table cell, not a flex box (the shared .types rule would break the row's alignment). */
+td.types { display: table-cell; white-space: nowrap; }
 td.types .type-badge + .type-badge { margin-left: 4px; }
+/* Rows whose cells hold icons, badges and text: center everything on one line. */
+table.roster-table td { vertical-align: middle; }
+table.roster-table :is(.pokemon-link, .type-badge, .trend) { vertical-align: middle; }
 td.mult { font-family: var(--font-display); font-weight: 700; }
 td.mult.bucket-super { color: var(--super); }
 td.mult.bucket-neutral { color: var(--neutral); }

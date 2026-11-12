@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
-import {defensiveChart, memberSpeed, metaSpeedSummary, speedMatchup, teamAttackTypes, teamSpeeds} from './team';
-import {member, meta, move, species} from './test-fixtures';
+import {defensiveChart, memberSpeed, metaSpeedSummary, speedMatchup, teamSpeeds} from './team';
+import {member, meta, species} from './test-fixtures';
 
 describe('defensiveChart', () => {
   it('applies abilities and counts weaknesses', () => {
@@ -14,15 +14,6 @@ describe('defensiveChart', () => {
     const team = ['A', 'B', 'C'].map(n => member(species(n, ['Grass'])));
     const fire = defensiveChart(team).find(r => r.type === 'Fire')!;
     expect(fire.shared).toBe(true);
-  });
-});
-
-describe('teamAttackTypes', () => {
-  it('collects damaging move types only', () => {
-    const m = member(species('A', ['Fire']), '', {
-      moves: [move('Heat Wave', 'Fire'), move('Protect', 'Normal', {category: 'Status'}), move('Earthquake', 'Ground')],
-    });
-    expect(teamAttackTypes([m, m])).toEqual(['Fire', 'Ground']);
   });
 });
 

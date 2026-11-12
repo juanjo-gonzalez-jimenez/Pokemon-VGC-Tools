@@ -1,6 +1,5 @@
 import type {Lineup} from '../../lib/matchup';
 import type {TeamMember} from '../../lib/paste';
-import {pct} from '../CoverageSummary';
 import {Panel} from '../Panel';
 import {PokemonIcon} from '../Sprite';
 
@@ -29,9 +28,6 @@ export function Lineups({lineups, iconOf, note}: Props) {
           <li key={i} className={`lineup${i === 0 ? ' best' : ''}`}>
             <header>
               <strong>{i === 0 ? 'Best pick' : `Option ${i + 1}`}</strong>
-              <div className="severity fit" title={`Score ${pct(Math.min(1, l.score), 0)}`}>
-                <div style={{width: pct(Math.max(0, Math.min(1, l.score)), 0)}} />
-              </div>
             </header>
             <dl>
               <dt>Lead</dt>
