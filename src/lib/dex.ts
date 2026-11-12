@@ -6,7 +6,7 @@ import {calcStat, parseSpread, STAT_LABELS, STATS, type StatName, type StatsTabl
 /** A base stat or the base stat total. */
 export type StatKey = StatName | 'bst';
 /** 'bstNoMega' sorts by base stat total and leaves Mega forms out of the list. */
-export const SORT_KEYS = ['usage', 'rising', 'falling', 'name', 'bst', 'bstNoMega', ...STATS] as const;
+export const SORT_KEYS = ['usage', 'bst', 'bstNoMega', ...STATS] as const;
 export type SortKey = (typeof SORT_KEYS)[number];
 
 /** Mega forms: "Charizard-Mega-Y", "Floette-Mega". */
@@ -31,23 +31,15 @@ export function searchRoster(roster: readonly MetaPokemon[], query: string, type
 export const sourceRank = (p: MetaPokemon) => (p.source === 'none' ? 2 : p.source === 'all' ? 1 : 0);
 
 /**
- * Usage and stats sort highest first; name sorts A–Z. Usage keeps Pokémon with rating-cutoff data
+ * Usage and stats sort highest first. Usage keeps Pokémon with rating-cutoff data
  * ahead of all-ratings-only ones, since their percentages aren't comparable.
  */
 export function sortRoster(list: readonly MetaPokemon[], key: SortKey): MetaPokemon[] {
   const sorted = [...list];
-  if (key === 'name') return sorted.sort((a, b) => a.name.localeCompare(b.name));
   if (key === 'usage') {
     return sorted.sort((a, b) => sourceRank(a) - sourceRank(b) || b.usage - a.usage || a.name.localeCompare(b.name));
   }
   if (key === 'bstNoMega') return sortRoster(sorted.filter(p => !isMega(p)), 'bst');
-  if (key === 'rising' || key === 'falling') {
-    // Only Pokémon with a trend; biggest change in usage first.
-    const sign = key === 'rising' ? 1 : -1;
-    return sorted
-      .filter(p => usageTrend(p))
-      .sort((a, b) => sign * (usageTrend(b)!.change - usageTrend(a)!.change) || b.usage - a.usage);
-  }
   return sorted.sort((a, b) => valueOf(b, key) - valueOf(a, key) || b.usage - a.usage);
 }
 

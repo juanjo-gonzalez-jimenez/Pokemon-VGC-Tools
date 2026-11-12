@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {anyString, boolean, oneOf, readStored, writeStored} from './storage';
+import {anyString, boolean, oneOf, readStored, regulationKey, writeStored} from './storage';
 
 function fakeStorage(initial: Record<string, string> = {}) {
   const data = new Map(Object.entries(initial));
@@ -39,5 +39,12 @@ describe('stored settings', () => {
     });
     expect(readStored('x', 'fallback', anyString)).toBe('fallback');
     expect(() => writeStored('x', 'y')).not.toThrow();
+  });
+});
+
+describe('regulationKey', () => {
+  it('shares remembered setups between the Bo1 and Bo3 data of a regulation', () => {
+    expect(regulationKey('gen9championsvgc2026regmcbo3')).toBe('gen9championsvgc2026regmc');
+    expect(regulationKey('gen9championsvgc2026regmc')).toBe('gen9championsvgc2026regmc');
   });
 });

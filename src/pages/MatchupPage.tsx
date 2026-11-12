@@ -18,7 +18,7 @@ import {mainAbility} from '../lib/combatant';
 import {FIELD_CHOICES, resolveField, type FieldChoice, type FieldContext} from '../lib/field';
 import {describeAutoField, matchupGrid, previewForms, suggestBrings} from '../lib/matchup';
 import {MAX_TEAM_SIZE, parseTeam, type TeamMember} from '../lib/paste';
-import {anyString, oneOf} from '../lib/storage';
+import {anyString, oneOf, regulationKey} from '../lib/storage';
 import {SPEED_MODE_IDS, type SpeedMode} from '../lib/team';
 import {assessThreat} from '../lib/threats';
 
@@ -52,7 +52,7 @@ export function MatchupPage({regId, mod}: Props) {
   const dex = useDexList(regId);
   const [teamText] = useSavedTeam();
   // Opposing Pokémon ids, comma separated, remembered per regulation.
-  const [stored, setStored] = usePersistentState(`vgc-tools:opponents:${regId}`, '', anyString);
+  const [stored, setStored] = usePersistentState(`vgc-tools:opponents:${regulationKey(regId)}`, '', anyString);
   const [mode, setMode] = usePersistentState<SpeedMode>('vgc-tools:speed-mode', 'normal', oneOf(SPEED_MODE_IDS));
   const [fieldChoice, setFieldChoice] = usePersistentState<FieldChoice>('vgc-tools:field', 'auto', oneOf(FIELD_CHOICES));
 
@@ -81,7 +81,7 @@ export function MatchupPage({regId, mod}: Props) {
     [team, opponents, tables, mode, fieldChoice],
   );
   // Lead vs lead picks: "0,1|2,3" (your team indexes | their six indexes), remembered per regulation.
-  const [storedLeads, setStoredLeads] = usePersistentState(`vgc-tools:leads:${regId}`, '', anyString);
+  const [storedLeads, setStoredLeads] = usePersistentState(`vgc-tools:leads:${regulationKey(regId)}`, '', anyString);
   const leadPicks = useMemo((): LeadPicks | null => {
     if (team.length < 2 || opponents.length < 2) return null;
     const pair = (text: string | undefined, size: number): [number, number] | null => {

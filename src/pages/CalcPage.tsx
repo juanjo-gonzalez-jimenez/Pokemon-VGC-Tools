@@ -8,7 +8,7 @@ import {useDexList} from '../data/useDexList';
 import {useLookupTables} from '../data/useLookupTables';
 import {calcMoves, usageSet, type CalcSet, type CalcState} from '../lib/calcset';
 import {NO_FIELD} from '../lib/damage';
-import {anyString, readStored, writeStored} from '../lib/storage';
+import {anyString, readStored, regulationKey, writeStored} from '../lib/storage';
 
 interface Props {
   regId: string;
@@ -33,7 +33,7 @@ function parseState(raw: string): CalcState | null {
 export function CalcPage({regId, mod}: Props) {
   const tables = useLookupTables(mod);
   const dex = useDexList(regId);
-  const key = `vgc-tools:calc:${regId}`;
+  const key = `vgc-tools:calc:${regulationKey(regId)}`;
   const [state, setState] = useState<CalcState>(() => parseState(readStored(key, '', anyString)) ?? EMPTY);
   useEffect(() => writeStored(key, JSON.stringify(state)), [key, state]);
 

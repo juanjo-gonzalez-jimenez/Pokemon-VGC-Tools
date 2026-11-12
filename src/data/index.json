@@ -2,8 +2,17 @@
   "updated": "2026-10",
   "regulations": [
     {
+      "id": "gen9championsvgc2026regmcbo3",
+      "name": "VGC 2026 Reg M-C (Bo3)",
+      "month": "2026-10",
+      "cutoff": 1760,
+      "battles": 262609,
+      "mod": "champions",
+      "previousMonth": "2026-09"
+    },
+    {
       "id": "gen9championsvgc2026regmc",
-      "name": "VGC 2026 Reg M-C",
+      "name": "VGC 2026 Reg M-C (Bo1)",
       "month": "2026-10",
       "cutoff": 1760,
       "battles": 1649648,
@@ -11,8 +20,17 @@
       "previousMonth": "2026-09"
     },
     {
+      "id": "gen9championsvgc2026regmbbo3",
+      "name": "VGC 2026 Reg M-B (Bo3)",
+      "month": "2026-09",
+      "cutoff": 1760,
+      "battles": 38449,
+      "mod": "championsregmb",
+      "previousMonth": "2026-08"
+    },
+    {
       "id": "gen9championsvgc2026regmb",
-      "name": "VGC 2026 Reg M-B",
+      "name": "VGC 2026 Reg M-B (Bo1)",
       "month": "2026-09",
       "cutoff": 1760,
       "battles": 326464,

@@ -7,12 +7,15 @@
 import type {ItemTable} from '../src/data/types';
 import {toID} from '../src/lib/ids';
 
-/** "gen9championsvgc2026regmc" -> "VGC 2026 Reg M-C". */
+/** Best-of-three formats end in "bo3"; the rest are the best-of-one ladder. */
+export const isBo3 = (id: string) => id.endsWith('bo3');
+
+/** "gen9championsvgc2026regmc" -> "VGC 2026 Reg M-C (Bo1)", "…regmcbo3" -> "VGC 2026 Reg M-C (Bo3)". */
 export function formatName(id: string): string {
-  const m = /vgc(\d{4})reg([a-z]+)/.exec(id);
+  const m = /vgc(\d{4})reg([a-z]+?)(bo3)?$/.exec(id);
   if (!m) return id;
   const reg = m[2].toUpperCase().split('').join('-');
-  return `VGC ${m[1]} Reg ${reg}`;
+  return `VGC ${m[1]} Reg ${reg} (${m[3] ? 'Bo3' : 'Bo1'})`;
 }
 
 /** Format id -> Showdown data mod, from config/formats.ts. */
@@ -133,7 +136,7 @@ export function championsVgcCutoffs(files: readonly string[]): Map<string, numbe
   const byFormat = new Map<string, number[]>();
   for (const f of files) {
     const m = /^(gen9championsvgc\w*?)-(\d+)\.json$/.exec(f);
-    if (!m || m[1].endsWith('bo3')) continue;
+    if (!m) continue;
     byFormat.set(m[1], [...(byFormat.get(m[1]) ?? []), Number(m[2])]);
   }
   return byFormat;

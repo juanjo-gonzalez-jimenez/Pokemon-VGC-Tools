@@ -17,6 +17,7 @@ import {
   championsVgcCutoffs,
   formatMods,
   formatName,
+  isBo3,
   legalSpecies,
   parseIconIndexes,
   parseItemNonstandard,
@@ -553,8 +554,10 @@ async function main() {
       : null;
     const withTrend = (p: MetaPokemon): MetaPokemon =>
       previous && !p.source ? {...p, previousUsage: Number((previous.get(p.id)?.usage ?? 0).toFixed(5))} : p;
-    check(modOf.has(id), `format ${id} not found in Showdown's config/formats.ts`);
-    const mod = modOf.get(id)!;
+    // A Bo3 format plays like its Bo1 version: same data mod when it isn't listed on its own.
+    const modId = modOf.has(id) ? id : id.replace(/bo3$/, '');
+    check(modOf.has(modId), `format ${id} not found in Showdown's config/formats.ts`);
+    const mod = modOf.get(modId)!;
     const data: RegulationData = {
       id,
       name: formatName(id),
@@ -630,8 +633,14 @@ async function main() {
         (missing.length ? `, ${missing.length} unmatched (${missing.slice(0, 5).join(', ')})` : ''),
     );
   }
-  // Most-played first, which puts the current regulation on top.
-  regulations.sort((a, b) => b.battles - a.battles);
+  // Most-played regulation first (Bo1 and Bo3 battles together), and within one regulation the
+  // Bo3 data first: tournament-style play, so it is the default.
+  const base = (id: string) => id.replace(/bo3$/, '');
+  const played = new Map<string, number>();
+  for (const r of regulations) played.set(base(r.id), (played.get(base(r.id)) ?? 0) + r.battles);
+  regulations.sort(
+    (a, b) => played.get(base(b.id))! - played.get(base(a.id))! || base(a.id).localeCompare(base(b.id)) || Number(isBo3(b.id)) - Number(isBo3(a.id)),
+  );
   // `updated` is the newest stats month, so re-running with unchanged stats rewrites nothing.
   const index: RegulationIndex = {updated: regulations.map(r => r.month).sort().at(-1)!, regulations};
   outputs.set(join(OUT_DIR, 'index.json'), JSON.stringify(index, null, 2));

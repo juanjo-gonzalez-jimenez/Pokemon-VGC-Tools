@@ -22,10 +22,9 @@ const loaders = import.meta.glob<RegulationData>(['./data/regulations/*.json', '
 const TOP_N_OPTIONS = [25, 50, 100, 0];
 
 const PAGES = {
-  coverage: {
-    label: 'Coverage',
-    intro:
-      'Pick up to four attacking move types and see how they hit the Pokémon Champions VGC meta, including abilities like Levitate, Water Absorb and Thick Fat.',
+  dex: {
+    label: 'Pokémon',
+    intro: 'Browse every Pokémon in the regulation: stats, moves, items, abilities, spreads, natures and teammates.',
   },
   team: {
     label: 'Team',
@@ -40,9 +39,10 @@ const PAGES = {
     label: 'Calc',
     intro: 'Exact damage between any two Pokémon of the regulation, both ways, starting from their most used sets.',
   },
-  dex: {
-    label: 'Pokémon',
-    intro: 'Browse every Pokémon in the regulation: stats, moves, items, abilities, spreads, natures and teammates.',
+  coverage: {
+    label: 'Coverage',
+    intro:
+      'Pick up to four attacking move types and see how they hit the Pokémon Champions VGC meta, including abilities like Levitate, Water Absorb and Thick Fat.',
   },
 } as const;
 type PageId = keyof typeof PAGES;
@@ -58,16 +58,18 @@ function routeFromHash(): Route {
   if (page === 'team') return {page: 'team'};
   if (page === 'matchup') return {page: 'matchup'};
   if (page === 'calc') return {page: 'calc'};
-  if (page === 'dex') return {page: 'dex', id: id || undefined};
-  return {page: 'coverage'};
+  if (page === 'coverage') return {page: 'coverage'};
+  // The first tab, Pokémon, is also the landing page.
+  return {page: 'dex', id: page === 'dex' ? id || undefined : undefined};
 }
 
 export function App() {
   const [route, setRoute] = useState<Route>(routeFromHash);
   const {page} = route;
   // Settings are remembered; a stored regulation that no longer exists falls back to the newest.
+  // (A new key: the Bo3 data became the default, so everyone starts there once.)
   const [regId, setRegId] = usePersistentState(
-    'vgc-tools:regulation',
+    'vgc-tools:regulation-v2',
     index.regulations[0]?.id ?? '',
     oneOf(index.regulations.map(r => r.id)),
   );
@@ -99,7 +101,7 @@ export function App() {
       <header>
         <div className="title-row">
           <h1>
-            <a className="brand" href="#/coverage">
+            <a className="brand" href="#/dex">
               <Logo />
               <span>
                 VGC <span className="brand-accent">Tools</span>

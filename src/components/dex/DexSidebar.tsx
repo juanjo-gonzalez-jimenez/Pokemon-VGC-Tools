@@ -8,9 +8,6 @@ import {Trend} from '../Trend';
 
 const SORT_OPTIONS: Array<[SortKey, string]> = [
   ['usage', 'Usage'],
-  ['rising', 'Rising since last month'],
-  ['falling', 'Falling since last month'],
-  ['name', 'Name'],
   ['bst', 'Base stat total'],
   ['bstNoMega', 'Base stat total (no Megas)'],
   ['hp', 'HP'],

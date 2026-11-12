@@ -35,9 +35,8 @@ describe('dex', () => {
     const noMega = sortRoster(withMega, 'bstNoMega');
     expect(noMega.map(p => p.name)).toEqual(['Garchomp', 'Sneasler', 'Incineroar']);
   });
-  it('sorts by usage, name or a stat', () => {
+  it('sorts by usage or a stat', () => {
     expect(sortRoster(roster, 'usage')[0].name).toBe('Sneasler');
-    expect(sortRoster(roster, 'name').map(p => p.name)).toEqual(['Garchomp', 'Incineroar', 'Sneasler']);
     expect(sortRoster(roster, 'spe').map(p => p.name)).toEqual(['Sneasler', 'Garchomp', 'Incineroar']);
   });
   it('keeps cutoff usage ahead of all-ratings and unused Pokémon when sorting by usage', () => {
@@ -66,10 +65,5 @@ describe('usage trends', () => {
     expect(usageTrend(p('B', 0.05, 0))!.isNew).toBe(true);
     expect(usageTrend(p('C', 0.05))).toBeNull();
     expect(usageTrend(p('D', 0.05, 0.01, 'all'))).toBeNull();
-  });
-  it('sorts by rising or falling usage, leaving out Pokémon without a trend', () => {
-    const list = [p('Up', 0.3, 0.1), p('Down', 0.2, 0.4), p('Flat', 0.1, 0.1), p('None', 0.5)];
-    expect(sortRoster(list, 'rising').map(x => x.name)).toEqual(['Up', 'Flat', 'Down']);
-    expect(sortRoster(list, 'falling').map(x => x.name)).toEqual(['Down', 'Flat', 'Up']);
   });
 });

@@ -28,3 +28,9 @@ export function writeStored(key: string, value: string | number | boolean): void
     // Storage can be unavailable (private mode); the value just won't be remembered.
   }
 }
+
+/**
+ * The part of a regulation id that names the game: Bo1 and Bo3 data of the same regulation share
+ * remembered setups (opponents, leads, calculator).
+ */
+export const regulationKey = (regId: string) => regId.replace(/bo3$/, '');

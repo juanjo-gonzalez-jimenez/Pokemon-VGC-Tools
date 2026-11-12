@@ -14,8 +14,9 @@ import {
 
 describe('formatName', () => {
   it('reads year and regulation letters', () => {
-    expect(formatName('gen9championsvgc2026regmc')).toBe('VGC 2026 Reg M-C');
-    expect(formatName('gen9vgc2025regi')).toBe('VGC 2025 Reg I');
+    expect(formatName('gen9championsvgc2026regmc')).toBe('VGC 2026 Reg M-C (Bo1)');
+    expect(formatName('gen9championsvgc2026regmcbo3')).toBe('VGC 2026 Reg M-C (Bo3)');
+    expect(formatName('gen9vgc2025regi')).toBe('VGC 2025 Reg I (Bo1)');
     expect(formatName('somethingelse')).toBe('somethingelse');
   });
 });
@@ -173,7 +174,7 @@ export const BattlePokemonIconIndexesLeft: { [id: string]: number } = {
 });
 
 describe('championsVgcCutoffs', () => {
-  it('groups cutoffs per Champions VGC format and skips Bo3 and other formats', () => {
+  it('groups cutoffs per Champions VGC format (Bo1 and Bo3) and skips other formats', () => {
     const map = championsVgcCutoffs([
       'gen9championsvgc2026regmc-0.json',
       'gen9championsvgc2026regmc-1760.json',
@@ -181,7 +182,10 @@ describe('championsVgcCutoffs', () => {
       'gen9championsou-1760.json',
       'gen9vgc2024regg-1760.json',
     ]);
-    expect([...map]).toEqual([['gen9championsvgc2026regmc', [0, 1760]]]);
+    expect([...map]).toEqual([
+      ['gen9championsvgc2026regmc', [0, 1760]],
+      ['gen9championsvgc2026regmcbo3', [1760]],
+    ]);
   });
 });
 

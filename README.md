@@ -116,8 +116,7 @@ cutoff use all-ratings stats (labelled "all"); legal Pokémon nobody used show b
 
 The **Pokémon** tab uses the full screen. Its sidebar has:
 - the regulation and a name search;
-- sorting by usage, rising or falling usage since last month, name, base stat total or any single
-  stat;
+- sorting by usage, base stat total or any single stat;
 - the list of Pokémon.
 
 **Usage trends**: next to each usage figure (searcher, threat list, Coverage table), ▲/▼ shows the
@@ -151,6 +150,14 @@ moves, spreads and Speed distributions, a searcher list of every legal Pokémon,
 `species.json` / `moves.json` / `items.json` for reading pasted teams. A regulation's meta roster
 is every Pokémon with ≥0.1% usage, so new regulations appear automatically once Smogon
 publishes them.
+
+Each regulation comes twice in the regulation menu:
+- **(Bo3)**, the default: best-of-three, tournament-style play. It has fewer battles, but
+  players build their own spreads.
+- **(Bo1)**: the best-of-one ladder. It has many more battles, but copied rental teams can
+  dominate a Pokémon's sets.
+
+Both share your saved opponents, leads and calculator setup.
 
 Showdown's source files are only read as text (`scripts/parsers.ts`, covered by tests). The
 script computes everything first and aborts without writing if a result looks broken (too few
