@@ -14,30 +14,31 @@ import {
 
 interface SpriteProps {
   sprite?: string;
+  /** Base form's sprite name, used while a form (e.g. a new Mega) has no pixel sprite of its own. */
   baseSprite?: string;
+  /** Menu-icon index, shown (scaled up) only when no pixel sprite loads at all. */
+  icon?: number;
   /** Rendered box size in px (Gen 5 sprites are 96×96). */
   size?: number;
 }
 
-/** A full-size Showdown sprite that falls back through spriteUrls() and hides itself if none load. */
-export function Sprite({sprite, baseSprite, size = 96}: SpriteProps) {
+/**
+ * A Pokémon's pixel-art sprite from Showdown: its own, else its base form's (some new Megas have
+ * none yet), else its menu icon scaled up. Never the 3D models, so the style stays consistent.
+ */
+export function Sprite({sprite, baseSprite, icon, size = 96}: SpriteProps) {
   const urls = sprite ? spriteUrls(sprite, baseSprite) : [];
   const [failed, setFailed] = useState(0);
   const src = urls[failed];
   return (
     <span className="sprite" style={{width: size, height: size}} aria-hidden>
-      {src && (
-        <img
-          key={src}
-          src={src}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          width={size}
-          height={size}
-          onError={() => setFailed(f => f + 1)}
-        />
-      )}
+      {src ? (
+        <img key={src} src={src} alt="" loading="lazy" decoding="async" width={size} height={size} onError={() => setFailed(f => f + 1)} />
+      ) : icon ? (
+        <span className="sprite-icon" style={{transform: `scale(${Math.max(1, Math.round(size / ICON_WIDTH))})`}}>
+          <PokemonIcon icon={icon} />
+        </span>
+      ) : null}
     </span>
   );
 }

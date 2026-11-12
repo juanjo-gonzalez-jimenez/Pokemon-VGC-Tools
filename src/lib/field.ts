@@ -2,11 +2,24 @@
 import {NO_FIELD, type Field, type Terrain, type Weather} from './damage';
 import {toID} from './ids';
 
-export const FIELD_CHOICES = ['auto', 'none', 'rain', 'sun', 'sand', 'snow', 'grassy'] as const;
+export const FIELD_CHOICES = ['auto', 'none', 'rain', 'sun', 'sand', 'snow', 'grassy', 'electric', 'psychic', 'misty'] as const;
 export type FieldChoice = (typeof FIELD_CHOICES)[number];
 
-const WEATHER_SETTERS: Record<string, Weather> = {drizzle: 'rain', drought: 'sun', sandstream: 'sand', snowwarning: 'snow'};
-const TERRAIN_SETTERS: Record<string, Terrain> = {grassysurge: 'grassy'};
+const WEATHER_SETTERS: Record<string, Weather> = {
+  drizzle: 'rain',
+  drought: 'sun',
+  orichalcumpulse: 'sun',
+  sandstream: 'sand',
+  snowwarning: 'snow',
+};
+const TERRAIN_SETTERS: Record<string, Terrain> = {
+  grassysurge: 'grassy',
+  electricsurge: 'electric',
+  hadronengine: 'electric',
+  psychicsurge: 'psychic',
+  mistysurge: 'misty',
+};
+const TERRAINS: readonly string[] = ['grassy', 'electric', 'psychic', 'misty'];
 
 /** The weather / terrain a group of abilities sets; conflicting setters cancel out. */
 export function fieldOf(abilities: readonly string[]): Field {
@@ -32,8 +45,8 @@ export interface FieldContext {
 export function resolveField(myAbility: string, theirAbility: string, ctx?: FieldContext): Field {
   if (ctx && ctx.choice !== 'auto') {
     if (ctx.choice === 'none') return NO_FIELD;
-    if (ctx.choice === 'grassy') return {weather: '', terrain: 'grassy'};
-    return {weather: ctx.choice, terrain: ''};
+    if (TERRAINS.includes(ctx.choice)) return {weather: '', terrain: ctx.choice as Terrain};
+    return {weather: ctx.choice as Weather, terrain: ''};
   }
   const pair = fieldOf([myAbility, theirAbility]);
   const theirs = fieldOf(ctx?.theirs ?? []);

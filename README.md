@@ -56,17 +56,27 @@ Their sets come from usage stats: most common ability, mean stats over all sprea
 most sets hold, and every move weighted by how many sets run it. Weather and terrain come from
 the abilities in play (Auto) or a fixed choice.
 
-### Damage estimates
+### Damage in the Matchup and Team tabs
 
-The Matchup tab and the Team tab's threats and teammate suggestions score each pairing from
-estimated damage (`src/lib/damage.ts`, the Gen 9 formula Champions uses): who knocks the other
-out in fewer hits, and who acts first. Numbers are shown as estimates (`~70%`, "likely OHKO").
-Modelled: STAB and Adaptability, Huge/Pure Power, Technician, -ate abilities, multi-hit moves,
-Foul Play / Body Press / Psyshock, Life Orb, Choice Band/Specs, type-boosting items, Expert Belt,
-Assault Vest, resist berries, Multiscale, spread moves, rain/sun/sand/snow, Grassy Terrain
-(including Grassy Glide's priority) and weather Speed abilities. Not modelled: stat boosts
-(Swords Dance, Intimidate drops), accuracy, crits, burns, screens, Helping Hand, Unburden,
-weight-based and other 0-power moves, recoil.
+Every damage number comes from Smogon's damage calculator ([`@smogon/calc`](https://github.com/smogon/damage-calc))
+in its **Pokémon Champions** mode: Champions stats, moves and abilities, Showdown's rounding and
+all 16 rolls (`src/lib/damage.ts` maps our data onto it). The Matchup tab and the Team tab's
+threats and teammate suggestions score each pairing by who knocks the other out in fewer hits,
+then who acts first (priority, then Speed). They still show `~` because the opponent is an
+average of its usage (mean stats over all spreads, moves weighted by how many sets run them).
+Not part of those scores: stat boosts (Swords Dance, Intimidate drops), accuracy, crits, burns,
+screens, partner support and Unburden; the Calc tab handles most of them.
+
+## Damage calculator
+
+The **Calc** tab is a Showdown-style calculator for any two legal Pokémon of the regulation,
+both ways at once. Each side starts from its most used set (ability, item, spread, moves) and
+everything is editable: ability, item, nature, stat points (with the 32 / 66 limits), four moves,
+stat boosts (−6 to +6, plus an "Intimidated" shortcut), burn, critical hits and current HP. The
+field covers weather, all four terrains, Reflect, Light Screen, Aurora Veil, Helping Hand,
+Friend Guard and single-target spread moves. Each move shows its damage range, the KO chance
+(from current HP, multi-hit and recovery aware), the 16 rolls and Showdown's description line.
+The setup is remembered per regulation. Learnsets aren't checked.
 
 ## Pokémon searcher
 
@@ -121,6 +131,9 @@ species, moves, items or legal Pokémon, or a list that shrank by more than 30%)
 - **Champions changes**: each regulation uses its Showdown data mod (`champions`,
   `championsregmb`). Move type and base power changes are applied, and moves and items that
   don't exist in the game are flagged in the Team tab's legality checks (`src/data/mods/`).
+- **Damage**: all damage numbers come from `@smogon/calc` in Champions mode (see above). The
+  points below are the app's own type-level model, used by the Coverage tab, the defensive
+  chart and type summaries.
 - **Defender abilities**: Levitate, Flash Fire, Water Absorb, Thick Fat, Filter and similar.
 - **Attacker abilities**: Pixilate / Aerilate / Refrigerate / Galvanize / Normalize / Liquid
   Voice change move types; Mold Breaker / Teravolt / Turboblaze ignore defensive abilities;
@@ -131,4 +144,5 @@ species, moves, items or legal Pokémon, or a list that shrank by more than 30%)
 ### Not modelled (yet)
 
 Lightning Rod / Storm Drain redirection in doubles, learnsets (whether a Pokémon can learn a
-move), and the damage effects listed under "Damage estimates".
+move), and in the Matchup / Team scores the effects listed under "Damage in the Matchup and Team
+tabs".

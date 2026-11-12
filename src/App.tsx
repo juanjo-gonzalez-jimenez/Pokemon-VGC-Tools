@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from 'react';
+import {lazy, Suspense, useEffect, useMemo, useState} from 'react';
 import {usePersistentState} from './hooks/usePersistentState';
 import {boolean, oneOf} from './lib/storage';
 import {Icon, Logo} from './components/Icon';
@@ -8,8 +8,11 @@ import type {RegulationData, RegulationIndex} from './data/types';
 import type {TypeName} from './lib/typechart';
 import {CoveragePage} from './pages/CoveragePage';
 import {DexPage} from './pages/DexPage';
-import {MatchupPage} from './pages/MatchupPage';
-import {TeamPage} from './pages/TeamPage';
+
+// Pages that use the damage calculator load it (and themselves) only when opened.
+const TeamPage = lazy(() => import('./pages/TeamPage').then(m => ({default: m.TeamPage})));
+const MatchupPage = lazy(() => import('./pages/MatchupPage').then(m => ({default: m.MatchupPage})));
+const CalcPage = lazy(() => import('./pages/CalcPage').then(m => ({default: m.CalcPage})));
 
 const index = indexJson as RegulationIndex;
 // Each regulation is its own chunk, loaded on demand.
@@ -33,6 +36,10 @@ const PAGES = {
     label: 'Matchup',
     intro: 'At team preview, enter the opponent’s six to see how your team matches up and which four to bring.',
   },
+  calc: {
+    label: 'Calc',
+    intro: 'Exact damage between any two Pokémon of the regulation, both ways, starting from their most used sets.',
+  },
   dex: {
     label: 'Pokémon',
     intro: 'Browse every Pokémon in the regulation: stats, moves, items, abilities, spreads, natures and teammates.',
@@ -50,6 +57,7 @@ function routeFromHash(): Route {
   const [page, id] = window.location.hash.replace(/^#\/?/, '').split('/');
   if (page === 'team') return {page: 'team'};
   if (page === 'matchup') return {page: 'matchup'};
+  if (page === 'calc') return {page: 'calc'};
   if (page === 'dex') return {page: 'dex', id: id || undefined};
   return {page: 'coverage'};
 }
@@ -87,7 +95,7 @@ export function App() {
   const summary = index.regulations.find(r => r.id === regId);
 
   return (
-    <main className={page === 'dex' ? 'wide' : undefined}>
+    <main className={page === 'dex' ? 'wide' : page === 'calc' ? 'full' : 'full narrow'}>
       <header>
         <div className="title-row">
           <h1>
@@ -126,7 +134,7 @@ export function App() {
             </select>
           </label>
           {/* The Matchup tab compares against the opponent's six, not the meta. */}
-          {page !== 'matchup' && (
+          {(page === 'coverage' || page === 'team') && (
             <>
               <label>
                 Meta
@@ -165,15 +173,23 @@ export function App() {
       ) : page === 'coverage' ? (
         <CoveragePage roster={roster} weighted={weighted} types={types} onTypesChange={setTypes} mod={summary?.mod} />
       ) : page === 'matchup' ? (
-        <MatchupPage key={regId} regId={regId} mod={summary?.mod} />
+        <Suspense fallback={<p className="muted">Loading…</p>}>
+          <MatchupPage key={regId} regId={regId} mod={summary?.mod} />
+        </Suspense>
+      ) : page === 'calc' ? (
+        <Suspense fallback={<p className="muted">Loading the calculator…</p>}>
+          <CalcPage key={regId} regId={regId} mod={summary?.mod} />
+        </Suspense>
       ) : (
-        <TeamPage roster={roster} weighted={weighted} mod={summary?.mod} />
+        <Suspense fallback={<p className="muted">Loading…</p>}>
+          <TeamPage roster={roster} weighted={weighted} mod={summary?.mod} />
+        </Suspense>
       )}
 
-      {page !== 'dex' && (
+      {page !== 'dex' && page !== 'calc' && (
         <footer className="muted">
           Built on Smogon usage stats. Damage figures are estimates: no stat boosts, accuracy, crits, screens or
-          partner support; no Lightning Rod / Storm Drain redirection or learnset checks.
+          partner support.
         </footer>
       )}
     </main>

@@ -360,6 +360,7 @@ function buildLookupTables(dex: Record<string, DexEntry>, moves: Record<string, 
       abilities: Object.values(e.abilities ?? {}),
       ...(e.baseSpecies ? {baseSpecies: e.baseSpecies} : {}),
       ...(e.requiredItem ? {requiredItem: e.requiredItem} : {}),
+      icon: iconIndex(id, e),
     };
   }
   const moveTable: MoveTable = {};

@@ -4,7 +4,17 @@
  */
 import type {MetaPokemon, MoveData, MoveTable} from '../data/types';
 import {fromMember, fromMeta} from './combatant';
-import {estimateDamage, hitsToKO, movePriority, NO_FIELD, type Combatant, type DamageEstimate, type Field, type Weather} from './damage';
+import {
+  estimateDamage,
+  grounded,
+  hitsToKO,
+  movePriority,
+  NO_FIELD,
+  type Combatant,
+  type DamageEstimate,
+  type Field,
+  type Weather,
+} from './damage';
 import {toID} from './ids';
 import type {TeamMember} from './paste';
 import {memberSpeed, speedMatchup, type SpeedMode} from './team';
@@ -88,6 +98,17 @@ export function expectedThreat(options: Array<{estimate: DamageEstimate; share: 
   return {percent, move: main.estimate.move, estimate: main.estimate, ohkoChance: 1 - noOhko, twoHkoChance: 1 - no2hko};
 }
 
+const PRIORITY_BLOCKERS = ['armortail', 'dazzling', 'queenlymajesty'];
+
+/**
+ * A priority move that fails against this target: grounded targets in Psychic Terrain, or a
+ * target with Armor Tail / Dazzling / Queenly Majesty.
+ */
+export function priorityBlocked(e: DamageEstimate, target: Combatant, field: Field): boolean {
+  if (e.priority <= 0) return false;
+  return (field.terrain === 'psychic' && grounded(target)) || PRIORITY_BLOCKERS.includes(toID(target.ability));
+}
+
 /** Your best option: fewest hits to KO, then higher priority, then more damage. */
 export function bestOption(estimates: ReadonlyArray<DamageEstimate | null>): DamageEstimate | null {
   let best: DamageEstimate | null = null;
@@ -140,11 +161,16 @@ export function duel(
 ): Duel {
   const me = fromMember(member);
   const them = fromMeta(opp);
-  const mine = bestOption(member.moves.map(m => estimateDamage(me, them, m, field)));
+  const mine = bestOption(
+    member.moves.map(m => {
+      const e = estimateDamage(me, them, m, field);
+      return e && !priorityBlocked(e, them, field) ? e : null;
+    }),
+  );
   const pool = theirMoves(opp, them, moves);
   const options = pool.list.flatMap(([move, share]) => {
     const estimate = estimateDamage(them, me, move, field);
-    return estimate && estimate.percent > 0 ? [{estimate, share}] : [];
+    return estimate && estimate.percent > 0 && !priorityBlocked(estimate, me, field) ? [{estimate, share}] : [];
   });
   const threat = expectedThreat(options);
   const theirs = threat && {...threat, options, assumed: pool.assumed};

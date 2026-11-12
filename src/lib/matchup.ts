@@ -28,7 +28,7 @@ export function describeAutoField(team: readonly TeamMember[], opponents: readon
   const setterOf = (field: 'weather' | 'terrain') => {
     for (const o of opponents) {
       const f = fieldOf([mainAbility(o)]);
-      if (f[field]) return `${f[field]} from ${o.name} (their ${mainAbility(o)})`;
+      if (f[field]) return `${f[field]} from ${o.name} (${mainAbility(o)})`;
     }
     for (const m of team) {
       const f = fieldOf([m.ability]);

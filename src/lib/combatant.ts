@@ -17,7 +17,16 @@ export function fromMember(m: TeamMember): Combatant {
   const stats =
     m.stats ??
     (Object.fromEntries(STATS.map(s => [s, calcStat(s, m.species.baseStats[s], m.sp[s], m.nature)])) as StatsTable);
-  return {name: m.label, types: m.species.types, ability: m.ability, item: m.item, stats};
+  return {
+    name: m.label,
+    species: m.species.name,
+    types: m.species.types,
+    ability: m.ability,
+    item: m.item,
+    stats,
+    // Members built from usage data carry average stats instead of a real spread.
+    ...(m.stats ? {} : {build: {nature: m.nature, sp: m.sp}}),
+  };
 }
 
 /** A meta Pokémon as usually built: mean stats, most common ability, item held by most sets. */
@@ -25,6 +34,7 @@ export function fromMeta(p: MetaPokemon): Combatant {
   const [item, share] = Object.entries(p.items).reduce<[string, number]>((a, b) => (b[1] > a[1] ? b : a), ['', 0]);
   return {
     name: p.name,
+    species: p.name,
     types: p.forms[0]?.types ?? [],
     ability: mainAbility(p),
     item: share >= MAIN_ITEM_SHARE ? item : '',

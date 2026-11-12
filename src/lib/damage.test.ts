@@ -1,84 +1,102 @@
 import {describe, expect, it} from 'vitest';
 import {estimateDamage, hitsToKO, koLabel, movePriority, type Combatant, type Field} from './damage';
+import {calcStat, STATS, type StatsTable} from './stats';
 import {move} from './test-fixtures';
 
-const stats = (s: Partial<Combatant['stats']>) => ({hp: 150, atk: 100, def: 100, spa: 100, spd: 100, spe: 100, ...s});
-const mon = (name: string, types: string[], s: Partial<Combatant['stats']>, ability = '', item = ''): Combatant => ({
-  name, types, ability, item, stats: stats(s),
-});
-const grassy: Field = {weather: '', terrain: 'grassy'};
+const sp = (s: Partial<StatsTable>): StatsTable => ({hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, ...s});
+const BASE: Record<string, StatsTable> = {
+  Rillaboom: {hp: 100, atk: 125, def: 90, spa: 60, spd: 70, spe: 85},
+  'Swampert-Mega': {hp: 100, atk: 150, def: 110, spa: 95, spd: 110, spe: 70},
+  'Salamence-Mega': {hp: 95, atk: 145, def: 130, spa: 120, spd: 90, spe: 120},
+};
+const TYPES: Record<string, string[]> = {
+  Rillaboom: ['Grass'],
+  'Swampert-Mega': ['Water', 'Ground'],
+  'Salamence-Mega': ['Dragon', 'Flying'],
+};
+/** A real build: species, nature and stat points, with stats from our Champions formula. */
+const built = (species: string, nature: string, points: Partial<StatsTable>, ability: string, item = ''): Combatant => {
+  const build = {nature, sp: sp(points)};
+  const stats = Object.fromEntries(STATS.map(s => [s, calcStat(s, BASE[species][s], build.sp[s], nature)])) as StatsTable;
+  return {name: species, species, types: TYPES[species], ability, item, stats, build};
+};
 
-// The user's Rillaboom (Adamant 15 HP / 32 Atk) and an average Mega Swampert from usage stats.
-const rillaboom = mon('Rillaboom', ['Grass'], {hp: 190, atk: 194, def: 110, spd: 90}, 'Grassy Surge', 'Miracle Seed');
-const swampert = mon('Swampert-Mega', ['Water', 'Ground'], {hp: 186, atk: 217, def: 131, spd: 130}, 'Swift Swim', 'Swampertite');
+// The user's Rillaboom and a common Mega Swampert / Mega Salamence build.
+const rillaboom = built('Rillaboom', 'Adamant', {hp: 15, atk: 32, spe: 19}, 'Grassy Surge', 'Miracle Seed');
+const swampert = built('Swampert-Mega', 'Adamant', {hp: 2, atk: 32, spe: 32}, 'Swift Swim', 'Swampertite');
+const salamence = built('Salamence-Mega', 'Timid', {spa: 32, spe: 32}, 'Aerilate', 'Salamencite');
+const grassy: Field = {weather: '', terrain: 'grassy'};
 const grassyGlide = move('Grassy Glide', 'Grass', {basePower: 55});
 const icePunch = move('Ice Punch', 'Ice', {basePower: 75});
+const hyperVoice = move('Hyper Voice', 'Normal', {category: 'Special', basePower: 90, target: 'allAdjacentFoes', sound: true});
 
-describe('estimateDamage', () => {
-  it('matches a hand-worked Lv. 50 calc: STAB, terrain, item and a 4× hit', () => {
-    // power 55 × 1.3 × 1.2 = 85.8; ⌊⌊22·85.8·194/131⌋/50⌋+2 = 57; ×1.5 ×4 = 342; ×0.925 / 186 HP.
+describe('estimateDamage (Smogon calculator, Champions mode)', () => {
+  it('gives the same max HP as our stat formula, for real builds and for given stats', () => {
+    expect(estimateDamage(swampert, rillaboom, icePunch)!.maxHp).toBe(rillaboom.stats.hp);
+    const average: Combatant = {...rillaboom, build: undefined, stats: {hp: 201, atk: 179, def: 111, spa: 73, spd: 103, spe: 111}};
+    expect(estimateDamage(swampert, average, icePunch)!.maxHp).toBe(201);
+  });
+  it('matches the calculator exactly: Grassy Glide vs Mega Swampert in Grassy Terrain', () => {
     const e = estimateDamage(rillaboom, swampert, grassyGlide, grassy)!;
-    expect(e.mult).toBe(4);
-    expect(e.percent).toBeCloseTo((342 * 0.925 * 100) / 186, 0);
-    expect(koLabel(e.percent)).toBe('OHKO');
+    expect(e.rolls).toHaveLength(16);
+    expect([e.rolls[0], e.rolls[15]]).toEqual([292, 348]);
+    expect(e.koText).toBe('guaranteed OHKO');
+    expect(e.priority).toBe(1);
   });
   it('rates 2× non-STAB coverage well below 4× STAB', () => {
-    // ⌊⌊22·75·217/110⌋/50⌋+2 = 67; ×2 = 134; ×0.925 / 190 HP ≈ 65%.
     const e = estimateDamage(swampert, rillaboom, icePunch, grassy)!;
-    expect(e.percent).toBeCloseTo((134 * 0.925 * 100) / 190, 0);
-    expect(koLabel(e.percent)).toBe('2HKO');
+    expect([Math.min(...e.rolls), Math.max(...e.rolls)]).toEqual([114, 136]);
+    expect(e.koText).toContain('2HKO');
+  });
+  it('applies Aerilate and the spread penalty, unless the move hits a single target', () => {
+    const spread = estimateDamage(salamence, rillaboom, hyperVoice)!;
+    expect(spread.type).toBe('Flying');
+    expect([Math.min(...spread.rolls), Math.max(...spread.rolls)]).toEqual([174, 206]);
+    expect(spread.koText).toBe('50% chance to OHKO');
+    const single = estimateDamage(salamence, rillaboom, hyperVoice, undefined, {singleTarget: true})!;
+    expect(single.max / spread.max).toBeCloseTo(4 / 3, 1);
+  });
+  it('applies screens, Helping Hand, crits, burn and boosts', () => {
+    const plain = estimateDamage(swampert, rillaboom, icePunch)!.max;
+    const reflect = estimateDamage(swampert, rillaboom, icePunch, undefined, {defenderSide: {reflect: true}})!.max;
+    expect(reflect / plain).toBeCloseTo(2732 / 4096, 1);
+    const lightScreen = estimateDamage(swampert, rillaboom, icePunch, undefined, {defenderSide: {lightScreen: true}})!.max;
+    expect(lightScreen).toBe(plain);
+    const helped = estimateDamage(swampert, rillaboom, icePunch, undefined, {attackerSide: {helpingHand: true}})!.max;
+    expect(helped / plain).toBeCloseTo(1.5, 1);
+    const crit = estimateDamage(swampert, rillaboom, icePunch, undefined, {crit: true, defenderSide: {reflect: true}})!.max;
+    expect(crit / plain).toBeCloseTo(1.5, 1);
+    const burned = estimateDamage({...swampert, status: 'brn'}, rillaboom, icePunch)!.max;
+    expect(burned / plain).toBeCloseTo(0.5, 1);
+    const boosted = estimateDamage({...swampert, boosts: {atk: 2}}, rillaboom, icePunch)!.max;
+    expect(boosted / plain).toBeCloseTo(2, 1);
+  });
+  it('reads KO chances from the current HP', () => {
+    const half = estimateDamage(swampert, {...rillaboom, hpPercent: 50}, icePunch)!;
+    expect(half.koText).toBe('guaranteed OHKO');
+  });
+  it('types Weather Ball by the weather on the field', () => {
+    const ball = move('Weather Ball', 'Normal', {category: 'Special', basePower: 50});
+    expect(estimateDamage(salamence, rillaboom, ball, {weather: 'sun', terrain: ''})!.type).toBe('Fire');
+  });
+  it('handles species the calculator does not know, keeping their types', () => {
+    const odd: Combatant = {name: 'Odd', species: 'Notamon', types: ['Fire'], ability: '', item: '', stats: {hp: 150, atk: 120, def: 100, spa: 100, spd: 100, spe: 100}};
+    const flare = move('Flare Blitz', 'Fire', {basePower: 120});
+    expect(estimateDamage(odd, rillaboom, flare)!.mult).toBe(2);
+    expect(estimateDamage(odd, rillaboom, flare)!.percent).toBeGreaterThan(0);
+  });
+  it('computes weight-based moves such as Low Kick', () => {
+    const lowKick = move('Low Kick', 'Fighting', {basePower: 0});
+    expect(estimateDamage(rillaboom, swampert, lowKick)!.percent).toBeGreaterThan(0);
+  });
+  it('returns zero against immunities and null for status moves', () => {
+    expect(estimateDamage(swampert, salamence, move('Earthquake', 'Ground', {basePower: 100}))!.percent).toBe(0);
+    expect(estimateDamage(swampert, rillaboom, move('Protect', 'Normal', {category: 'Status'}))).toBeNull();
   });
   it('gives Grassy Glide priority only in Grassy Terrain and for grounded users', () => {
     expect(movePriority(grassyGlide, rillaboom, grassy)).toBe(1);
     expect(movePriority(grassyGlide, rillaboom, {weather: '', terrain: ''})).toBe(0);
     expect(movePriority(grassyGlide, {...rillaboom, ability: 'Levitate'}, grassy)).toBe(0);
-  });
-  it('applies the spread penalty, weather and Weather Ball', () => {
-    const attacker = mon('A', ['Normal'], {spa: 150});
-    const target = mon('B', ['Normal'], {});
-    const single = estimateDamage(attacker, target, move('Water Pulse', 'Water', {category: 'Special', basePower: 60}))!;
-    const spread = estimateDamage(attacker, target, move('Surf', 'Water', {category: 'Special', basePower: 60, target: 'allAdjacent'}))!;
-    expect(spread.percent / single.percent).toBeCloseTo(0.75, 1);
-    const rain = estimateDamage(attacker, target, move('Water Pulse', 'Water', {category: 'Special', basePower: 60}), {weather: 'rain', terrain: ''})!;
-    expect(rain.percent / single.percent).toBeCloseTo(1.5, 1);
-    const ball = estimateDamage(attacker, target, move('Weather Ball', 'Normal', {category: 'Special', basePower: 50}), {weather: 'sun', terrain: ''})!;
-    expect(ball.type).toBe('Fire');
-  });
-  it('halves Earthquake in Grassy Terrain against grounded targets', () => {
-    const eq = move('Earthquake', 'Ground', {basePower: 100});
-    const target = mon('B', ['Fire'], {});
-    const plain = estimateDamage(swampert, target, eq)!;
-    const terrain = estimateDamage(swampert, target, eq, grassy)!;
-    expect(terrain.percent / plain.percent).toBeCloseTo(0.5, 1);
-  });
-  it('uses the right stats for Foul Play, Body Press and Psyshock', () => {
-    const weak = mon('Weak', ['Normal'], {atk: 50, def: 200, spa: 50});
-    const target = mon('Strong', ['Normal'], {atk: 200, def: 60, spd: 200});
-    const foul = estimateDamage(weak, target, move('Foul Play', 'Dark', {basePower: 95, offensive: 'target'}))!;
-    const crunch = estimateDamage(weak, target, move('Crunch', 'Dark', {basePower: 95}))!;
-    expect(foul.percent).toBeGreaterThan(crunch.percent * 3);
-    const press = estimateDamage(weak, target, move('Body Press', 'Fighting', {basePower: 80, offensive: 'def'}))!;
-    const punch = estimateDamage(weak, target, move('Brick Break', 'Fighting', {basePower: 80}))!;
-    expect(press.percent).toBeGreaterThan(punch.percent * 3);
-    const psyshock = estimateDamage(weak, target, move('Psyshock', 'Psychic', {category: 'Special', basePower: 80, defensive: 'def'}))!;
-    const psychic = estimateDamage(weak, target, move('Psychic', 'Psychic', {category: 'Special', basePower: 80}))!;
-    expect(psyshock.percent).toBeGreaterThan(psychic.percent * 2);
-  });
-  it('counts multi-hit moves and Skill Link', () => {
-    const blast = move('Rock Blast', 'Rock', {basePower: 25, multihit: [2, 5]});
-    const target = mon('B', ['Normal'], {});
-    expect(estimateDamage(mon('A', ['Rock'], {}), target, blast)!.hits).toBe(3);
-    expect(estimateDamage(mon('A', ['Rock'], {}, 'Skill Link'), target, blast)!.hits).toBe(5);
-  });
-  it('applies items, berries and Multiscale', () => {
-    const plain = estimateDamage(swampert, rillaboom, icePunch)!.percent;
-    expect(estimateDamage({...swampert, item: 'Life Orb'}, rillaboom, icePunch)!.percent / plain).toBeCloseTo(1.3, 1);
-    expect(estimateDamage(swampert, {...rillaboom, item: 'Yache Berry'}, icePunch)!.percent / plain).toBeCloseTo(0.5, 1);
-    expect(estimateDamage(swampert, {...rillaboom, ability: 'Multiscale'}, icePunch)!.percent / plain).toBeCloseTo(0.5, 1);
-  });
-  it('returns zero against immunities and null for status moves', () => {
-    expect(estimateDamage(swampert, mon('F', ['Flying'], {}), move('Earthquake', 'Ground'))!.percent).toBe(0);
-    expect(estimateDamage(swampert, rillaboom, move('Protect', 'Normal', {category: 'Status'}))).toBeNull();
   });
 });
 

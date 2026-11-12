@@ -62,6 +62,8 @@ export interface SpeciesData {
   baseSpecies?: string;
   /** Set for Mega forms: the stone that triggers them. */
   requiredItem?: string;
+  /** Index on Showdown's 40×30 icon sheet. */
+  icon?: number;
 }
 
 export interface MoveData {

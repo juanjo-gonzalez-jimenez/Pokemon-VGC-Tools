@@ -28,6 +28,9 @@ const FIELD_LABELS: Record<FieldChoice, string> = {
   sand: 'Sand',
   snow: 'Snow',
   grassy: 'Grassy Terrain',
+  electric: 'Electric Terrain',
+  psychic: 'Psychic Terrain',
+  misty: 'Misty Terrain',
 };
 
 const fieldContext = (choice: FieldChoice, team: TeamMember[], opponents: MetaPokemon[]): FieldContext => ({

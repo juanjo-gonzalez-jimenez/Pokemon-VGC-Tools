@@ -354,3 +354,10 @@ td.mult.bucket-immune { color: var(--immune); }
   .tabs { gap: 2px; padding: 3px; }
   .tabs a { padding: 6px 6px; font-size: 0.85rem; }
 }
+
+/* A menu icon standing in for a missing sprite, scaled up with crisp pixels. */
+.sprite-icon { display: inline-flex; image-rendering: pixelated; }
+
+/* ---------- Page width: the header uses the full 1480 px; most tabs keep a narrower column ---------- */
+main.full { max-width: 1480px; }
+main.full.narrow > :not(header) { width: 100%; max-width: 1020px; justify-self: center; }

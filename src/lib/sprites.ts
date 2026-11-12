@@ -29,11 +29,12 @@ export function spriteId(name: string, baseSpecies?: string): string {
 }
 
 /**
- * Full-size sprite URLs, best first: the static Gen 5 sprite, the animated sprite (the only one
- * some new Megas have), then the base species' sprite.
+ * Pixel-art sprite URLs (Gen 5 style, 96×96), best first: the Pokémon's own, then its base
+ * form's. Showdown has no pixel sprite yet for some new Megas, so they show their base form until
+ * one is added.
  */
 export function spriteUrls(sprite: string, baseSprite?: string): string[] {
-  const urls = [`${SPRITES}/gen5/${sprite}.png`, `${SPRITES}/ani/${sprite}.gif`];
-  if (baseSprite) urls.push(`${SPRITES}/gen5/${baseSprite}.png`);
+  const urls = [`${SPRITES}/gen5/${sprite}.png`];
+  if (baseSprite && baseSprite !== sprite) urls.push(`${SPRITES}/gen5/${baseSprite}.png`);
   return urls;
 }

@@ -39,6 +39,12 @@ const PATHS: Record<string, ReactNode> = {
     </>
   ),
   matchup: <path d="M5 4l14 16M19 4L5 20M3 7l4-4M21 7l-4-4M3 17l4 4M21 17l-4 4" />,
+  calc: (
+    <>
+      <rect x="4" y="2" width="16" height="20" rx="2" />
+      <path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h8" />
+    </>
+  ),
   dex: (
     <>
       <circle cx="11" cy="11" r="7" />
@@ -47,7 +53,18 @@ const PATHS: Record<string, ReactNode> = {
   ),
 };
 
-export type IconName = 'sun' | 'moon' | 'monitor' | 'chevron' | 'check' | 'alert' | 'coverage' | 'team' | 'matchup' | 'dex';
+export type IconName =
+  | 'sun'
+  | 'moon'
+  | 'monitor'
+  | 'chevron'
+  | 'check'
+  | 'alert'
+  | 'coverage'
+  | 'team'
+  | 'matchup'
+  | 'calc'
+  | 'dex';
 
 /** Decorative icon; pair it with visible text or an aria-label on the control. */
 export function Icon({name, size = 16}: {name: IconName; size?: number}) {

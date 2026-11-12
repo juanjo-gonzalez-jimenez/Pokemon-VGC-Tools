@@ -7,12 +7,12 @@ describe('sprites', () => {
     expect(spriteId('Charizard-Mega-Y', 'Charizard')).toBe('charizard-megay');
     expect(spriteId('Urshifu-Rapid-Strike', 'Urshifu')).toBe('urshifu-rapidstrike');
   });
-  it('falls back from the static to the animated to the base sprite', () => {
+  it('falls back from the pixel sprite to the base form pixel sprite', () => {
     expect(spriteUrls('raichu-megay', 'raichu').map(u => u.split('/sprites/')[1])).toEqual([
       'gen5/raichu-megay.png',
-      'ani/raichu-megay.gif',
       'gen5/raichu.png',
     ]);
+    expect(spriteUrls('garchomp')).toHaveLength(1);
   });
   it('locates item icons on the 16-wide sheet', () => {
     expect(itemIconPosition(69)).toEqual({x: 5 * 24, y: 4 * 24}); // Choice Scarf

@@ -6,7 +6,6 @@ import type {ItemTable} from '../data/types';
 import {ItemIcon, Sprite} from './Sprite';
 import {TypeBadge, typingVars} from './TypeBadge';
 import {spriteId} from '../lib/sprites';
-import {toID} from '../lib/ids';
 
 const spSummary = (m: TeamMember) =>
   STATS.filter(s => m.sp[s] > 0)
@@ -21,7 +20,8 @@ export function TeamCards({team, items}: {team: TeamMember[]; items: ItemTable |
           <header className="team-card-head">
             <Sprite
               sprite={spriteId(m.species.name, m.species.baseSpecies)}
-              baseSprite={m.species.baseSpecies ? toID(m.species.baseSpecies) : undefined}
+              baseSprite={m.species.baseSpecies ? spriteId(m.baseSpecies.name, m.baseSpecies.baseSpecies) : undefined}
+              icon={m.species.icon}
             />
             <div>
               <strong>{m.label}</strong>
@@ -34,7 +34,8 @@ export function TeamCards({team, items}: {team: TeamMember[]; items: ItemTable |
               </div>
             </div>
           </header>
-          <dl>
+          {/* One element per row, so rows line up across the cards (see team.css). */}
+          <dl className="card-row">
             <dt>Item</dt>
             <dd className="item-line">
               {m.item ? (
@@ -45,12 +46,18 @@ export function TeamCards({team, items}: {team: TeamMember[]; items: ItemTable |
                 '—'
               )}
             </dd>
+          </dl>
+          <dl className="card-row">
             <dt>Ability</dt>
             <dd>{m.ability || '—'}</dd>
+          </dl>
+          <dl className="card-row">
             <dt>Spread</dt>
             <dd>
               {m.nature} · {spSummary(m)}
             </dd>
+          </dl>
+          <dl className="card-row">
             <dt>Speed</dt>
             <dd>{memberSpeed(m)}</dd>
           </dl>

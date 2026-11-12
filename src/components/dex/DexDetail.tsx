@@ -6,7 +6,7 @@ import {toID} from '../../lib/ids';
 import {moveType} from '../../lib/moves';
 import {calcStat, NATURES, STAT_LABELS, STATS} from '../../lib/stats';
 import {metaSpeedSummary} from '../../lib/team';
-import {mainAbility} from '../../lib/threats';
+import {mainAbility} from '../../lib/combatant';
 import {pct} from '../CoverageSummary';
 import {ItemIcon, PokemonIcon, Sprite} from '../Sprite';
 import {TypeBadge, typingVars} from '../TypeBadge';
@@ -123,7 +123,7 @@ export function DexDetail({pokemon: p, rank, cutoff, roster, moves, items, possi
     <div className="dex-detail">
       <header className="dex-head" style={typingVars(types)}>
         <div className="dex-identity">
-          <Sprite key={p.id} sprite={p.sprite} baseSprite={p.baseSprite} size={88} />
+          <Sprite key={p.id} sprite={p.sprite} baseSprite={p.baseSprite} icon={p.icon} size={88} />
           <div>
             <h2>{p.name}</h2>
             <div className="types">

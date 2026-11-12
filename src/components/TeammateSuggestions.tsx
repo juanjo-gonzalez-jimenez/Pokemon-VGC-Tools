@@ -35,7 +35,8 @@ export function TeammateSuggestions({suggestions, teamSize}: Props) {
             <div className="severity fit" title={`Fit ${pct(s.score, 0)}`}>
               <div style={{width: pct(s.score, 0)}} />
             </div>
-            <dl>
+            {/* Every row is always present (— when empty) so rows line up across the cards. */}
+            <dl className="card-row">
               <dt>Paired with</dt>
               <dd>
                 {s.pairings.length
@@ -45,28 +46,20 @@ export function TeammateSuggestions({suggestions, teamSize}: Props) {
                       .join(' · ')
                   : <span className="muted">rarely paired with your team</span>}
               </dd>
-              {s.covers.length > 0 && (
-                <>
-                  <dt>Resists</dt>
-                  <dd className="types">
-                    {s.covers.map(t => (
-                      <TypeBadge key={t} type={t} />
-                    ))}
-                  </dd>
-                </>
-              )}
-              {s.checks.length > 0 && (
-                <>
-                  <dt>Checks</dt>
-                  <dd>{s.checks.join(', ')}</dd>
-                </>
-              )}
-              {s.roles.length > 0 && (
-                <>
-                  <dt>Adds</dt>
-                  <dd>{s.roles.join(', ')}</dd>
-                </>
-              )}
+            </dl>
+            <dl className="card-row">
+              <dt>Resists</dt>
+              <dd className="types">
+                {s.covers.length ? s.covers.map(t => <TypeBadge key={t} type={t} />) : <span className="muted">—</span>}
+              </dd>
+            </dl>
+            <dl className="card-row">
+              <dt>Checks</dt>
+              <dd>{s.checks.length ? s.checks.join(', ') : <span className="muted">—</span>}</dd>
+            </dl>
+            <dl className="card-row">
+              <dt>Adds</dt>
+              <dd>{s.roles.length ? s.roles.join(', ') : <span className="muted">—</span>}</dd>
             </dl>
           </article>
         ))}

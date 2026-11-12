@@ -25,9 +25,6 @@ textarea.paste {
 .team-card::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, var(--type-color), var(--type-color-2)); }
 .team-card:hover { box-shadow: var(--shadow-lift); transform: translateY(-2px); }
 .team-card strong { font-family: var(--font-display); font-size: 1.02rem; }
-.team-card dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 0; font-size: 0.85rem; }
-.team-card dt { color: var(--muted); }
-.team-card dd { margin: 0; }
 .team-card .moves { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 0.85rem; }
 
 .callouts { display: grid; gap: 6px; margin-bottom: 12px; }
@@ -78,8 +75,25 @@ textarea.paste {
 .mate-card strong { font-family: var(--font-display); }
 .mate-card header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .mate-card header .muted { font-size: 0.8rem; }
-.mate-card dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 0; font-size: 0.82rem; }
-.mate-card dt { color: var(--muted); }
-.mate-card dd { margin: 0; }
+
+/* ---------- Cards whose rows line up across a row of cards ----------
+ * Each card spans N rows of its grid and adopts them with subgrid, so the same row (Item,
+ * Spread, Checks…) has the same height in every card of a visual row. Without subgrid support
+ * the cards simply size their own rows. */
+.card-row { display: grid; grid-template-columns: var(--label-width) minmax(0, 1fr); gap: 10px; margin: 0; align-items: start; }
+.card-row dt { color: var(--muted); }
+.card-row dd { margin: 0; min-width: 0; }
+.card-row .type-badge { min-width: 0; }
+.team-card { --label-width: 52px; font-size: 0.85rem; }
+.team-card .card-row { font-size: 0.85rem; }
+.mate-card { --label-width: 76px; }
+.mate-card .card-row { font-size: 0.82rem; }
+@supports (grid-template-rows: subgrid) {
+  .team-cards, .mate-cards { grid-auto-rows: auto; }
+  /* header, Item, Ability, Spread, Speed, moves */
+  .team-card { grid-row: span 6; grid-template-rows: subgrid; row-gap: 6px; }
+  /* header, types, fit bar, Paired with, Resists, Checks, Adds */
+  .mate-card { grid-row: span 7; grid-template-rows: subgrid; row-gap: 6px; }
+}
 .severity.fit { width: 100%; }
 .severity.fit div { background: linear-gradient(90deg, color-mix(in srgb, var(--super) 65%, var(--accent-2-bright)), var(--super)); }

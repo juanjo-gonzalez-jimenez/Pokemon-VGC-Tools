@@ -3,7 +3,7 @@ import {estimateDamage, type Combatant} from './damage';
 import {bestOption, duel, expectedThreat} from './exchange';
 import {member, meta, move, species} from './test-fixtures';
 
-const target: Combatant = {name: 'T', types: ['Normal'], ability: '', item: '', stats: {hp: 155, atk: 100, def: 100, spa: 100, spd: 100, spe: 100}};
+const target: Combatant = {name: 'T', species: 'Smeargle', types: ['Normal'], ability: '', item: '', stats: {hp: 155, atk: 100, def: 100, spa: 100, spd: 100, spe: 100}};
 const user: Combatant = {...target, name: 'U'};
 const est = (bp: number, extra = {}) => estimateDamage(user, target, move(`M${bp}`, 'Fighting', {basePower: bp, ...extra}))!;
 
@@ -100,6 +100,15 @@ describe('duel', () => {
       quickhit: move('Quick Hit', 'Fighting', {basePower: 20, priority: 1}),
     };
     expect(duel(me(150), weakQuick, moves).first).toBe(1);
+  });
+  it('blocks priority in Psychic Terrain and against Armor Tail', () => {
+    const quick = move('Quick Strike', 'Fighting', {basePower: 100, priority: 1});
+    const slow = me(50, [quick]);
+    expect(duel(slow, opp(200), movesFor()).first).toBe(1);
+    // In Psychic Terrain the priority move fails, so the slow Pokémon has no attack at all.
+    expect(duel(slow, opp(200), movesFor(), {weather: '', terrain: 'psychic'}).mine).toBeNull();
+    const tail = {...opp(200), forms: [{name: 'Opp', types: ['Normal'], weight: 1, abilities: {'Armor Tail': 1}}]};
+    expect(duel(slow, tail, movesFor()).mine).toBeNull();
   });
   it('decides equal hits by Speed otherwise', () => {
     expect(duel(me(150), opp(50), movesFor()).win).toBe(1);

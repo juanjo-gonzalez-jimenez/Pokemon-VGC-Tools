@@ -5,6 +5,7 @@ import './styles/base.css';
 import './styles/team.css';
 import './styles/dex.css';
 import './styles/matchup.css';
+import './styles/calc.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
