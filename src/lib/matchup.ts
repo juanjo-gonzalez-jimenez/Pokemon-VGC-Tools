@@ -5,9 +5,10 @@
  * common VGC roles on top. Estimates, not exact calculations.
  */
 import type {MetaPokemon, MoveTable} from '../data/types';
-import type {Field} from './damage';
-import {mainAbility} from './combatant';
-import {duel, type Duel} from './exchange';
+import {estimateDamage, hitsToKO, type Field} from './damage';
+import {fromMember, fromMeta, mainAbility} from './combatant';
+import {facing, hitsPartner, isSpread, redirectedBy, redirectType} from './doubles';
+import {duel, type Duel, type DuelOptions} from './exchange';
 import {fieldOf, resolveField, type FieldChoice, type FieldContext} from './field';
 import {toID} from './ids';
 import {withoutMega, type TeamMember} from './paste';
@@ -17,7 +18,12 @@ import {RELIABLE_MOVE_SHARE} from './threats';
 
 const LINEUP_WEIGHTS = {answers: 0.6, leads: 0.4};
 const ANSWER_WEIGHTS = {bestTwo: 0.6, everyone: 0.4};
-const BONUS = {fakeOut: 0.03, intimidate: 0.02, speedControl: 0.03, spread: 0.02, redirection: 0.02};
+// Intimidate's drop is already in each pairing; the bonus is for hitting both foes at once.
+const BONUS = {fakeOut: 0.03, intimidate: 0.01, speedControl: 0.03, spread: 0.04, redirection: 0.02};
+/** Penalty for a lead whose best move hits its partner hard (Earthquake next to a non-immune ally). */
+const FRIENDLY_FIRE_PENALTY = 0.03;
+/** Partner damage (% of HP) from a lead's own spread move that counts as a problem. */
+const FRIENDLY_FIRE_PERCENT = 25;
 const SHARED_WEAKNESS_PENALTY = 0.03;
 const MAX_SHARED_WEAKNESSES = 3;
 export const BRING = 4;
@@ -56,9 +62,10 @@ export function pairScore(
   moves: MoveTable,
   mode: SpeedMode = 'normal',
   ctx?: FieldContext,
+  options?: DuelOptions,
 ): PairScore {
   const field = resolveField(member.ability, mainAbility(opp), ctx);
-  return {...duel(member, opp, moves, field, mode), field};
+  return {...duel(member, opp, moves, field, mode, options), field};
 }
 
 /** "~85%" style label for an estimated percentage. */
@@ -145,12 +152,48 @@ export function suggestBrings(
   const rows = new Map(team.map((m, i) => [m, grid[i]]));
   // Only one Pokémon can Mega Evolve per battle. When a four holds more than one stone, each
   // choice of Mega is scored with the others in base form, and the best choice is kept.
+  const ctx: FieldContext = {choice, theirs: opponents.map(mainAbility), yours: team.map(m => m.ability)};
   const unMega = new Map(team.filter(m => m.isMega).map(m => [m, withoutMega(m)]));
   if (unMega.size > 1) {
-    const ctx: FieldContext = {choice, theirs: opponents.map(mainAbility), yours: team.map(m => m.ability)};
     for (const base of unMega.values()) rows.set(base, opponents.map(o => pairScore(base, o, moves, mode, ctx)));
   }
   const score = (m: TeamMember, j: number) => rows.get(m)![j];
+  // A Lightning Rod / Storm Drain user in the four draws their single-target attacks of that type
+  // away from the other three: those pairings are scored again without them (cached per types).
+  const redirectRows = new Map<TeamMember, Map<string, PairScore[]>>();
+  const redirectTypesFor = (m: TeamMember, four: readonly TeamMember[]) =>
+    [...new Set(four.filter(o => o !== m).map(o => redirectType(o.ability)).filter(Boolean))].sort();
+  const scoreIn = (m: TeamMember, j: number, four: readonly TeamMember[]): PairScore => {
+    const types = redirectTypesFor(m, four);
+    if (!types.length) return score(m, j);
+    const key = types.join(',');
+    const cache = redirectRows.get(m) ?? new Map<string, PairScore[]>();
+    redirectRows.set(m, cache);
+    let row = cache.get(key);
+    if (!row) {
+      row = opponents.map(o => pairScore(m, o, moves, mode, ctx, {redirected: types}));
+      cache.set(key, row);
+    }
+    return row[j];
+  };
+  // Their redirectors: a single-target move of yours of that type may be drawn away.
+  const theirRedirectors = opponents.map(o => ({name: o.name, ability: mainAbility(o), type: redirectType(mainAbility(o))})).filter(r => r.type);
+  // Spread moves: the best one per member and how many of their six it 2HKOs.
+  const spreadCache = new Map<TeamMember, {move: string; count: number} | null>();
+  const spreadOf = (m: TeamMember) => {
+    if (spreadCache.has(m)) return spreadCache.get(m)!;
+    let best: {move: string; count: number} | null = null;
+    for (const move of m.moves.filter(isSpread)) {
+      const count = opponents.filter(o => {
+        const [me, them] = facing(fromMember(m), fromMeta(o));
+        const e = estimateDamage(me, them, move, resolveField(m.ability, mainAbility(o), ctx));
+        return e && hitsToKO(e.percent) <= 2;
+      }).length;
+      if (count && (!best || count > best.count)) best = {move: move.name, count};
+    }
+    spreadCache.set(m, best);
+    return best;
+  };
   const physicalHeavy = opponents.filter(o => isPhysical(o, moves)).length >= opponents.length / 2;
 
   const lineups: Lineup[] = [];
@@ -167,7 +210,7 @@ export function suggestBrings(
       // count as well, so nobody in the back is a liability.
       const answers = mean(
         opponents.map((_, j) => {
-          const totals = four.map(m => score(m, j).total).sort((a, b) => b - a);
+          const totals = four.map(m => scoreIn(m, j, four).total).sort((a, b) => b - a);
           return ANSWER_WEIGHTS.bestTwo * mean(totals.slice(0, 2)) + ANSWER_WEIGHTS.everyone * mean(totals);
         }),
       );
@@ -187,9 +230,14 @@ export function suggestBrings(
         fourBonus += BONUS.redirection;
         fourReasons.push(`Redirection from ${names(roles['Redirection'])}`);
       }
+      for (const r of four.filter(m => redirectType(m.ability))) {
+        const type = redirectType(r.ability);
+        const helped = four.filter(m => m !== r && opponents.some((_, j) => scoreIn(m, j, four).total > score(m, j).total + 1e-9));
+        if (helped.length) fourReasons.push(`${r.label}'s ${r.ability} draws ${type} attacks away from ${names(helped.map(m => m.label))}`);
+      }
       // Same numbers as the score: an opponent that likely OHKOs three or more of the four.
       const shared = opponents
-        .map((o, j) => ({name: o.name, ko: four.filter(m => score(m, j).theirHits <= 1).length}))
+        .map((o, j) => ({name: o.name, ko: four.filter(m => scoreIn(m, j, four).theirHits <= 1).length}))
         .filter(x => x.ko >= 3)
         .slice(0, MAX_SHARED_WEAKNESSES);
       for (const s of shared) warnings.push(`${s.name} can likely OHKO ${s.ko} of these four`);
@@ -224,10 +272,42 @@ export function suggestBrings(
           bonus += BONUS.fakeOut;
           reasons.push(`Fake Out pressure from ${names(fakeOut.map(m => m.label))}`);
         }
-        const spread = leads.filter(m => roles['Spread damage']?.includes(m.label));
-        if (spread.length) {
-          bonus += BONUS.spread;
-          reasons.push(`Spread damage from ${names(spread.map(m => m.label))}`);
+        const leadWarnings: string[] = [];
+        // Spread moves hit both foes: worth more the more of their team they 2HKO.
+        for (const m of leads) {
+          const s = spreadOf(m);
+          if (!s) continue;
+          bonus += (BONUS.spread * s.count) / opponents.length;
+          reasons.push(`${m.label}'s ${s.move} 2HKOs ${s.count} of their ${opponents.length} (hits both foes)`);
+        }
+        // Moves that hit everyone adjacent also hit the partner, when it's the move the lead would click.
+        for (const m of leads) {
+          const partner = leads.find(p => p !== m);
+          if (!partner) continue;
+          const clicked = new Set(opponents.map((_, j) => score(m, j).mine?.move).filter(mv => mv && hitsPartner(mv)));
+          for (const move of clicked) {
+            const e = estimateDamage(fromMember(m), fromMember(partner), move!, resolveField(m.ability, partner.ability, ctx));
+            if (!e) continue;
+            if (e.percent === 0) reasons.push(`${m.label}'s ${move!.name} is safe next to ${partner.label} (immune)`);
+            else if (e.percent >= FRIENDLY_FIRE_PERCENT) {
+              bonus -= FRIENDLY_FIRE_PENALTY;
+              leadWarnings.push(`${m.label}'s ${move!.name} hits partner ${partner.label} for ${approx(e.percent)}`);
+            }
+          }
+        }
+        // Their Lightning Rod / Storm Drain users can absorb the leads' single-target attacks.
+        for (const m of leads) {
+          const absorbed = new Map<string, string>();
+          opponents.forEach((o, j) => {
+            const mine = score(m, j).mine;
+            if (!mine) return;
+            for (const r of theirRedirectors) {
+              if (r.name !== o.name && redirectedBy(mine, r.type) && !absorbed.has(mine.move.name)) {
+                absorbed.set(mine.move.name, `${r.name} (${r.ability}) can absorb ${m.label}'s ${mine.move.name}`);
+              }
+            }
+          });
+          leadWarnings.push(...absorbed.values());
         }
         for (const m of [...leads].reverse()) reasons.unshift(leadReason(m, opponents, j => score(m, j)));
         const total = LINEUP_WEIGHTS.answers * answers + LINEUP_WEIGHTS.leads * leadQuality + bonus - penalty;
@@ -239,7 +319,7 @@ export function suggestBrings(
             mega,
             score: total,
             reasons: [...reasons, ...fourReasons],
-            warnings,
+            warnings: [...leadWarnings, ...warnings],
           };
         }
       }

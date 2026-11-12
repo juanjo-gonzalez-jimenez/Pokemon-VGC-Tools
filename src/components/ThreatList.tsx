@@ -2,6 +2,7 @@ import type {Threat} from '../lib/threats';
 import {pct} from './CoverageSummary';
 import {Panel} from './Panel';
 import {PokemonLink} from './PokemonLink';
+import {Trend} from './Trend';
 
 interface Props {
   threats: Threat[];
@@ -38,7 +39,10 @@ export function ThreatList({
                 <td>
                   <PokemonLink pokemon={t.pokemon} />
                 </td>
-                <td className="num">{pct(t.pokemon.usage)}</td>
+                <td className="num">
+                  {pct(t.pokemon.usage)}
+                  <Trend pokemon={t.pokemon} />
+                </td>
                 <td>
                   <div className="severity" title={`Severity ${pct(t.severity, 0)}`}>
                     <div style={{width: pct(t.severity, 0)}} />

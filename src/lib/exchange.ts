@@ -15,6 +15,7 @@ import {
   type Field,
   type Weather,
 } from './damage';
+import {facing, redirectedBy} from './doubles';
 import {toID} from './ids';
 import type {TeamMember} from './paste';
 import {memberSpeed, speedMatchup, type SpeedMode} from './team';
@@ -152,15 +153,24 @@ export function theirPriorityBrackets(
   return [...out];
 }
 
+export interface DuelOptions {
+  /**
+   * Types their single-target attacks can't bring to bear on you: a partner of yours with
+   * Lightning Rod (Electric) or Storm Drain (Water) draws them in.
+   */
+  redirected?: readonly string[];
+}
+
 export function duel(
   member: TeamMember,
   opp: MetaPokemon,
   moves: MoveTable,
   field: Field = NO_FIELD,
   mode: SpeedMode = 'normal',
+  duelOptions: DuelOptions = {},
 ): Duel {
-  const me = fromMember(member);
-  const them = fromMeta(opp);
+  // Intimidate on either side lowers the other's Attack before anything is computed.
+  const [me, them] = facing(fromMember(member), fromMeta(opp));
   const mine = bestOption(
     member.moves.map(m => {
       const e = estimateDamage(me, them, m, field);
@@ -170,7 +180,9 @@ export function duel(
   const pool = theirMoves(opp, them, moves);
   const options = pool.list.flatMap(([move, share]) => {
     const estimate = estimateDamage(them, me, move, field);
-    return estimate && estimate.percent > 0 && !priorityBlocked(estimate, me, field) ? [{estimate, share}] : [];
+    if (!estimate || estimate.percent <= 0 || priorityBlocked(estimate, me, field)) return [];
+    if (duelOptions.redirected?.some(type => redirectedBy(estimate, type))) return [];
+    return [{estimate, share}];
   });
   const threat = expectedThreat(options);
   const theirs = threat && {...threat, options, assumed: pool.assumed};

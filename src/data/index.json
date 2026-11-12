@@ -7,7 +7,8 @@
       "month": "2026-10",
       "cutoff": 1760,
       "battles": 1649648,
-      "mod": "champions"
+      "mod": "champions",
+      "previousMonth": "2026-09"
     },
     {
       "id": "gen9championsvgc2026regmb",
@@ -15,7 +16,8 @@
       "month": "2026-09",
       "cutoff": 1760,
       "battles": 326464,
-      "mod": "championsregmb"
+      "mod": "championsregmb",
+      "previousMonth": "2026-08"
     }
   ]
 }

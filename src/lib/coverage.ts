@@ -17,6 +17,8 @@ export interface Pokemon {
   name: string;
   /** Fraction of teams this Pokémon appears on (0..1). */
   usage: number;
+  /** Usage in the regulation's previous month (0 = unused then); absent when there's no previous month. */
+  previousUsage?: number;
   forms: Form[];
 }
 

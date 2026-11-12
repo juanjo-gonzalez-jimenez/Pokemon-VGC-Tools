@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {bst, formatSpread, searchRoster, sortRoster} from './dex';
+import {bst, formatSpread, searchRoster, sortRoster, usageTrend} from './dex';
 import {meta} from './test-fixtures';
 
 const withStats = (name: string, usage: number, spe: number, hp = 80) => ({
@@ -55,5 +55,21 @@ describe('dex', () => {
     expect(s.stats.hp).toBe(202);
     expect(s.stats.atk).toBe(163); // (115 + 14 + 20) * 1.1 = 163.9
     expect(s.stats.spa).toBe(90); // (80 + 0 + 20) * 0.9
+  });
+});
+
+describe('usage trends', () => {
+  const p = (name: string, usage: number, previousUsage?: number, source?: 'all') =>
+    ({...meta(name, usage, {}), ...(previousUsage === undefined ? {} : {previousUsage}), ...(source ? {source} : {})});
+  it('measures the change since last month and spots new Pokémon', () => {
+    expect(usageTrend(p('A', 0.3, 0.2))!.change).toBeCloseTo(0.1);
+    expect(usageTrend(p('B', 0.05, 0))!.isNew).toBe(true);
+    expect(usageTrend(p('C', 0.05))).toBeNull();
+    expect(usageTrend(p('D', 0.05, 0.01, 'all'))).toBeNull();
+  });
+  it('sorts by rising or falling usage, leaving out Pokémon without a trend', () => {
+    const list = [p('Up', 0.3, 0.1), p('Down', 0.2, 0.4), p('Flat', 0.1, 0.1), p('None', 0.5)];
+    expect(sortRoster(list, 'rising').map(x => x.name)).toEqual(['Up', 'Flat', 'Down']);
+    expect(sortRoster(list, 'falling').map(x => x.name)).toEqual(['Down', 'Flat', 'Up']);
   });
 });

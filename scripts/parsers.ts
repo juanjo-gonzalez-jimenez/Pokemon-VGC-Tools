@@ -138,3 +138,21 @@ export function championsVgcCutoffs(files: readonly string[]): Map<string, numbe
   }
   return byFormat;
 }
+
+/**
+ * Learnsets from a data mod's learnsets.ts: species id -> move ids it can learn. `inherit`
+ * entries add to the parent mod's list instead of replacing it.
+ */
+export function parseLearnsets(source: string): Map<string, {inherit: boolean; moves: string[]}> {
+  const out = new Map<string, {inherit: boolean; moves: string[]}>();
+  // Each species block starts with one tab of indentation and ends at the next one.
+  const blocks = source.split(/^\t(?=\w+: \{)/m).slice(1);
+  for (const block of blocks) {
+    const id = /^(\w+): \{/.exec(block)?.[1];
+    const learnset = /learnset: \{([\s\S]*?)\n\t\t\}/.exec(block)?.[1];
+    if (!id || learnset === undefined) continue;
+    const moves = [...learnset.matchAll(/^\t{3}(\w+): \[/gm)].map(m => m[1]);
+    out.set(id, {inherit: /^\t\tinherit: true,/m.test(block), moves});
+  }
+  return out;
+}

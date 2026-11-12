@@ -11,6 +11,8 @@ export interface RegulationSummary {
   battles: number;
   /** Showdown data mod the regulation uses, e.g. "champions"; names its file in data/mods/. */
   mod: string;
+  /** The month before `month` with stats at the same cutoff, when there is one (for trends). */
+  previousMonth?: string;
 }
 
 export interface RegulationIndex {
@@ -102,6 +104,8 @@ export interface ModData {
   /** Ids of moves and items that don't exist in this game. */
   unavailableMoves: string[];
   unavailableItems: string[];
+  /** Species id -> move ids it can learn in this game; absent when the mod has no learnsets. */
+  learnsets?: Record<string, string[]>;
 }
 
 export type SpeciesTable = Record<string, SpeciesData>;

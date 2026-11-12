@@ -188,8 +188,8 @@ export function App() {
 
       {page !== 'dex' && page !== 'calc' && (
         <footer className="muted">
-          Built on Smogon usage stats. Damage figures are estimates: no stat boosts, accuracy, crits, screens or
-          partner support.
+          Built on Smogon usage stats. Damage figures are estimates: Intimidate and redirection are included; other
+          stat boosts, accuracy, crits, screens and Helping Hand are not.
         </footer>
       )}
     </main>

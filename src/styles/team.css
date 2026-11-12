@@ -97,3 +97,17 @@ textarea.paste {
 }
 .severity.fit { width: 100%; }
 .severity.fit div { background: linear-gradient(90deg, color-mix(in srgb, var(--super) 65%, var(--accent-2-bright)), var(--super)); }
+
+/* ---------- Saved teams ---------- */
+.team-switcher { display: flex; flex-wrap: wrap; align-items: end; gap: 8px 14px; margin-bottom: 10px; }
+.team-switcher label { display: grid; gap: 2px; }
+.team-switcher select, .team-switcher input { padding: 5px 8px; font-size: 0.9rem; }
+.team-switcher-pick select { min-width: 160px; font-weight: 600; }
+.team-switcher-name input { width: 180px; }
+.team-switcher-actions { display: flex; flex-wrap: wrap; gap: 4px 14px; padding-bottom: 6px; }
+.team-switcher button.link:disabled { color: var(--muted); cursor: default; text-decoration: none; }
+.team-switcher button.link.danger { color: var(--immune); }
+.team-switcher-status { flex-basis: 100%; margin: 0; }
+@media (max-width: 520px) {
+  .team-switcher label, .team-switcher-pick select, .team-switcher-name input { width: 100%; }
+}

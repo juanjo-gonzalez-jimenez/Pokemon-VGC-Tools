@@ -6,6 +6,8 @@ export interface LookupTables {
   species: SpeciesTable;
   moves: MoveTable;
   items: ItemTable;
+  /** Species id -> learnable move ids, when the regulation's game has learnsets. */
+  learnsets?: Record<string, string[]>;
 }
 
 let base: Promise<LookupTables> | null = null;

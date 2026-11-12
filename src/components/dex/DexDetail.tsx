@@ -1,7 +1,7 @@
 import type {ReactNode} from 'react';
 import type {ItemTable, MetaPokemon, MoveTable} from '../../data/types';
 import {abilityEffect} from '../../lib/abilities';
-import {bst, formatSpread} from '../../lib/dex';
+import {bst, formatSpread, usageTrend} from '../../lib/dex';
 import {toID} from '../../lib/ids';
 import {moveType} from '../../lib/moves';
 import {calcStat, NATURES, STAT_LABELS, STATS} from '../../lib/stats';
@@ -11,6 +11,7 @@ import {pct} from '../CoverageSummary';
 import {ItemIcon, PokemonIcon, Sprite} from '../Sprite';
 import {TypeBadge, typingVars} from '../TypeBadge';
 import {ShareList, type ShareRow} from './ShareList';
+import {Trend} from '../Trend';
 
 const TOP_TEAMMATES = 15;
 
@@ -50,6 +51,7 @@ interface Props {
 
 export function DexDetail({pokemon: p, rank, cutoff, roster, moves, items, possibleAbilities, onSelect}: Props) {
   const noData = p.source === 'none';
+  const trend = usageTrend(p);
   const types = p.forms[0]?.types ?? [];
   const ability = mainAbility(p);
   const speed = metaSpeedSummary(p);
@@ -138,6 +140,15 @@ export function DexDetail({pokemon: p, rank, cutoff, roster, moves, items, possi
             <dt>{p.source === 'all' ? 'Usage (all ratings)' : 'Usage'}</dt>
             <dd>{noData ? '—' : pct(p.usage, p.usage < 0.001 ? 3 : 1)}</dd>
           </div>
+          {trend && (
+            <div>
+              <dt>Last month</dt>
+              <dd>
+                {trend.isNew ? 'unused' : pct(trend.previous, trend.previous < 0.001 ? 3 : 1)}
+                <Trend pokemon={p} />
+              </dd>
+            </div>
+          )}
           <div>
             <dt>Rank</dt>
             <dd>{rank ? `#${rank}` : '—'}</dd>

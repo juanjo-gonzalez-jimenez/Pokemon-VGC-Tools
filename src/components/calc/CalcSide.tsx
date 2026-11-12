@@ -1,5 +1,7 @@
 import type {MetaPokemon, SpeciesData} from '../../data/types';
 import type {LookupTables} from '../../data/useLookupTables';
+import {toID} from '../../lib/ids';
+import {canLearn, learnsetOf} from '../../lib/learnsets';
 import {BOOST_STATS, setStats, spProblems, spreadOptions, withSpread, type BoostStat, type CalcSet} from '../../lib/calcset';
 import {NATURES, NEUTRAL_NATURES, STAT_LABELS, STATS} from '../../lib/stats';
 import {pct} from '../CoverageSummary';
@@ -32,8 +34,11 @@ export function CalcSide({side, title, dex, tables, itemNames, moveNames, pokemo
   const spreadKey = `${set.nature}:${STATS.map(s => set.sp[s]).join('/')}`;
   const update = (patch: Partial<CalcSet>) => onChange({...set, ...patch});
   const abilities = [...new Set([...species.abilities, set.ability].filter(Boolean))];
-  // This Pokémon's own common moves first, then every move in the game.
+  // This Pokémon's own common moves first, then every move it can learn in the game.
   const ownMoves = Object.keys(pokemon.moves);
+  const learnset = learnsetOf(tables.learnsets, pokemon.id, pokemon.baseSprite);
+  const learnable = moveNames.filter(n => canLearn(learnset, n));
+  const unlearnable = set.moves.filter(m => m && tables.moves[toID(m)] && !canLearn(learnset, m));
   const movesId = `calc-moves-${side}`;
   const itemsId = `calc-items-${side}`;
 
@@ -166,10 +171,15 @@ export function CalcSide({side, title, dex, tables, itemNames, moveNames, pokemo
           />
         ))}
         <datalist id={movesId}>
-          {[...ownMoves, ...moveNames.filter(n => !ownMoves.includes(n))].map(n => (
+          {[...ownMoves, ...learnable.filter(n => !ownMoves.includes(n))].map(n => (
             <option key={n} value={n} />
           ))}
         </datalist>
+        {unlearnable.length > 0 && (
+          <p className="calc-warning small">
+            {species.name} can’t learn {unlearnable.join(', ')}.
+          </p>
+        )}
       </div>
 
       <div className="calc-toggles">

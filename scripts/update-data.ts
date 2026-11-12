@@ -22,6 +22,7 @@ import {
   parseItemNonstandard,
   parseItems,
   parseModInherit,
+  parseLearnsets,
   parseModOverrides,
 } from './parsers';
 import {toID} from '../src/lib/ids';
@@ -82,6 +83,8 @@ interface DexEntry {
   baseSpecies?: string;
   tags?: string[];
   battleOnly?: string | string[];
+  /** The form whose learnset this one uses. */
+  changesFrom?: string;
 }
 
 interface DexMove {
@@ -142,8 +145,15 @@ async function listDir(url: string): Promise<string[]> {
   return [...html.matchAll(/href="([^"?/][^"]*)"/g)].map(m => m[1]);
 }
 
+interface FoundFormat {
+  month: string;
+  cutoff: number;
+  /** The newest earlier month with stats at the same cutoff (for usage trends). */
+  previousMonth?: string;
+}
+
 /** Latest month and best cutoff available for each VGC format in the last few months. */
-async function findFormats(): Promise<Map<string, {month: string; cutoff: number}>> {
+async function findFormats(): Promise<Map<string, FoundFormat>> {
   const months = (await listDir(STATS_URL))
     .filter(h => /^\d{4}-\d{2}\/$/.test(h))
     .map(h => h.slice(0, -1))
@@ -151,12 +161,17 @@ async function findFormats(): Promise<Map<string, {month: string; cutoff: number
     .reverse()
     .slice(0, MONTHS_TO_SCAN);
 
-  const found = new Map<string, {month: string; cutoff: number}>();
+  const found = new Map<string, FoundFormat>();
   for (const month of months) {
     const byFormat = championsVgcCutoffs(await listDir(`${STATS_URL}${month}/chaos/`));
     for (const [format, cutoffs] of byFormat) {
+      const known = found.get(format);
+      if (known) {
+        if (!known.previousMonth && cutoffs.includes(known.cutoff)) known.previousMonth = month;
+        continue;
+      }
       const cutoff = CUTOFFS.find(c => cutoffs.includes(c));
-      if (!found.has(format) && cutoff !== undefined) found.set(format, {month, cutoff});
+      if (cutoff !== undefined) found.set(format, {month, cutoff});
     }
   }
   return found;
@@ -427,7 +442,20 @@ async function buildModData(
     }
   }
 
+  // Learnsets: each mod in the chain replaces a species' list, or adds to it with `inherit`.
+  const learnsets = new Map<string, Set<string>>();
+  for (const link of await modChain(mod)) {
+    for (const [id, entry] of parseLearnsets((await getOptionalText(modFileUrl(link, 'learnsets'))) ?? '')) {
+      const learned = entry.inherit ? (learnsets.get(id) ?? new Set<string>()) : new Set<string>();
+      for (const m of entry.moves) learned.add(m);
+      learnsets.set(id, learned);
+    }
+  }
+
   const data: ModData = {moves: {}, unavailableMoves: [], unavailableItems: []};
+  if (learnsets.size) {
+    data.learnsets = Object.fromEntries([...learnsets].sort(([a], [b]) => a.localeCompare(b)).map(([id, s]) => [id, [...s].sort()]));
+  }
   for (const [id, state] of moveState) {
     if (state.nonstandard) data.unavailableMoves.push(id);
     const change: {type?: string; basePower?: number} = {};
@@ -516,9 +544,15 @@ async function main() {
   ];
 
   const regulations: RegulationIndex['regulations'] = [];
-  for (const [id, {month, cutoff}] of formats) {
+  for (const [id, {month, cutoff, previousMonth}] of formats) {
     const chaos = (await (await get(`${STATS_URL}${month}/chaos/${id}-${cutoff}.json`)).json()) as ChaosFile;
     const {roster, missing} = buildRoster(chaos, dex, names);
+    // Last month's usage at the same cutoff, for rising / falling trends.
+    const previous = previousMonth
+      ? byId((await (await get(`${STATS_URL}${previousMonth}/chaos/${id}-${cutoff}.json`)).json()) as ChaosFile)
+      : null;
+    const withTrend = (p: MetaPokemon): MetaPokemon =>
+      previous && !p.source ? {...p, previousUsage: Number((previous.get(p.id)?.usage ?? 0).toFixed(5))} : p;
     check(modOf.has(id), `format ${id} not found in Showdown's config/formats.ts`);
     const mod = modOf.get(id)!;
     const data: RegulationData = {
@@ -528,12 +562,13 @@ async function main() {
       cutoff,
       battles: chaos.info['number of battles'],
       mod,
-      pokemon: roster,
+      ...(previousMonth ? {previousMonth} : {}),
+      pokemon: roster.map(withTrend),
     };
     // Searcher list: every legal Pokémon, with all-ratings stats for ones too rare at the cutoff.
     const allChaos =
       cutoff === 0 ? null : ((await (await get(`${STATS_URL}${month}/chaos/${id}-0.json`)).json()) as ChaosFile);
-    const dexList = buildDex(await legalFor(mod), chaos, allChaos, dex, names);
+    const dexList = buildDex(await legalFor(mod), chaos, allChaos, dex, names).map(withTrend);
 
     const rosterPath = join(regDir, `${id}.json`);
     const dexPath = join(regDir, `${id}-dex.json`);
@@ -557,14 +592,38 @@ async function main() {
     ];
     check(usedButGone.length === 0, `${data.name}: used but flagged unavailable: ${usedButGone.slice(0, 8).join(', ')}`);
     check(game.unavailableMoves.length < Object.keys(moveTable).length * 0.8, `${mod}: almost every move unavailable`);
+    // Learnsets: forms without their own (Megas, battle forms) use the form they change from
+    // (Floette-Mega -> Floette-Eternal).
+    if (game.learnsets) {
+      for (const p of dexList) {
+        const entry = dex[p.id];
+        const battleOnly = typeof entry?.battleOnly === 'string' ? entry.battleOnly : undefined;
+        const from = entry?.changesFrom ?? battleOnly ?? entry?.baseSpecies;
+        if (!game.learnsets[p.id] && from && game.learnsets[toID(from)] && toID(from) !== p.baseSprite) {
+          game.learnsets[p.id] = game.learnsets[toID(from)];
+        }
+      }
+    }
+    // Learnsets: what players actually run must be learnable, or the parsing is wrong.
+    if (game.learnsets) {
+      const learnable = (p: MetaPokemon, move: string) => {
+        const list = game.learnsets![p.id] ?? (p.baseSprite ? game.learnsets![p.baseSprite] : undefined);
+        return !list || list.includes(toID(move));
+      };
+      const unlearnable = roster.flatMap(p =>
+        Object.keys(p.moves).filter(m => p.moves[m] >= 0.05 && !learnable(p, m)).map(m => `${p.name}: ${m}`),
+      );
+      check(unlearnable.length <= 3, `${data.name}: common moves not in learnsets: ${unlearnable.slice(0, 8).join(', ')}`);
+      check(Object.keys(game.learnsets).length >= roster.length * 0.5, `${mod}: only ${Object.keys(game.learnsets).length} learnsets`);
+    }
 
     outputs.set(rosterPath, JSON.stringify(data));
     outputs.set(dexPath, JSON.stringify(dexList));
     outputs.set(join(modDir, `${mod}.json`), JSON.stringify(game));
-    regulations.push({id, name: data.name, month, cutoff, battles: data.battles, mod});
+    regulations.push({id, name: data.name, month, cutoff, battles: data.battles, mod, ...(previousMonth ? {previousMonth} : {})});
     const count = (s: MetaPokemon['source']) => dexList.filter(p => p.source === s).length;
     summary.push(
-      `${data.name}: ${month} @${cutoff}, ${data.battles} battles, ${roster.length} Pokémon` +
+      `${data.name}: ${month} @${cutoff}${previousMonth ? ` (trend vs ${previousMonth})` : ''}, ${data.battles} battles, ${roster.length} Pokémon` +
         `; searcher: ${dexList.length} legal (${count('all')} from all ratings, ${count('none')} unused)` +
         `; ${mod}: ${Object.keys(game.moves).length} changed / ${game.unavailableMoves.length} removed moves, ` +
         `${game.unavailableItems.length} removed items` +

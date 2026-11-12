@@ -62,3 +62,27 @@
 .field-select { display: inline-flex; align-items: center; gap: 8px; }
 .field-select select { font-size: 0.88rem; padding: 5px 8px; }
 .field-note { margin: 0; flex-basis: 100%; }
+
+/* ---------- Lead vs lead ---------- */
+.lb-picks { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.lb-picks select { font-weight: 600; padding: 4px 8px; }
+.lb-notes { margin: 10px 0 4px; padding-left: 18px; display: grid; gap: 2px; }
+.lb-title { font-family: var(--font-display); font-size: 0.95rem; margin: 14px 0 6px; }
+.lead-board { width: 100%; }
+.lead-board th, .lead-board td { text-align: left; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lead-board tbody th { font-weight: 700; }
+.lead-board tr.lb-break > * { border-top: 1px solid var(--border); }
+.lb-move .tag { margin-left: 6px; }
+.lb-hit span { display: block; line-height: 1.25; }
+.lb-ko-label { font-size: 0.75rem; color: var(--muted); }
+.lb-ko { background: color-mix(in srgb, var(--super) 14%, transparent); }
+.lb-none { color: var(--muted); }
+.lb-redirect { color: var(--resisted); font-weight: 600; }
+@media (max-width: 640px) {
+  .lead-board { font-size: 0.78rem; }
+  .lead-board th, .lead-board td { white-space: normal; padding-left: 4px; padding-right: 4px; }
+  .lead-board tbody th { overflow-wrap: normal; }
+  .lb-move .tag, .lb-move .small { display: block; margin: 2px 0 0; width: fit-content; white-space: nowrap; }
+  .lb-ko-label { font-size: 0.68rem; }
+}
+.team-select { font-size: 0.85rem; padding: 3px 6px; font-weight: 600; margin-right: 10px; }

@@ -44,4 +44,19 @@ describe('checkLegality', () => {
     const b = {...species('Absol', ['Dark'])};
     expect(checkLegality([member(a, '', {item: 'Gengarite'}), member(b, '', {item: 'Absolite'})])).toEqual([]);
   });
+  it('flags moves the Pokémon cannot learn, using the base form for Megas', () => {
+    const learnsets = {garchomp: ['earthquake', 'protect'], charizard: ['heatwave']};
+    const megaY = {...species('Charizard-Mega-Y', ['Fire', 'Flying']), baseSpecies: 'Charizard'};
+    const zard = species('Charizard', ['Fire', 'Flying']);
+    const issues = checkLegality(
+      [
+        member(chomp, '', {moves: [move('Earthquake', 'Ground'), move('Surf', 'Water')]}),
+        member(megaY, '', {baseSpecies: zard, isMega: true, moves: [move('Heat Wave', 'Fire')]}),
+        member(species('Unknownmon', ['Normal']), '', {moves: [move('Surf', 'Water')]}),
+      ],
+      null,
+      learnsets,
+    );
+    expect(issues).toEqual(["Garchomp can't learn Surf."]);
+  });
 });

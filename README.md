@@ -28,7 +28,8 @@ tab to see:
 - Team roles checklist: Fake Out, Intimidate, speed control, redirection, Protect (3+ users),
   spread damage, priority attacks
 - Legality checks: stat points (66 total, 32 per stat), Item Clause, Species Clause (Megas and
-  forms count as their base species), impossible abilities, more than 4 moves
+  forms count as their base species), impossible abilities, moves the Pokémon can't learn in the
+  regulation (Showdown's Champions learnsets), more than 4 moves
 - Threat list: the top-usage Pokémon your team struggles with most, from estimated damage: how
   many of your Pokémon it likely KOs in two hits or fewer, how few of yours beat it one-on-one,
   and how many it acts before (priority, then Speed); weighted by usage
@@ -38,7 +39,11 @@ tab to see:
   which missing roles their usual set fills
 
 Champions Speed formula: `trunc((base + SP + 20) × nature)`; HP is `base + SP + 75`.
-The team is saved in the browser's local storage.
+
+**Saved teams**: keep several named teams in the browser's local storage. You can switch between
+them (on the Team tab, or from the Matchup tab), duplicate or delete them, and copy a team as
+Showdown text. **Copy share link** gives a `#/team/import/…` link: opening it adds that team, or
+switches to it if it's already saved.
 
 ## Matchup (lead / bring-4 suggester)
 
@@ -64,8 +69,24 @@ all 16 rolls (`src/lib/damage.ts` maps our data onto it). The Matchup tab and th
 threats and teammate suggestions score each pairing by who knocks the other out in fewer hits,
 then who acts first (priority, then Speed). They still show `~` because the opponent is an
 average of its usage (mean stats over all spreads, moves weighted by how many sets run them).
-Not part of those scores: stat boosts (Swords Dance, Intimidate drops), accuracy, crits, burns,
-screens, partner support and Unburden; the Calc tab handles most of them.
+Doubles effects in those scores:
+- Intimidate lowers the other side's Attack in every pairing. Clear Body, Inner Focus, Defiant,
+  Competitive, Guard Dog, Mirror Armor and Clear Amulet are handled.
+- Line-ups credit spread moves for how many of their six they 2HKO. They warn when a lead's
+  Earthquake-style move hits its partner hard, and note when the partner is immune.
+- A Lightning Rod / Storm Drain user in your four draws their single-target Electric or Water
+  attacks away from its partners. Their redirectors raise a warning instead, since they may not be
+  brought.
+
+Not part of those scores: other stat boosts (Swords Dance), accuracy, crits, burns, screens,
+Helping Hand and Unburden; the Calc tab handles most of them.
+
+The Matchup tab's **Lead vs lead** board takes two of your leads and two of theirs. It shows
+every attack into each foe, with:
+- spread moves on both foes and on the partner;
+- Intimidate from everyone on the field;
+- redirection between the two targets;
+- the speed order.
 
 ## Damage calculator
 
@@ -76,7 +97,16 @@ stat boosts (−6 to +6, plus an "Intimidated" shortcut), burn, critical hits an
 field covers weather, all four terrains, Reflect, Light Screen, Aurora Veil, Helping Hand,
 Friend Guard and single-target spread moves. Each move shows its damage range, the KO chance
 (from current HP, multi-hit and recovery aware), the 16 rolls and Showdown's description line.
-The setup is remembered per regulation. Learnsets aren't checked.
+The setup is remembered per regulation. The move list only offers moves the Pokémon can learn
+in the regulation (and flags any typed move it can't).
+
+The **Spread optimizer** under the results finds the fewest stat points for one side to:
+- survive chosen attacks from the other side (every damage roll, from full HP);
+- outspeed the other side or a given Speed (boosts and Choice Scarf included).
+
+It uses everything set in the calculator (items, abilities, boosts, field, screens…). Stats that
+aren't goals keep their points, and it can optionally try other natures that don't lower a goal
+stat or an attacking stat the set uses. **Apply** writes the spread back to that side.
 
 ## Pokémon searcher
 
@@ -84,8 +114,15 @@ The searcher lists **every legal Pokémon** in the regulation (from Showdown's C
 `formats-data.ts`, minus Flat Rules bans), not just the meta. Pokémon too rare at the rating
 cutoff use all-ratings stats (labelled "all"); legal Pokémon nobody used show base data only.
 
-The **Pokémon** tab uses the full screen: a sidebar with the regulation, a name search, sorting
-(usage, name, base stat total or any single stat) and the list of Pokémon.
+The **Pokémon** tab uses the full screen. Its sidebar has:
+- the regulation and a name search;
+- sorting by usage, rising or falling usage since last month, name, base stat total or any single
+  stat;
+- the list of Pokémon.
+
+**Usage trends**: next to each usage figure (searcher, threat list, Coverage table), ▲/▼ shows the
+change in percentage points since the previous month of the same regulation at the same rating
+cutoff, or "new" for a Pokémon unused last month.
 The selected Pokémon shows base stats, moves, items, abilities, natures, the most common
 stat-point spreads (with resulting Lv. 50 stats) and common teammates (click one to open it).
 Links like `#/dex/garchomp` open a Pokémon directly.
@@ -143,6 +180,4 @@ species, moves, items or legal Pokémon, or a list that shrank by more than 30%)
 
 ### Not modelled (yet)
 
-Lightning Rod / Storm Drain redirection in doubles, learnsets (whether a Pokémon can learn a
-move), and in the Matchup / Team scores the effects listed under "Damage in the Matchup and Team
-tabs".
+In the Matchup / Team scores, the effects listed under "Damage in the Matchup and Team tabs".

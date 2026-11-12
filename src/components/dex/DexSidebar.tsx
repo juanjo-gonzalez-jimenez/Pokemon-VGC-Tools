@@ -4,9 +4,12 @@ import {bst, type SortKey} from '../../lib/dex';
 import {TYPES, type TypeName} from '../../lib/typechart';
 import {pct} from '../CoverageSummary';
 import {PokemonIcon} from '../Sprite';
+import {Trend} from '../Trend';
 
 const SORT_OPTIONS: Array<[SortKey, string]> = [
   ['usage', 'Usage'],
+  ['rising', 'Rising since last month'],
+  ['falling', 'Falling since last month'],
   ['name', 'Name'],
   ['bst', 'Base stat total'],
   ['bstNoMega', 'Base stat total (no Megas)'],
@@ -125,6 +128,7 @@ export function DexSidebar(props: Props) {
               <span className="dex-row-usage" title={p.source === 'all' ? 'Usage at all ratings' : undefined}>
                 {p.source === 'none' ? '—' : pct(p.usage, p.usage < 0.001 ? 3 : 1)}
                 {p.source === 'all' && <span className="tag">all</span>}
+                <Trend pokemon={p} />
               </span>
               <span className="dex-row-bst muted">BST {bst(p.baseStats)}</span>
             </button>

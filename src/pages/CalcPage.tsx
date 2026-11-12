@@ -1,5 +1,6 @@
 import {useEffect, useMemo, useState} from 'react';
 import {CalcFieldPanel} from '../components/calc/CalcFieldPanel';
+import {CalcOptimizer} from '../components/calc/CalcOptimizer';
 import {CalcResults} from '../components/calc/CalcResults';
 import {CalcSide} from '../components/calc/CalcSide';
 import type {MetaPokemon} from '../data/types';
@@ -106,9 +107,10 @@ export function CalcPage({regId, mod}: Props) {
           <CalcResults title={`${b.species.name} → ${a.species.name}`} results={results.ba} />
         </div>
       )}
+      <CalcOptimizer a={a} b={b} moves={tables.moves} state={state} onApply={(side, set) => setSide(side)(set)} />
       <p className="muted small calc-credit">
         Calculated with Smogon’s damage calculator (@smogon/calc) in its Pokémon Champions mode: exact rolls, Showdown
-        rounding. Learnsets aren’t checked, so any move can be entered.
+        rounding. The move list only offers moves the Pokémon can learn in this regulation.
       </p>
     </div>
   );

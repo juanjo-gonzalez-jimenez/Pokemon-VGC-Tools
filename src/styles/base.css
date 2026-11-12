@@ -361,3 +361,14 @@ td.mult.bucket-immune { color: var(--immune); }
 /* ---------- Page width: the header uses the full 1480 px; most tabs keep a narrower column ---------- */
 main.full { max-width: 1480px; }
 main.full.narrow > :not(header) { width: 100%; max-width: 1020px; justify-self: center; }
+
+/* ---------- Usage trend (change since last month, in percentage points) ---------- */
+.trend { font-size: 0.72rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; margin-left: 6px; }
+.trend-up { color: var(--super); }
+.trend-down { color: var(--immune); }
+.trend-flat { color: var(--muted); }
+
+/* ---------- Main action button ---------- */
+button.primary { background: var(--accent); color: var(--panel); border: 0; border-radius: 8px; padding: 7px 14px; font-weight: 600; }
+button.primary:hover:not(:disabled) { filter: brightness(1.08); }
+button.primary:disabled { opacity: 0.45; }

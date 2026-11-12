@@ -19,6 +19,7 @@ import {oneOf} from '../lib/storage';
 import {defensiveChart, SPEED_MODE_IDS, teamAttackTypes, teamSpeeds, type SpeedMode} from '../lib/team';
 import {suggestTeammates} from '../lib/teammates';
 import {threatList} from '../lib/threats';
+import {TeamSwitcher} from '../components/TeamSwitcher';
 
 const EXAMPLE_TEAM = `Sneasler @ White Herb
 Ability: Unburden
@@ -95,7 +96,7 @@ export function TeamPage({roster, weighted, mod}: Props) {
   const defense = useMemo(() => defensiveChart(team), [team]);
   const attackTypes = useMemo(() => teamAttackTypes(team), [team]);
   const speeds = useMemo(() => teamSpeeds(team, roster, weighted, speedMode), [team, roster, weighted, speedMode]);
-  const legality = useMemo(() => checkLegality(team, tables?.items), [team, tables]);
+  const legality = useMemo(() => checkLegality(team, tables?.items, tables?.learnsets), [team, tables]);
   const roles = useMemo(() => teamRoles(team), [team]);
   const threats = useMemo(
     () => (tables ? threatList(team, roster, tables.moves, speedMode) : []),
@@ -124,6 +125,7 @@ export function TeamPage({roster, weighted, mod}: Props) {
           </>
         }
       >
+        <TeamSwitcher />
         <textarea
           className="paste"
           value={text}

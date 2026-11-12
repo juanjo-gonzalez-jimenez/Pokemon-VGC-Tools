@@ -16,5 +16,5 @@ export function applyMod<T extends {moves: MoveTable; items: ItemTable}>(tables:
   for (const [id, item] of Object.entries(tables.items)) {
     items[id] = goneItems.has(id) ? {...item, unavailable: true} : item;
   }
-  return {...tables, moves, items};
+  return {...tables, moves, items, ...(mod.learnsets ? {learnsets: mod.learnsets} : {})};
 }

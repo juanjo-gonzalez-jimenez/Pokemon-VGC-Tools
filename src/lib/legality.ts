@@ -1,5 +1,6 @@
 import type {ItemTable} from '../data/types';
 import {toID} from './ids';
+import {canLearn, learnsetOf, type Learnsets} from './learnsets';
 import type {TeamMember} from './paste';
 import {STAT_LABELS, STATS} from './stats';
 
@@ -12,7 +13,7 @@ export const MAX_MOVES = 4;
  * Rule problems a Champions VGC team would be rejected for. Moves and items are checked against
  * the regulation's game when the tables come from applyMod() (which sets `unavailable`).
  */
-export function checkLegality(team: readonly TeamMember[], items?: ItemTable | null): string[] {
+export function checkLegality(team: readonly TeamMember[], items?: ItemTable | null, learnsets?: Learnsets): string[] {
   const issues: string[] = [];
 
   for (const m of team) {
@@ -24,8 +25,11 @@ export function checkLegality(team: readonly TeamMember[], items?: ItemTable | n
       }
     }
     if (m.moveLines > MAX_MOVES) issues.push(`${m.label} has ${m.moveLines} moves (max ${MAX_MOVES}).`);
+    // A Mega uses its base form's learnset; forms with their own learnset (Rotom-Wash) use theirs.
+    const learnset = learnsetOf(learnsets, m.species.name, m.baseSpecies.name, m.baseSpecies.baseSpecies);
     for (const move of m.moves) {
       if (move.unavailable) issues.push(`${m.label}: ${move.name} isn't available in this regulation.`);
+      else if (!canLearn(learnset, move.name)) issues.push(`${m.baseSpecies.name} can't learn ${move.name}.`);
     }
     if (m.item && items?.[toID(m.item)]?.unavailable) {
       issues.push(`${m.label}: ${m.item} isn't available in this regulation.`);

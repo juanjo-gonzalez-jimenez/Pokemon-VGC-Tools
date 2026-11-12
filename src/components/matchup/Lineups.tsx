@@ -57,8 +57,9 @@ export function Lineups({lineups, iconOf, note}: Props) {
         ))}
       </ol>
       <p className="muted small">
-        Built from estimated damage (who KOs whom first, priority included) plus roles (Fake Out, Intimidate, speed
-        control, spread moves). Estimates ignore stat boosts, crits and partner support, so treat this as a starting
+        Built from estimated damage (who KOs whom first, priority and Intimidate included) plus doubles effects:
+        spread moves on both foes, spread moves hitting a partner, Lightning Rod / Storm Drain redirection, Fake Out
+        and speed control. Other stat boosts, crits and partner support are ignored, so treat this as a starting
         point, not the answer.
       </p>
     </Panel>

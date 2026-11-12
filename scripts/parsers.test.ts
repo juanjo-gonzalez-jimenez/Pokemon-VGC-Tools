@@ -8,6 +8,7 @@ import {
   parseItemNonstandard,
   parseItems,
   parseModInherit,
+  parseLearnsets,
   parseModOverrides,
 } from './parsers';
 
@@ -181,5 +182,28 @@ describe('championsVgcCutoffs', () => {
       'gen9vgc2024regg-1760.json',
     ]);
     expect([...map]).toEqual([['gen9championsvgc2026regmc', [0, 1760]]]);
+  });
+});
+
+describe('parseLearnsets', () => {
+  it('reads each species and its moves, noting inherit entries', () => {
+    const src = `export const Learnsets: import('../../../sim/dex-species').ModdedLearnsetDataTable = {
+\tvenusaur: {
+\t\tlearnset: {
+\t\t\tacidspray: ["9M"],
+\t\t\tgigadrain: ["9M"],
+\t\t},
+\t},
+\tfloetteeternal: {
+\t\tinherit: true,
+\t\tlearnset: {
+\t\t\tmoonblast: ["9M"],
+\t\t},
+\t},
+};
+`;
+    const l = parseLearnsets(src);
+    expect(l.get('venusaur')).toEqual({inherit: false, moves: ['acidspray', 'gigadrain']});
+    expect(l.get('floetteeternal')).toEqual({inherit: true, moves: ['moonblast']});
   });
 });

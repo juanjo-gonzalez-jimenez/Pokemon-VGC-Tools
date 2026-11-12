@@ -97,6 +97,47 @@ describe('suggestBrings', () => {
   });
 });
 
+describe('suggestBrings in doubles', () => {
+  const quake = move('Earthquake', 'Ground', {basePower: 100, target: 'allAdjacent'});
+  const thunderbolt = move('Thunderbolt', 'Electric', {category: 'Special', basePower: 90});
+  const table: MoveTable = {...moves, thunderbolt};
+  const quaker = member(species('Quaker', ['Ground'], 90), '', {moves: [quake]});
+  const opponents = ['A', 'B'].map(n => fireOpp(n));
+
+  it('warns when a lead\'s spread move hits its partner hard', () => {
+    const buddy = attacker('Buddy', ['Fire'], 'Water', 80);
+    const [only] = suggestBrings([quaker, buddy], opponents, table);
+    expect(only.warnings.some(w => w.startsWith("Quaker's Earthquake hits partner Buddy"))).toBe(true);
+  });
+  it('notes a partner immune to it, and credits the spread move', () => {
+    const flyer = attacker('Flyer', ['Flying'], 'Water', 80);
+    const [only] = suggestBrings([quaker, flyer], opponents, table);
+    expect(only.reasons).toContain("Quaker's Earthquake is safe next to Flyer (immune)");
+    expect(only.reasons.some(r => r.startsWith("Quaker's Earthquake 2HKOs"))).toBe(true);
+    expect(only.warnings.join(' ')).not.toMatch(/hits partner/);
+  });
+  it('scores your Lightning Rod user as drawing Electric attacks away from its partners', () => {
+    const zappers = ['Z1', 'Z2'].map(n =>
+      meta(n, 0.2, {'100': 1}, {forms: form(n, ['Electric']), moves: {Thunderbolt: 1}, stats: {hp: 155, atk: 100, def: 100, spa: 180, spd: 100, spe: 100}}),
+    );
+    const rod = attacker('Rod', ['Normal'], 'Normal', 80);
+    const water = attacker('Wet', ['Water'], 'Normal', 80);
+    const [plain] = suggestBrings([{...rod, ability: 'Static'}, water], zappers, table);
+    const [withRod] = suggestBrings([{...rod, ability: 'Lightning Rod'}, water], zappers, table);
+    expect(withRod.reasons).toContain("Rod's Lightning Rod draws Electric attacks away from Wet");
+    expect(withRod.score).toBeGreaterThan(plain.score);
+  });
+  it('warns that their Lightning Rod user can absorb a single-target Electric attack', () => {
+    const theirs = [
+      meta('Bird', 0.2, {'100': 1}, {forms: form('Bird', ['Water', 'Flying']), moves: {Flamethrower: 1}}),
+      meta('Rodder', 0.2, {'100': 1}, {forms: [{name: 'Rodder', types: ['Normal'], weight: 1, abilities: {'Lightning Rod': 1}}], moves: {Flamethrower: 1}}),
+    ];
+    const zapper = member(species('Zapper', ['Electric'], 90), '', {moves: [thunderbolt]});
+    const [only] = suggestBrings([zapper], theirs, table);
+    expect(only.warnings).toContain("Rodder (Lightning Rod) can absorb Zapper's Thunderbolt");
+  });
+});
+
 describe('previewForms', () => {
   const dex = [
     meta('Charizard', 0.001, {}, {forms: form('Charizard', ['Fire', 'Flying'])}),

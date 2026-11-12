@@ -4,6 +4,7 @@ import {pct} from './CoverageSummary';
 import {TypeBadge} from './TypeBadge';
 import {Panel} from './Panel';
 import {PokemonLink} from './PokemonLink';
+import {Trend} from './Trend';
 
 const multLabel = (m: number) => `${Number(m.toFixed(3))}×`;
 
@@ -55,7 +56,10 @@ export function PokemonTable({results, title = 'Roster', defaultWallsOnly = fals
                       <TypeBadge key={t} type={t} />
                     ))}
                   </td>
-                  <td className="num">{pct(r.pokemon.usage)}</td>
+                  <td className="num">
+                    {pct(r.pokemon.usage)}
+                    <Trend pokemon={r.pokemon} />
+                  </td>
                   <td className={`num mult bucket-${bucketOf(main.mult)}`}>{multLabel(main.mult)}</td>
                   <td className="types">
                     {main.bestTypes.map(t => (
