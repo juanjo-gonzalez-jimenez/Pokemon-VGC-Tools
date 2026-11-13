@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import type {MoveTable} from '../data/types';
-import {estimateDamage, type Combatant} from './damage';
-import {facing, intimidate, leadBoard} from './doubles';
+import type {Combatant} from './damage';
+import {facing, intimidate} from './doubles';
 import {duel} from './exchange';
 import {member, meta, move, species} from './test-fixtures';
 
@@ -49,64 +49,5 @@ describe('duel with Intimidate', () => {
     const intim = {...plain, ability: 'Intimidate'};
     const hit = (m: typeof plain) => duel(m, opp, moves).theirs!.percent;
     expect(hit(intim) / hit(plain)).toBeCloseTo(2 / 3, 1);
-  });
-});
-
-describe('leadBoard', () => {
-  const moves: MoveTable = {
-    discharge: move('Discharge', 'Electric', {category: 'Special', basePower: 80, target: 'allAdjacent'}),
-    thunderbolt: move('Thunderbolt', 'Electric', {category: 'Special', basePower: 90}),
-    flamethrower: move('Flamethrower', 'Fire', {category: 'Special', basePower: 90}),
-  };
-  const opp = (name: string, types: string[], ability: string, moveShares: Record<string, number>) =>
-    meta(name, 0.2, {100: 1}, {forms: [{name, types, weight: 1, abilities: {[ability]: 1}}], moves: moveShares, stats: STATS});
-  const rotom = member(species('Rotom-Wash', ['Electric', 'Water'], 86, ['Levitate']), 'Levitate', {
-    moves: [moves.discharge, moves.thunderbolt],
-  });
-  const garchomp = member(species('Garchomp', ['Dragon', 'Ground'], 102, ['Rough Skin']), 'Rough Skin', {moves: [moves.flamethrower]});
-  const raichu = opp('Raichu', ['Electric'], 'Lightning Rod', {Thunderbolt: 1});
-  const pelipper = opp('Pelipper', ['Water', 'Flying'], 'Drizzle', {Flamethrower: 0.5});
-
-  const board = leadBoard([rotom, garchomp], [pelipper, raichu], moves);
-  const row = (name: string) => board.mine.find(r => r.move.name === name)!;
-
-  it('picks up the field from the abilities on it', () => {
-    expect(board.field.weather).toBe('rain');
-  });
-  it('shows spread moves on both foes and on the partner', () => {
-    const d = row('Discharge');
-    expect(d.spread).toBe(true);
-    expect(d.foes[0].estimate!.percent).toBeGreaterThan(0);
-    // Raichu's Lightning Rod makes it immune; Garchomp is a Ground type.
-    expect(d.foes[1].estimate!.percent).toBe(0);
-    expect(d.partner!.estimate!.percent).toBe(0);
-  });
-  it('redirects single-target Electric moves into the Lightning Rod partner', () => {
-    const t = row('Thunderbolt');
-    expect(t.foes[0].redirectedTo).toBe('Raichu');
-    expect(t.foes[0].estimate).toBeNull();
-  });
-  it('lists their common moves with the share of sets running them', () => {
-    expect(board.against.map(r => [r.attacker, r.move.name, r.share])).toEqual([
-      ['Pelipper', 'Flamethrower', 0.5],
-      ['Raichu', 'Thunderbolt', 1],
-    ]);
-  });
-  it('notes Intimidate from the leads', () => {
-    const lead = leadBoard([{...garchomp, ability: 'Intimidate'}, rotom], [pelipper, raichu], moves);
-    expect(lead.notes).toEqual(["Your Garchomp's Intimidate: their Pelipper −1 Atk", "Your Garchomp's Intimidate: their Raichu −1 Atk"]);
-    expect(lead.theirs[0].boosts).toEqual({atk: -1});
-  });
-  it('lets only the first of two Mega Stone holders Mega Evolve', () => {
-    const base = species('Charizard', ['Fire', 'Flying']);
-    const mega = species('Charizard-Mega-Y', ['Fire', 'Flying']);
-    const zard = member(mega, 'Drought', {isMega: true, baseSpecies: base, item: 'Charizardite Y'});
-    const lead = leadBoard([rotom, zard].map((m, i) => (i === 0 ? {...m, isMega: true} : m)) as [typeof rotom, typeof rotom], [pelipper, raichu], moves);
-    expect(lead.notes[0]).toBe('One Mega per battle: Charizard-Mega-Y stays as Charizard');
-    expect(lead.yours[1].species).toBe('Charizard');
-  });
-  it('agrees with a direct calculation', () => {
-    const e = estimateDamage(board.yours[0], board.theirs[0], moves.discharge, board.field)!;
-    expect(row('Discharge').foes[0].estimate!.rolls).toEqual(e.rolls);
   });
 });

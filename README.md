@@ -83,13 +83,6 @@ Doubles effects in those scores:
 Not part of those scores: other stat boosts (Swords Dance), accuracy, crits, burns, screens,
 Helping Hand and Unburden; the Calc tab handles most of them.
 
-The Matchup tab's **Lead vs lead** board takes two of your leads and two of theirs. It shows
-every attack into each foe, with:
-- spread moves on both foes and on the partner;
-- Intimidate from everyone on the field;
-- redirection between the two targets;
-- the speed order.
-
 ## Damage calculator
 
 The **Calc** tab is a Showdown-style calculator for any two legal Pokémon of the regulation,
@@ -208,3 +201,18 @@ species, moves, items or legal Pokémon, or a list that shrank by more than 30%)
 ### Not modelled (yet)
 
 In the Matchup / Team scores, the effects listed under "Damage in the Matchup and Team tabs".
+
+### Credits and disclaimer
+
+Unofficial fan project, not affiliated with or endorsed by Nintendo, Game Freak, Creatures or
+The Pokémon Company. Pokémon and all related names and images are trademarks and © of their
+respective owners. Every tab's footer shows this and a **Credits** list:
+
+- Usage statistics: [Smogon](https://www.smogon.com/stats/)
+- Pokémon, move and item data, sprites and icons:
+  [Pokémon Showdown](https://github.com/smogon/pokemon-showdown) (MIT License); sprites and
+  icons are loaded from Showdown's servers
+- Damage calculator: [@smogon/calc](https://github.com/smogon/damage-calc) (MIT License)
+- Tournament teams: [Limitless](https://play.limitlesstcg.com/)
+- Fonts: Fira Sans and Chakra Petch (SIL Open Font License), bundled with the app through
+  Fontsource, so visitors' browsers never contact Google Fonts

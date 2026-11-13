@@ -177,8 +177,9 @@ export function CalcSide({side, title, dex, tables, itemNames, moveNames, pokemo
             className="move-picker"
             value={m}
             onChange={name => update({moves: set.moves.map((x, j) => (j === i ? name : x))})}
-            names={learnable}
+            names={learnable.filter(n => n === m || !set.moves.includes(n))}
             usual={usualMoves.filter(o => o.name === m || !set.moves.includes(o.name))}
+            showAll
             emptyLabel="No move"
             placeholder={`Move ${i + 1}`}
             renderIcon={name => {

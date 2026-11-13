@@ -3,6 +3,7 @@ import {usePersistentState} from './hooks/usePersistentState';
 import {boolean, oneOf} from './lib/storage';
 import {Icon, Logo} from './components/Icon';
 import {ThemeToggle} from './components/ThemeToggle';
+import {LegalFooter} from './components/LegalFooter';
 import indexJson from './data/index.json';
 import type {RegulationData, RegulationIndex} from './data/types';
 import type {TypeName} from './lib/typechart';
@@ -194,6 +195,7 @@ export function App() {
           stat boosts, accuracy, crits, screens and Helping Hand are not.
         </footer>
       )}
+      <LegalFooter />
     </main>
   );
 }

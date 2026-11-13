@@ -3,8 +3,9 @@ main.wide {
   max-width: none;
   height: 100vh;
   height: 100dvh;
-  grid-template-rows: auto minmax(0, 1fr);
-  padding-bottom: 16px;
+  /* header, the searcher (fills the screen), the legal footer */
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding-bottom: 12px;
 }
 .dex {
   display: grid;

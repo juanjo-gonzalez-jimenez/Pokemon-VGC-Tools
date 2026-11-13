@@ -1,5 +1,4 @@
 import {useMemo} from 'react';
-import {LeadBoard, type LeadPicks} from '../components/matchup/LeadBoard';
 import {Lineups} from '../components/matchup/Lineups';
 import {MatchupGrid} from '../components/matchup/MatchupGrid';
 import {OpponentPicker} from '../components/matchup/OpponentPicker';
@@ -15,7 +14,7 @@ import {usePersistentState} from '../hooks/usePersistentState';
 import {useSavedTeam} from '../hooks/useSavedTeam';
 import {toID} from '../lib/ids';
 import {mainAbility} from '../lib/combatant';
-import {FIELD_CHOICES, resolveField, type FieldChoice, type FieldContext} from '../lib/field';
+import {FIELD_CHOICES, type FieldChoice, type FieldContext} from '../lib/field';
 import {describeAutoField, matchupGrid, previewForms, suggestBrings} from '../lib/matchup';
 import {MAX_TEAM_SIZE, parseTeam, type TeamMember} from '../lib/paste';
 import {anyString, oneOf, regulationKey} from '../lib/storage';
@@ -80,29 +79,6 @@ export function MatchupPage({regId, mod}: Props) {
     () => (tables ? suggestBrings(team, opponents, tables.moves, mode, 3, fieldChoice) : []),
     [team, opponents, tables, mode, fieldChoice],
   );
-  // Lead vs lead picks: "0,1|2,3" (your team indexes | their six indexes), remembered per regulation.
-  const [storedLeads, setStoredLeads] = usePersistentState(`vgc-tools:leads:${regulationKey(regId)}`, '', anyString);
-  const leadPicks = useMemo((): LeadPicks | null => {
-    if (team.length < 2 || opponents.length < 2) return null;
-    const pair = (text: string | undefined, size: number): [number, number] | null => {
-      const n = (text ?? '').split(',').map(Number);
-      return n.length === 2 && n.every(i => Number.isInteger(i) && i >= 0 && i < size) && n[0] !== n[1] ? [n[0], n[1]] : null;
-    };
-    const [y, t] = storedLeads.split('|');
-    const best = lineups[0];
-    const yours = pair(y, team.length) ?? (best && best.leads.length === 2 ? (best.leads.map(m => team.findIndex(x => x.label === m.label)) as [number, number]) : [0, 1]);
-    // Their likeliest pressure: the two that score best against your two leads.
-    const danger = opponents
-      .map((_, j) => ({j, total: (grid[yours[0]]?.[j]?.total ?? 0.5) + (grid[yours[1]]?.[j]?.total ?? 0.5)}))
-      .sort((a, b) => a.total - b.total);
-    const theirs = pair(t, opponents.length) ?? ([danger[0].j, danger[1].j] as [number, number]);
-    return {yours: yours[0] === yours[1] || yours.includes(-1) ? [0, 1] : yours, theirs};
-  }, [storedLeads, team, opponents, lineups, grid]);
-  const fixedField = useMemo(
-    () => (fieldChoice === 'auto' ? undefined : resolveField('', '', fieldContext(fieldChoice, team, opponents))),
-    [fieldChoice, team, opponents],
-  );
-
   const threats = useMemo(
     () =>
       tables
@@ -202,17 +178,6 @@ export function MatchupPage({regId, mod}: Props) {
             {fieldChoice === 'auto' && <span className="muted small field-note">Auto: {describeAutoField(team, opponents)}</span>}
           </section>
           <Lineups lineups={lineups} iconOf={iconOf} note={speedModeNote(mode)} />
-          {leadPicks && (
-            <LeadBoard
-              team={team}
-              opponents={opponents}
-              moves={tables.moves}
-              picks={leadPicks}
-              onPicks={p => setStoredLeads(`${p.yours.join(',')}|${p.theirs.join(',')}`)}
-              mode={mode}
-              field={fixedField}
-            />
-          )}
           <MatchupGrid team={team} opponents={opponents} grid={grid} iconOf={iconOf} />
           <ThreatList
             id="matchup-threats"

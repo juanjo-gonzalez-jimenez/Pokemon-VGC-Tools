@@ -1,4 +1,4 @@
-import {useId, useState, type ReactNode} from 'react';
+import {useId, useRef, useState, type ReactNode} from 'react';
 import {toID} from '../../lib/ids';
 import {pct} from '../CoverageSummary';
 
@@ -30,29 +30,48 @@ interface Props {
   label: string;
   maxLength: number;
   className?: string;
+  /**
+   * List every name, not just the first few: the usual picks first, then all the others A–Z
+   * (e.g. every move the Pokémon can learn). The list scrolls.
+   */
+  showAll?: boolean;
 }
 
 /** Names matching `query`: the ones starting with it first, then ones containing it. */
-export function searchNames(names: string[], query: string): string[] {
+export function searchNames(names: string[], query: string, limit = MAX_RESULTS): string[] {
   const q = toID(query);
   const starts = names.filter(n => toID(n).startsWith(q));
   const contains = names.filter(n => !toID(n).startsWith(q) && toID(n).includes(q));
-  return [...starts, ...contains].slice(0, MAX_RESULTS);
+  return [...starts, ...contains].slice(0, limit);
+}
+
+/**
+ * What an empty search offers: the empty choice and the usual picks, plus (with `showAll`)
+ * every other name A–Z. `others` is the index where those others start, for a divider.
+ */
+export function browseOptions(names: string[], usual: PickerOption[], showAll: boolean): {options: PickerOption[]; others: number} {
+  const top = [{name: ''}, ...(showAll ? usual : usual.slice(0, MAX_RESULTS))];
+  if (!showAll) return {options: top, others: -1};
+  const seen = new Set(usual.map(o => o.name));
+  const rest = names.filter(n => !seen.has(n)).sort((a, b) => a.localeCompare(b));
+  return {options: [...top, ...rest.map(name => ({name}))], others: rest.length ? top.length : -1};
 }
 
 /**
  * Search dropdown in the style of the Pokémon search: click it to see the usual picks, type to
  * search everything, pick with the mouse or ↑/↓ and Enter. Esc or clicking away keeps the value.
  */
-export function SearchPicker({value, onChange, names, usual, emptyLabel, placeholder = emptyLabel, renderIcon, iconInBox = true, renderDetail, label, maxLength, className}: Props) {
+export function SearchPicker({value, onChange, names, usual, emptyLabel, placeholder = emptyLabel, renderIcon, iconInBox = true, renderDetail, label, maxLength, className, showAll = false}: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const listId = useId();
+  const listRef = useRef<HTMLUListElement>(null);
 
-  const options: PickerOption[] = query.trim()
-    ? searchNames(names, query).map(name => ({name}))
-    : [{name: ''}, ...usual.slice(0, MAX_RESULTS)];
+  const searching = Boolean(query.trim());
+  const {options, others}: {options: PickerOption[]; others: number} = searching
+    ? {options: searchNames(names, query, showAll ? Infinity : MAX_RESULTS).map(name => ({name})), others: -1}
+    : browseOptions(names, usual, showAll);
 
   const close = () => {
     setOpen(false);
@@ -88,7 +107,10 @@ export function SearchPicker({value, onChange, names, usual, emptyLabel, placeho
             if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
               e.preventDefault();
               const step = e.key === 'ArrowDown' ? 1 : -1;
-              setActive(i => Math.max(0, Math.min(options.length - 1, i + step)));
+              const next = Math.max(0, Math.min(options.length - 1, active + step));
+              setActive(next);
+              // Keep the highlighted row in view in a long, scrolling list.
+              listRef.current?.children[next]?.scrollIntoView({block: 'nearest'});
             } else if (e.key === 'Enter' && options[active]) {
               e.preventDefault();
               pick(options[active].name);
@@ -100,9 +122,9 @@ export function SearchPicker({value, onChange, names, usual, emptyLabel, placeho
         />
       </span>
       {open && options.length > 0 && (
-        <ul className="opponent-results" id={listId} role="listbox">
+        <ul className={`opponent-results${showAll ? ' scrolls' : ''}`} id={listId} role="listbox" ref={listRef}>
           {options.map((o, i) => (
-            <li key={o.name || '(none)'} role="option" aria-selected={i === active}>
+            <li key={o.name || '(none)'} role="option" aria-selected={i === active} className={i === others ? 'others-start' : undefined}>
               {/* mousedown, not click: picking must happen before the box loses focus. */}
               <button
                 type="button"

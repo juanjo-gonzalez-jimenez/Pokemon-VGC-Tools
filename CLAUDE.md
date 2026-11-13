@@ -23,6 +23,7 @@ Before committing, run lint, tests and build. Commit and push only when the user
 |---|---|
 | Tabs, routing (`#/dex`, `#/team`…), regulation select, footer | `src/App.tsx` (`PAGES`). The tab order is Pokémon, Team, Matchup, Calc, Coverage; an empty hash opens Pokémon. |
 | Light/Dark switch | `src/components/ThemeToggle.tsx` |
+| Disclaimer and credits footer (every tab) | `src/components/LegalFooter.tsx`; fonts are bundled via `@fontsource` imports in `src/main.tsx` (no Google Fonts) |
 | Icons | `src/components/Icon.tsx` |
 | Collapsible panels | `src/components/Panel.tsx`, `src/lib/collapsed.ts` |
 | Styles | `src/styles/base.css` (shared inputs, tables, red problem style, tabs), plus `dex.css`, `team.css`, `matchup.css`, `calc.css` |
@@ -32,7 +33,7 @@ Before committing, run lint, tests and build. Commit and push only when the user
 |---|---|---|
 | Pokémon (dex) | `src/pages/DexPage.tsx` | `components/dex/DexSidebar.tsx` (list, search, sort), `DexDetail.tsx` (stats, sets, usage tiles), `ShareList.tsx`. Sorting and trends: `lib/dex.ts`, `components/Trend.tsx`. |
 | Team | `src/pages/TeamPage.tsx` (section tabs: Defense / Threats / Speed / Swap ideas / Top teams) | `TeamSwitcher.tsx` (saved teams), `TeamCards.tsx`, `DefensiveChart.tsx`, `SpeedTiers.tsx`, `ThreatList.tsx`, `RolesChecklist.tsx`, `TeammateSuggestions.tsx`, `TournamentTeams.tsx` |
-| Matchup | `src/pages/MatchupPage.tsx` | `components/matchup/OpponentPicker.tsx`, `MatchupGrid.tsx`, `Lineups.tsx` (suggested fours), `LeadBoard.tsx` (lead vs lead) |
+| Matchup | `src/pages/MatchupPage.tsx` | `components/matchup/OpponentPicker.tsx`, `MatchupGrid.tsx`, `Lineups.tsx` (suggested fours) |
 | Calc | `src/pages/CalcPage.tsx` | `components/calc/CalcSide.tsx` (one side's set), `SearchPicker.tsx` (the item and move dropdowns), `CalcResults.tsx`, `CalcFieldPanel.tsx`, `CalcOptimizer.tsx` |
 | Coverage | `src/pages/CoveragePage.tsx` | `TypePicker.tsx`, `TeamTypeShortcuts.tsx`, `CoverageSummary.tsx`, `PokemonTable.tsx` (roster table), `Suggestions.tsx` |
 
@@ -42,7 +43,7 @@ Before committing, run lint, tests and build. Commit and push only when the user
 | Damage (`@smogon/calc` in Champions mode, `Generations.get(0)`) | `damage.ts` |
 | Building a calc input from your member or a meta Pokémon | `combatant.ts` (`fromMember`, `fromMeta`, `mainAbility`) |
 | 1v1 duel: KO turns, speed order, best move | `exchange.ts` (`duel`, `bestOption`, `expectedThreat`) |
-| Doubles effects: Intimidate, redirection, spread moves, lead board | `doubles.ts` |
+| Doubles effects: Intimidate, redirection, spread moves | `doubles.ts` |
 | Matchup grid scores and suggested bring-four | `matchup.ts` (`pairScore`, `matchupGrid`, `suggestBrings`, `BONUS`) |
 | Auto weather and terrain | `field.ts` |
 | Calc tab sets and state, usage sets, SP checks | `calcset.ts` |
@@ -76,7 +77,7 @@ Before committing, run lint, tests and build. Commit and push only when the user
 
 ## Conventions
 
-- localStorage keys start with `vgc-tools:`. For example: `vgc-tools:teams`, `vgc-tools:theme`, `vgc-tools:regulation-v2`, and `vgc-tools:leads:<regulationKey>`. Per-regulation state goes through `regulationKey()`.
+- localStorage keys start with `vgc-tools:`. For example: `vgc-tools:teams`, `vgc-tools:theme`, and `vgc-tools:regulation-v2`. Per-regulation state goes through `regulationKey()`.
 - Show problems in red with the existing classes: `.warnings`, `.legality`, `.calc-warning`, `.field-error`.
 - Name boxes stop at 24 characters (`MAX_NAME`, `MAX_NAME_LENGTH`).
 - Visual checks run headless Playwright from the scratchpad, at 1440 px and 390 px wide. Check that nothing scrolls sideways.

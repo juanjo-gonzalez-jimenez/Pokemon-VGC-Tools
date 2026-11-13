@@ -79,15 +79,19 @@ export function Icon({name, size = 16}: {name: IconName; size?: number}) {
   );
 }
 
-/** The app's mark: coverage bars with one highlighted. */
+/** The app's mark: a capture ball in the app's violet (top), white (bottom), with a dark band and button. */
 export function Logo({size = 30}: {size?: number}) {
+  const ink = '#1a1830';
   return (
     <svg className="logo" width={size} height={size} viewBox="0 0 32 32" aria-hidden>
-      <rect width="32" height="32" rx="8" fill="var(--accent-fill)" />
-      <rect x="6" y="17" width="4" height="9" rx="1.5" fill="#fff" opacity="0.9" />
-      <rect x="12" y="11" width="4" height="15" rx="1.5" fill="#fff" opacity="0.9" />
-      <rect x="18" y="14" width="4" height="12" rx="1.5" fill="#fff" opacity="0.9" />
-      <rect x="24" y="6" width="3" height="20" rx="1.5" fill="var(--accent-2-bright)" />
+      <circle cx="16" cy="16" r="14.5" fill="#ffffff" />
+      <path d="M1.5 16a14.5 14.5 0 0 1 29 0z" fill="var(--accent-fill)" />
+      <ellipse cx="10.5" cy="8.5" rx="4" ry="2.2" fill="#ffffff" opacity="0.28" transform="rotate(-30 10.5 8.5)" />
+      <rect x="1.5" y="14.6" width="29" height="2.8" fill={ink} />
+      <circle cx="16" cy="16" r="14.5" fill="none" stroke={ink} strokeWidth="2" />
+      <circle cx="16" cy="16" r="5.2" fill={ink} />
+      <circle cx="16" cy="16" r="3.3" fill="#ffffff" />
+      <circle cx="16" cy="16" r="1.7" fill="none" stroke={ink} strokeOpacity="0.25" strokeWidth="0.8" />
     </svg>
   );
 }
