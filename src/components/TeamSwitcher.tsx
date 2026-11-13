@@ -1,6 +1,20 @@
 import {useEffect, useState} from 'react';
 import {useTeamStore} from '../hooks/useSavedTeam';
-import {activeTeam, addTeam, decodeShare, duplicate, encodeShare, importTeam, nextName, removeActive, rename, select, SHARE_PREFIX} from '../lib/teams';
+import {
+  activeTeam,
+  addTeam,
+  decodeShare,
+  duplicate,
+  encodeShare,
+  importTeam,
+  MAX_NAME,
+  nameTaken,
+  nextName,
+  removeActive,
+  rename,
+  select,
+  SHARE_PREFIX,
+} from '../lib/teams';
 
 async function copy(text: string): Promise<boolean> {
   try {
@@ -9,6 +23,46 @@ async function copy(text: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/**
+ * The active team's name. Typing edits a draft; it is saved only while it's non-blank and no
+ * other team has it, otherwise a red message says why (and leaving the box restores the name).
+ */
+function NameField() {
+  const [store, update] = useTeamStore();
+  const current = activeTeam(store);
+  const [draft, setDraft] = useState(current.name);
+  const problem = !draft.trim() ? 'The team needs a name.' : nameTaken(store, draft, current.id) ? 'Name already in use.' : '';
+  return (
+    <label className="team-switcher-name">
+      {/* The message takes the counter's place, so nothing around it moves. */}
+      <span className="team-switcher-head small">
+        <span className="muted">Name</span>
+        {problem ? (
+          <span className="field-error" role="alert">
+            {problem}
+          </span>
+        ) : (
+          <span className="muted">
+            {draft.length}/{MAX_NAME}
+          </span>
+        )}
+      </span>
+      <input
+        value={draft}
+        maxLength={MAX_NAME}
+        aria-label="Team name"
+        aria-invalid={Boolean(problem)}
+        className={problem ? 'invalid' : undefined}
+        onChange={e => {
+          setDraft(e.target.value);
+          update(s => rename(s, e.target.value));
+        }}
+        onBlur={() => problem && setDraft(current.name)}
+      />
+    </label>
+  );
 }
 
 /** Pick, name, add, copy and share saved teams. Also opens `#/team/import/<code>` links. */
@@ -42,7 +96,12 @@ export function TeamSwitcher() {
   return (
     <div className="team-switcher">
       <label className="team-switcher-pick">
-        <span className="muted small">Team</span>
+        <span className="team-switcher-head small">
+          <span className="muted">Team</span>
+          <span className="muted">
+            {store.teams.length} saved
+          </span>
+        </span>
         <select value={store.active} onChange={e => update(s => select(s, e.target.value))} aria-label="Saved team">
           {store.teams.map(t => (
             <option key={t.id} value={t.id}>
@@ -51,10 +110,7 @@ export function TeamSwitcher() {
           ))}
         </select>
       </label>
-      <label className="team-switcher-name">
-        <span className="muted small">Name</span>
-        <input value={current.name} onChange={e => update(s => rename(s, e.target.value))} aria-label="Team name" maxLength={40} />
-      </label>
+      <NameField key={current.id} />
       <div className="team-switcher-actions">
         <button className="link" onClick={() => update(s => addTeam(s))}>
           New

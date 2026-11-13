@@ -9,6 +9,12 @@ export type StatKey = StatName | 'bst';
 export const SORT_KEYS = ['usage', 'bst', 'bstNoMega', ...STATS] as const;
 export type SortKey = (typeof SORT_KEYS)[number];
 
+/**
+ * Longest text a Pokémon name box accepts. The longest legal name is "Tauros-Paldea-Combat" (20);
+ * a little room is left for future forms.
+ */
+export const MAX_NAME_LENGTH = 24;
+
 /** Mega forms: "Charizard-Mega-Y", "Floette-Mega". */
 export const isMega = (p: MetaPokemon) => /-Mega(-|$)/.test(p.name);
 

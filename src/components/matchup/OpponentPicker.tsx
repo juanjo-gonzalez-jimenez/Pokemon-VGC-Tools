@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import type {MetaPokemon} from '../../data/types';
-import {searchRoster} from '../../lib/dex';
+import {MAX_NAME_LENGTH, searchRoster} from '../../lib/dex';
 import {previewForms} from '../../lib/matchup';
 import {MAX_TEAM_SIZE} from '../../lib/paste';
 import {pct} from '../CoverageSummary';
@@ -65,6 +65,7 @@ export function OpponentPicker({dex, opponents, onChange}: Props) {
             type="search"
             value={query}
             placeholder={`Add their Pokémon (${opponents.length}/${MAX_TEAM_SIZE})`}
+            maxLength={MAX_NAME_LENGTH}
             aria-label="Add an opposing Pokémon"
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => {

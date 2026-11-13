@@ -6,8 +6,18 @@ import {BOOST_STATS, setStats, spProblems, spreadOptions, withSpread, type Boost
 import {NATURES, NEUTRAL_NATURES, STAT_LABELS, STATS} from '../../lib/stats';
 import {pct} from '../CoverageSummary';
 import {PokemonSearch} from '../PokemonSearch';
+import {SearchPicker, type PickerOption} from './SearchPicker';
 import {ItemIcon, Sprite} from '../Sprite';
 import {TypeBadge, typingVars} from '../TypeBadge';
+
+/** Longest text the item and move boxes accept (the longest names are under 20 characters). */
+const MAX_PICK_LENGTH = 24;
+
+/** Usage shares (name -> share) as picker options, most used first. */
+const byShare = (shares: Record<string, number>): PickerOption[] =>
+  Object.entries(shares)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, share]) => ({name, share}));
 
 const NATURE_NAMES = [...Object.keys(NATURES), ...NEUTRAL_NATURES].sort();
 const BOOSTS = [6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6];
@@ -34,13 +44,12 @@ export function CalcSide({side, title, dex, tables, itemNames, moveNames, pokemo
   const spreadKey = `${set.nature}:${STATS.map(s => set.sp[s]).join('/')}`;
   const update = (patch: Partial<CalcSet>) => onChange({...set, ...patch});
   const abilities = [...new Set([...species.abilities, set.ability].filter(Boolean))];
-  // This Pokémon's own common moves first, then every move it can learn in the game.
-  const ownMoves = Object.keys(pokemon.moves);
+  // Searchable moves: every damaging move it can learn in the game.
   const learnset = learnsetOf(tables.learnsets, pokemon.id, pokemon.baseSprite);
   const learnable = moveNames.filter(n => canLearn(learnset, n));
   const unlearnable = set.moves.filter(m => m && tables.moves[toID(m)] && !canLearn(learnset, m));
-  const movesId = `calc-moves-${side}`;
-  const itemsId = `calc-items-${side}`;
+  // This Pokémon's damaging moves by how many sets run them, offered as soon as a box is clicked.
+  const usualMoves = byShare(pokemon.moves).filter(o => learnable.includes(o.name));
 
   return (
     <section className={`panel calc-side calc-side-${side}`} style={typingVars(species.types)}>
@@ -98,18 +107,20 @@ export function CalcSide({side, title, dex, tables, itemNames, moveNames, pokemo
         </label>
       </div>
 
-      <label className="calc-field">
+      <div className="calc-field">
         <span>Item</span>
-        <span className="calc-item">
-          <ItemIcon item={set.item} items={tables.items} />
-          <input list={itemsId} value={set.item} placeholder="No item" onChange={e => update({item: e.target.value})} />
-        </span>
-        <datalist id={itemsId}>
-          {itemNames.map(n => (
-            <option key={n} value={n} />
-          ))}
-        </datalist>
-      </label>
+        <SearchPicker
+          className="item-picker"
+          value={set.item}
+          onChange={item => update({item})}
+          names={itemNames}
+          usual={byShare(pokemon.items)}
+          emptyLabel="No item"
+          renderIcon={name => <ItemIcon item={name} items={tables.items} />}
+          label={`${title}: item`}
+          maxLength={MAX_PICK_LENGTH}
+        />
+      </div>
 
       <table className="calc-stats">
         <thead>
@@ -161,20 +172,28 @@ export function CalcSide({side, title, dex, tables, itemNames, moveNames, pokemo
       <div className="calc-moves">
         <span className="calc-label">Moves</span>
         {set.moves.map((m, i) => (
-          <input
+          <SearchPicker
             key={i}
-            list={movesId}
+            className="move-picker"
             value={m}
+            onChange={name => update({moves: set.moves.map((x, j) => (j === i ? name : x))})}
+            names={learnable}
+            usual={usualMoves.filter(o => o.name === m || !set.moves.includes(o.name))}
+            emptyLabel="No move"
             placeholder={`Move ${i + 1}`}
-            aria-label={`Move ${i + 1}`}
-            onChange={e => update({moves: set.moves.map((x, j) => (j === i ? e.target.value : x))})}
+            renderIcon={name => {
+              const move = tables.moves[toID(name)];
+              return move ? <TypeBadge type={move.type} /> : null;
+            }}
+            iconInBox={false}
+            renderDetail={name => {
+              const move = tables.moves[toID(name)];
+              return move ? `${move.category}${move.basePower ? ` · ${move.basePower}` : ''}` : '';
+            }}
+            label={`${title}: move ${i + 1}`}
+            maxLength={MAX_PICK_LENGTH}
           />
         ))}
-        <datalist id={movesId}>
-          {[...ownMoves, ...learnable.filter(n => !ownMoves.includes(n))].map(n => (
-            <option key={n} value={n} />
-          ))}
-        </datalist>
         {unlearnable.length > 0 && (
           <p className="calc-warning small">
             {species.name} can’t learn {unlearnable.join(', ')}.

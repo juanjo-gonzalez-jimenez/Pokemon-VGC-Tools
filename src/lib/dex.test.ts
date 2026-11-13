@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {bst, formatSpread, searchRoster, sortRoster, usageTrend} from './dex';
+import {bst, formatSpread, MAX_NAME_LENGTH, searchRoster, sortRoster, usageTrend} from './dex';
 import {meta} from './test-fixtures';
 
 const withStats = (name: string, usage: number, spe: number, hp = 80) => ({
@@ -65,5 +65,18 @@ describe('usage trends', () => {
     expect(usageTrend(p('B', 0.05, 0))!.isNew).toBe(true);
     expect(usageTrend(p('C', 0.05))).toBeNull();
     expect(usageTrend(p('D', 0.05, 0.01, 'all'))).toBeNull();
+  });
+});
+
+describe('MAX_NAME_LENGTH', () => {
+  it('fits every legal Pokémon name', async () => {
+    const {readdirSync, readFileSync} = await import('node:fs');
+    const {join} = await import('node:path');
+    const dir = join(import.meta.dirname, '..', 'data', 'regulations');
+    for (const file of readdirSync(dir).filter(name => name.endsWith('-dex.json'))) {
+      for (const p of JSON.parse(readFileSync(join(dir, file), 'utf8')) as Array<{name: string}>) {
+        expect(p.name.length).toBeLessThanOrEqual(MAX_NAME_LENGTH);
+      }
+    }
   });
 });

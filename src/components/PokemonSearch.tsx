@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import type {MetaPokemon} from '../data/types';
-import {searchRoster} from '../lib/dex';
+import {MAX_NAME_LENGTH, searchRoster} from '../lib/dex';
 import {pct} from './CoverageSummary';
 import {PokemonIcon} from './Sprite';
 
@@ -27,6 +27,7 @@ export function PokemonSearch({dex, onPick, placeholder, label}: Props) {
         type="search"
         value={query}
         placeholder={placeholder}
+        maxLength={MAX_NAME_LENGTH}
         aria-label={label}
         onChange={e => setQuery(e.target.value)}
         onKeyDown={e => {

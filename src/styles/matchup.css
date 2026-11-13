@@ -43,7 +43,7 @@
 .lineup dt { color: var(--muted); font-size: 0.8rem; }
 .lineup dd { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .reasons { margin: 0; padding-left: 18px; font-size: 0.82rem; display: grid; gap: 3px; }
-.reasons .warning { color: var(--resisted); }
+.reasons .warning { list-style: none; margin-left: -18px; }
 
 .matchup-grid th, .matchup-grid td { text-align: center; white-space: nowrap; }
 .matchup-grid th[scope="row"] { text-align: left; }
@@ -85,4 +85,4 @@
   .lb-move .tag, .lb-move .small { display: block; margin: 2px 0 0; width: fit-content; white-space: nowrap; }
   .lb-ko-label { font-size: 0.68rem; }
 }
-.team-select { font-size: 0.85rem; padding: 3px 6px; font-weight: 600; margin-right: 10px; }
+.team-select { width: 180px; font-size: 0.85rem; padding: 3px 6px; font-weight: 600; margin-right: 10px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }

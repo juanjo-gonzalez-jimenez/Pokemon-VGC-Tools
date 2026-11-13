@@ -16,10 +16,29 @@ export interface TeamStore {
 let counter = 0;
 const newId = () => `t${Date.now().toString(36)}${(counter++).toString(36)}`;
 
+/** Longest team name. */
+export const MAX_NAME = 24;
+
+const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
+/** Another team (not `exceptId`) already has this name, ignoring case and spaces at the ends. */
+export const nameTaken = (store: TeamStore, name: string, exceptId?: string) =>
+  store.teams.some(t => t.id !== exceptId && sameName(t.name, name));
+
+/** `name`, or "name (2)", "name (3)"… so no two teams share a name. */
+export function uniqueName(store: TeamStore, name: string): string {
+  const base = name.slice(0, MAX_NAME);
+  if (!nameTaken(store, base)) return base;
+  for (let n = 2; ; n++) {
+    const suffix = ` (${n})`;
+    const candidate = `${base.slice(0, MAX_NAME - suffix.length)}${suffix}`;
+    if (!nameTaken(store, candidate)) return candidate;
+  }
+}
+
 /** "Team 3": the first number not used by another team's default name. */
 export function nextName(store: TeamStore | null, base = 'Team'): string {
-  const used = new Set(store?.teams.map(t => t.name) ?? []);
-  for (let n = 1; ; n++) if (!used.has(`${base} ${n}`)) return `${base} ${n}`;
+  for (let n = 1; ; n++) if (!store || !nameTaken(store, `${base} ${n}`)) return `${base} ${n}`;
 }
 
 /**
@@ -48,19 +67,33 @@ export function setText(store: TeamStore, text: string): TeamStore {
   return {...store, teams: store.teams.map(t => (t.id === store.active ? {...t, text} : t))};
 }
 
+/** Renames the active team; a blank or already used name is refused (store unchanged). */
 export function rename(store: TeamStore, name: string): TeamStore {
+  if (!name.trim() || name.length > MAX_NAME || nameTaken(store, name, store.active)) return store;
   return {...store, teams: store.teams.map(t => (t.id === store.active ? {...t, name} : t))};
 }
 
 /** Adds a team and makes it active. */
 export function addTeam(store: TeamStore, text = '', name = nextName(store)): TeamStore {
-  const team = {id: newId(), name, text};
+  const team = {id: newId(), name: uniqueName(store, name), text};
   return {active: team.id, teams: [...store.teams, team]};
 }
 
+/** A copy suffix: " (copy 3)". */
+const COPY_SUFFIX = / \(copy \d+\)$/;
+
+/**
+ * Copies the active team as "Name (copy 1)", "Name (copy 2)"…: copying a copy numbers it from
+ * the original name instead of stacking suffixes.
+ */
 export function duplicate(store: TeamStore): TeamStore {
   const current = activeTeam(store);
-  return addTeam(store, current.text, `${current.name} (copy)`);
+  const original = current.name.replace(COPY_SUFFIX, '');
+  for (let n = 1; ; n++) {
+    const suffix = ` (copy ${n})`;
+    const name = `${original.slice(0, MAX_NAME - suffix.length)}${suffix}`;
+    if (!nameTaken(store, name)) return addTeam(store, current.text, name);
+  }
 }
 
 /** Removes the active team; the one before it becomes active (a blank team when none is left). */

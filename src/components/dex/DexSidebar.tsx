@@ -1,6 +1,6 @@
 import {useEffect, useRef, type KeyboardEvent} from 'react';
 import type {MetaPokemon, RegulationSummary} from '../../data/types';
-import {bst, type SortKey} from '../../lib/dex';
+import {bst, MAX_NAME_LENGTH, type SortKey} from '../../lib/dex';
 import {TYPES, type TypeName} from '../../lib/typechart';
 import {pct} from '../CoverageSummary';
 import {PokemonIcon} from '../Sprite';
@@ -80,6 +80,7 @@ export function DexSidebar(props: Props) {
             type="search"
             value={props.query}
             placeholder="Pokémon name"
+            maxLength={MAX_NAME_LENGTH}
             onChange={e => props.onQueryChange(e.target.value)}
           />
         </label>

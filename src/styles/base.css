@@ -120,7 +120,8 @@ a, button, select, input, textarea, .panel, .tile, .team-card, .mate-card, .line
 .controls label.check { display: flex; align-items: center; gap: 6px; color: var(--text); padding-bottom: 7px; font-size: 0.9rem; font-weight: 400; letter-spacing: 0; text-transform: none; cursor: pointer; }
 .controls .source { margin: 0; font-size: 0.78rem; width: 100%; }
 
-select, input[type="search"], textarea {
+/* Every typing box shares one look (selects, search, text and number fields, text areas). */
+select, input:not([type]), input[type="text"], input[type="search"], input[type="number"], textarea {
   font: inherit;
   color: var(--text);
   background: var(--inset);
@@ -129,7 +130,7 @@ select, input[type="search"], textarea {
   padding: 7px 10px;
 }
 select { cursor: pointer; font-weight: 500; text-transform: none; letter-spacing: 0; font-size: 0.92rem; }
-select:hover, input[type="search"]:hover, textarea:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+select:hover, input:not([type]):hover, input[type="text"]:hover, input[type="search"]:hover, input[type="number"]:hover, textarea:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
 select:focus-visible, input:focus-visible, textarea:focus-visible { outline-offset: 0; border-color: var(--accent); }
 input[type="checkbox"] { accent-color: var(--accent-fill); width: 16px; height: 16px; cursor: pointer; }
 
@@ -297,9 +298,10 @@ td.mult.bucket-immune { color: var(--immune); }
 }
 
 /* ---------- Theme toggle ---------- */
-.header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.theme-toggle { margin: 0; box-shadow: var(--shadow); background: var(--panel); }
-.theme-toggle button { display: inline-flex; align-items: center; padding: 8px 9px; line-height: 1; }
+/* The theme switch stretches to the tabs' height and uses the same frame. */
+.header-actions { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; }
+.segmented.theme-toggle { margin: 0; box-shadow: var(--shadow); background: var(--panel); border-radius: 12px; align-items: stretch; }
+.segmented.theme-toggle button { display: inline-flex; align-items: center; padding: 7px 11px; line-height: 1; }
 
 /* ---------- Collapsible panels ---------- */
 .panel-toggle {
@@ -367,12 +369,25 @@ main.full { max-width: 1480px; }
 main.full.narrow > :not(header) { width: 100%; max-width: 1020px; justify-self: center; }
 
 /* ---------- Usage trend (change since last month, in percentage points) ---------- */
-.trend { font-size: 0.72rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; margin-left: 6px; }
+/* Fixed width, so usage numbers line up in a column whatever the trend says ("▲ 12.9", "=", "new"). */
+.trend { display: inline-block; min-width: 3.7em; text-align: left; font-size: 0.72rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; margin-left: 6px; }
 .trend-up { color: var(--super); }
 .trend-down { color: var(--immune); }
 .trend-flat { color: var(--muted); }
 
 /* ---------- Main action button ---------- */
-button.primary { background: var(--accent); color: var(--panel); border: 0; border-radius: 8px; padding: 7px 14px; font-weight: 600; }
+button.primary { background: var(--accent-fill); color: var(--on-accent); border: 0; border-radius: 8px; padding: 7px 14px; font-weight: 600; }
 button.primary:hover:not(:disabled) { filter: brightness(1.08); }
 button.primary:disabled { opacity: 0.45; }
+
+/* ---------- Problems: always red, so they're seen without reading ---------- */
+.warnings, .legality, .reasons .warning, .calc-warning, .field-error-box {
+  color: var(--immune);
+  background: color-mix(in srgb, var(--immune) 10%, transparent);
+  border-left: 3px solid var(--immune);
+  border-radius: 6px;
+  font-weight: 500;
+}
+ul.warnings, ul.legality { padding: 8px 12px 8px 28px; }
+.reasons .warning, .calc-warning { padding: 5px 10px; }
+.field-error { color: var(--immune); font-weight: 600; }
