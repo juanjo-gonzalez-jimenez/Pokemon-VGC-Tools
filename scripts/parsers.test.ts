@@ -10,7 +10,9 @@ import {
   parseModInherit,
   parseLearnsets,
   parseModOverrides,
+  parseStandings,
 } from './parsers';
+import type {SpeciesTable} from '../src/data/types';
 
 describe('formatName', () => {
   it('reads year and regulation letters', () => {
@@ -209,5 +211,44 @@ describe('parseLearnsets', () => {
     const l = parseLearnsets(src);
     expect(l.get('venusaur')).toEqual({inherit: false, moves: ['acidspray', 'gigadrain']});
     expect(l.get('floetteeternal')).toEqual({inherit: true, moves: ['moonblast']});
+  });
+});
+
+describe('parseStandings', () => {
+  const base = {types: ['Fire'], baseStats: {hp: 1, atk: 1, def: 1, spa: 1, spd: 1, spe: 1}, abilities: []};
+  const species = {
+    charizard: {...base, name: 'Charizard', icon: 6},
+    charizardmegay: {...base, name: 'Charizard-Mega-Y', baseSpecies: 'Charizard', requiredItem: 'Charizardite Y', icon: 99},
+    ninetalesalola: {...base, name: 'Ninetales-Alola', baseSpecies: 'Ninetales'},
+  } as SpeciesTable;
+  const six = (first: {id: string; name: string; item?: string}) => [
+    {...first, ability: 'Drought', nature: 'Timid', attacks: ['Heat Wave', 'Protect'], tera: null},
+    ...Array.from({length: 5}, () => ({id: 'ninetales-alola', name: 'Alolan Ninetales', item: '', ability: 'Snow Warning', nature: 'Timid', attacks: ['Blizzard']})),
+  ];
+  const event = {id: 'e1', name: 'Weekly', date: '2026-11-10T00:00:00.000Z', players: 40};
+  const standings = [
+    {player: 'b', name: 'B', placing: 2, record: {wins: 6, losses: 2, ties: 0}, decklist: six({id: 'charizard', name: 'Charizard'})},
+    {player: 'a', name: 'A', placing: 1, record: {wins: 7, losses: 1, ties: 0}, decklist: six({id: 'charizard', name: 'Charizard', item: 'Charizardite Y'})},
+    {player: 'c', name: 'C', placing: 3, record: {wins: 5, losses: 3, ties: 0}, decklist: null},
+    {player: 'd', name: 'D', placing: 9, record: {wins: 4, losses: 4, ties: 0}, decklist: six({id: 'charizard', name: 'Charizard'})},
+    {player: 'e', name: 'E', placing: 4, record: {wins: 5, losses: 3, ties: 0}, decklist: six({id: 'mystery', name: 'Mystery'})},
+  ];
+
+  it('keeps the top placings with a full team, best first', () => {
+    const unknown = new Set<string>();
+    const teams = parseStandings(event, standings, species, 4, unknown);
+    expect(teams.map(t => t.player)).toEqual(['a', 'b', 'e']);
+    expect(unknown).toEqual(new Set(['mystery']));
+  });
+
+  it('maps species to our ids and Mega forms by their stone', () => {
+    const [a, b] = parseStandings(event, standings, species, 4);
+    expect(a.members[0]).toEqual({
+      species: 'charizard', name: 'Charizard', form: 'charizardmegay', formName: 'Charizard-Mega-Y', icon: 99,
+      item: 'Charizardite Y', ability: 'Drought', nature: 'Timid', moves: ['Heat Wave', 'Protect'],
+    });
+    expect(b.members[0].form).toBe('charizard');
+    expect(a.members[1]).toMatchObject({species: 'ninetalesalola', name: 'Ninetales-Alola', form: 'ninetalesalola'});
+    expect(a.record).toEqual({wins: 7, losses: 1, ties: 0});
   });
 });

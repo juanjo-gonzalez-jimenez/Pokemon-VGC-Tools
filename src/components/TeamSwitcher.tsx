@@ -33,6 +33,13 @@ function NameField() {
   const [store, update] = useTeamStore();
   const current = activeTeam(store);
   const [draft, setDraft] = useState(current.name);
+  // Follow renames made elsewhere (e.g. opening a tournament team into this blank team). Typing
+  // a valid name saves it, so it already equals the draft and nothing is overwritten.
+  const [seen, setSeen] = useState(current.name);
+  if (seen !== current.name) {
+    setSeen(current.name);
+    setDraft(current.name);
+  }
   const problem = !draft.trim() ? 'The team needs a name.' : nameTaken(store, draft, current.id) ? 'Name already in use.' : '';
   return (
     <label className="team-switcher-name">

@@ -6,14 +6,17 @@ import {toID} from '../../lib/ids';
 import {moveType} from '../../lib/moves';
 import {calcStat, NATURES, STAT_LABELS, STATS} from '../../lib/stats';
 import {metaSpeedSummary} from '../../lib/team';
+import {bestFirst, teamsWith, type TournamentTeam} from '../../lib/tournaments';
 import {mainAbility} from '../../lib/combatant';
 import {pct} from '../CoverageSummary';
 import {ItemIcon, PokemonIcon, Sprite} from '../Sprite';
 import {TypeBadge, typingVars} from '../TypeBadge';
 import {ShareList, type ShareRow} from './ShareList';
 import {Trend} from '../Trend';
+import {TournamentTeams} from '../TournamentTeams';
 
 const TOP_TEAMMATES = 15;
+const MAX_TOURNAMENT_TEAMS = 5;
 
 const range = (min: number, max: number) => (min === max ? `${min}` : `${min}–${max}`);
 
@@ -46,10 +49,13 @@ interface Props {
   items: ItemTable | null;
   /** Abilities the species can have (shown when there's no usage data). */
   possibleAbilities: string[];
+  /** Recent tournament teams of the regulation; null while loading. */
+  tournamentTeams: TournamentTeam[] | null;
   onSelect: (id: string) => void;
 }
 
-export function DexDetail({pokemon: p, rank, cutoff, roster, moves, items, possibleAbilities, onSelect}: Props) {
+export function DexDetail({pokemon: p, rank, cutoff, roster, moves, items, possibleAbilities, tournamentTeams, onSelect}: Props) {
+  const withIt = tournamentTeams ? bestFirst(teamsWith(tournamentTeams, p.id)) : [];
   const noData = p.source === 'none';
   const trend = usageTrend(p);
   const types = p.forms[0]?.types ?? [];
@@ -236,6 +242,16 @@ export function DexDetail({pokemon: p, rank, cutoff, roster, moves, items, possi
 
         <Tile title="Teammates" note="share of its teams · click to open">
           <ShareList rows={teammateRows} />
+        </Tile>
+
+        <Tile title="Tournament teams" note={tournamentTeams ? `${withIt.length} recent · from Limitless` : undefined}>
+          {!tournamentTeams ? (
+            <p className="muted small">Loading…</p>
+          ) : withIt.length ? (
+            <TournamentTeams teams={withIt.slice(0, MAX_TOURNAMENT_TEAMS)} roster={roster} />
+          ) : (
+            <p className="muted small">No recent top tournament teams with {p.name}.</p>
+          )}
         </Tile>
       </div>
     </div>

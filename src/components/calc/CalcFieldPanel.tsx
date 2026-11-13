@@ -52,12 +52,15 @@ export function CalcFieldPanel({field, sides, names, singleTarget, onField, onSi
           {CONDITIONS.map(([key, label]) => {
             const box = (side: 'a' | 'b') => (
               <td>
-                <input
-                  type="checkbox"
-                  aria-label={`${label} on ${names[side]}'s side`}
-                  checked={Boolean(sides[side][key])}
-                  onChange={e => onSides({...sides, [side]: {...sides[side], [key]: e.target.checked}})}
-                />
+                {/* The label pads the box out to a comfortable tap area. */}
+                <label className="cell-check">
+                  <input
+                    type="checkbox"
+                    aria-label={`${label} on ${names[side]}'s side`}
+                    checked={Boolean(sides[side][key])}
+                    onChange={e => onSides({...sides, [side]: {...sides[side], [key]: e.target.checked}})}
+                  />
+                </label>
               </td>
             );
             return (

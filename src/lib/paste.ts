@@ -97,7 +97,13 @@ export function parseTeam(text: string, species: SpeciesTable, moves: MoveTable)
     // species until it Mega Evolves.
     const pastedMega = pasted.requiredItem && pasted.baseSpecies ? pasted : undefined;
     const base = (pastedMega && species[toID(pastedMega.baseSpecies!)]) || pasted;
-    const mega = pastedMega ?? (item ? megas.get(`${toID(base.name)}:${toID(item)}`) : undefined);
+    // A form can Mega Evolve too: Floette-Eternal @ Floettite becomes Floette-Mega.
+    const mega =
+      pastedMega ??
+      (item
+        ? (megas.get(`${toID(base.name)}:${toID(item)}`) ??
+          (base.baseSpecies ? megas.get(`${toID(base.baseSpecies)}:${toID(item)}`) : undefined))
+        : undefined);
     let ability = '';
     let moveLines = 0;
     let nature = 'Serious';

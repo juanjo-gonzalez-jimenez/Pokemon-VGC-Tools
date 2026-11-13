@@ -19,6 +19,10 @@ import {defensiveChart, SPEED_MODE_IDS, teamSpeeds, type SpeedMode} from '../lib
 import {suggestTeammates} from '../lib/teammates';
 import {threatList} from '../lib/threats';
 import {TeamSwitcher} from '../components/TeamSwitcher';
+import {TournamentTeams} from '../components/TournamentTeams';
+import {useDexList} from '../data/useDexList';
+import {useTournamentTeams} from '../data/useTournamentTeams';
+import {bestFirst} from '../lib/tournaments';
 
 const EXAMPLE_TEAM = `Sneasler @ White Herb
 Ability: Unburden
@@ -74,18 +78,90 @@ Careful Nature
 - Flare Blitz
 - Darkest Lariat`;
 
+/** The analysis sections under the team; one shows at a time. */
+const SECTIONS = [
+  {id: 'defense', label: 'Defense'},
+  {id: 'threats', label: 'Threats'},
+  {id: 'speed', label: 'Speed'},
+  {id: 'ideas', label: 'Swap ideas'},
+  {id: 'top', label: 'Top teams'},
+] as const;
+type Section = (typeof SECTIONS)[number]['id'];
+const SECTION_IDS = SECTIONS.map(s => s.id);
+
+/** Defense / Threats / Speed / Swap ideas / Top teams switch (←/→ move between them). */
+function SectionTabs({section, onChange}: {section: Section; onChange: (s: Section) => void}) {
+  return (
+    <div
+      className="segmented section-tabs"
+      role="tablist"
+      aria-label="Team analysis"
+      onKeyDown={e => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        const i = SECTION_IDS.indexOf(section);
+        const next = SECTION_IDS[(i + (e.key === 'ArrowRight' ? 1 : SECTION_IDS.length - 1)) % SECTION_IDS.length];
+        onChange(next);
+        e.currentTarget.querySelector<HTMLButtonElement>(`#tab-${next}`)?.focus();
+      }}
+    >
+      {SECTIONS.map(s => (
+        <button
+          key={s.id}
+          id={`tab-${s.id}`}
+          role="tab"
+          aria-selected={section === s.id}
+          aria-controls="team-section"
+          tabIndex={section === s.id ? 0 : -1}
+          className={section === s.id ? 'on' : ''}
+          onClick={() => onChange(s.id)}
+        >
+          {s.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Tournament teams shown on the Team tab: the latest winners. */
+const TOP_TEAMS = 8;
+
+/** Recent top tournament teams, each one click from being your team. */
+function TopTeamsPanel({regId}: {regId: string}) {
+  const teams = useTournamentTeams(regId);
+  // Every legal Pokémon (not just the meta roster), so each member finds its usual spread.
+  const dexList = useDexList(regId);
+  if (teams && !teams.length) return null;
+  return (
+    <Panel id="top-teams" title="Start from a top team" note="recent tournaments · from Limitless">
+      {!teams || !dexList ? (
+        <p className="muted">Loading teams…</p>
+      ) : (
+        <>
+          <TournamentTeams teams={bestFirst(teams).slice(0, TOP_TEAMS)} roster={dexList} />
+          <p className="muted small">
+            Tournament teams don’t publish stat points, so an opened team gets each Pokémon’s most used spread (with
+            its nature when possible). Change them in the text.
+          </p>
+        </>
+      )}
+    </Panel>
+  );
+}
+
 interface Props {
+  regId: string;
   roster: MetaPokemon[];
   weighted: boolean;
   /** The regulation's Showdown data mod, for move and item differences. */
   mod: string | undefined;
 }
 
-export function TeamPage({roster, weighted, mod}: Props) {
+export function TeamPage({regId, roster, weighted, mod}: Props) {
   const [text, update] = useSavedTeam();
   const tables = useLookupTables(mod);
   // Shared by the speed tiers and the threat list.
   const [speedMode, setSpeedMode] = usePersistentState<SpeedMode>('vgc-tools:speed-mode', 'normal', oneOf(SPEED_MODE_IDS));
+  const [section, setSection] = usePersistentState<Section>('vgc-tools:team-section', 'defense', oneOf(SECTION_IDS));
 
   const parsed = useMemo(
     () => (tables ? parseTeam(text, tables.species, tables.moves) : {members: [], warnings: []}),
@@ -107,6 +183,8 @@ export function TeamPage({roster, weighted, mod}: Props) {
 
   return (
     <>
+      {/* On wide screens the paste and the roles sit side by side. */}
+      <div className="panel-pair">
       <Panel
         id="team-paste"
         title="Your team"
@@ -154,18 +232,25 @@ export function TeamPage({roster, weighted, mod}: Props) {
             </p>
           ))}
       </Panel>
+      {team.length > 0 && <RolesChecklist roles={roles} />}
+      </div>
+      {team.length === 0 && <TopTeamsPanel regId={regId} />}
 
       {team.length > 0 && (
         <>
           <Panel id="team-members" title="Team members" note={`${team.length} Pokémon`}>
             <TeamCards team={team} items={tables?.items ?? null} />
           </Panel>
-          <RolesChecklist roles={roles} />
-          <DefensiveChart team={team} rows={defense} />
-          <ThreatList threats={threats} teamSize={team.length} />
-          <TeammateSuggestions suggestions={teammates} teamSize={team.length} />
-
-          <SpeedTiers speeds={speeds} roster={roster} mode={speedMode} onModeChange={setSpeedMode} />
+          <SectionTabs section={section} onChange={setSection} />
+          <div id="team-section" role="tabpanel" aria-labelledby={`tab-${section}`} className="team-section">
+            {section === 'defense' && <DefensiveChart team={team} rows={defense} />}
+            {section === 'threats' && <ThreatList threats={threats} teamSize={team.length} />}
+            {section === 'speed' && (
+              <SpeedTiers speeds={speeds} roster={roster} mode={speedMode} onModeChange={setSpeedMode} />
+            )}
+            {section === 'ideas' && <TeammateSuggestions suggestions={teammates} teamSize={team.length} />}
+            {section === 'top' && <TopTeamsPanel regId={regId} />}
+          </div>
         </>
       )}
     </>

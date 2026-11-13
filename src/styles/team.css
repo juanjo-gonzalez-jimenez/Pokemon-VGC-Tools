@@ -7,7 +7,11 @@ textarea.paste {
 }
 .warnings { margin: 10px 0 0; font-size: 0.85rem; }
 
-.team-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+/* A team is six, so the cards go 3 + 3 (or 2 + 2 + 2) instead of leaving a half-empty row;
+   each card keeps 280 px or more so moves and spreads stay on one line. */
+.team-cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 640px) { .team-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 960px) { .team-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 /* Each card carries its Pokémon's type colours: a strip on top and a faint wash behind the sprite. */
 .team-card {
   position: relative;
@@ -112,4 +116,29 @@ textarea.paste {
 .team-switcher-status { flex-basis: 100%; margin: 0; }
 @media (max-width: 520px) {
   .team-switcher label { width: 100%; }
+}
+
+/* ---------- Tournament teams (Team tab panel and the Pokémon tab tile) ---------- */
+.tourney-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 10px; }
+.tourney-card { display: grid; gap: 6px; min-width: 0; background: var(--inset); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
+.tourney-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; min-width: 0; }
+.tourney-head a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tourney-event { margin: 0; font-size: 0.8rem; display: grid; min-width: 0; }
+.tourney-event > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tourney-mons { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2px; }
+.tourney-mons a { display: inline-flex; border-radius: 6px; }
+.tourney-mons a:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.tourney-card > button.link { justify-self: start; }
+/* In the Pokémon tab's narrow tile, one card per row. */
+.tile .tourney-grid { grid-template-columns: minmax(0, 1fr); }
+
+/* ---------- Team tab sections: one analysis at a time under the team ---------- */
+/* Sits like a panel title row: full width, buttons a little larger than other switches. */
+.segmented.section-tabs { display: flex; margin: 0; background: var(--panel); box-shadow: var(--shadow); border-radius: 12px; }
+.section-tabs button { flex: 1 1 auto; padding: 9px 14px; font-size: 0.95rem; }
+.team-section { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+/* Phones: five tabs don't fit one row, so they form an even grid instead of one leftover on a row. */
+@media (max-width: 560px) {
+  .segmented.section-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .section-tabs button { padding: 8px 6px; font-size: 0.88rem; }
 }

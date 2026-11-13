@@ -4,7 +4,8 @@
  * Keep them covered by parsers.test.ts: a layout change upstream should fail a test, not ship
  * broken data.
  */
-import type {ItemTable} from '../src/data/types';
+import type {ItemTable, SpeciesTable} from '../src/data/types';
+import type {TournamentTeam} from '../src/lib/tournaments';
 import {toID} from '../src/lib/ids';
 
 /** Best-of-three formats end in "bo3"; the rest are the best-of-one ladder. */
@@ -158,4 +159,61 @@ export function parseLearnsets(source: string): Map<string, {inherit: boolean; m
     out.set(id, {inherit: /^\t\tinherit: true,/m.test(block), moves});
   }
   return out;
+}
+
+// ---------------------------------------------------------------- Limitless tournament standings
+
+/** One player of a Limitless `/tournaments/{id}/standings` response (only the fields we read). */
+export interface LimitlessStanding {
+  player: string;
+  name: string;
+  placing: number | null;
+  record: {wins: number; losses: number; ties: number};
+  decklist?: Array<{id: string; name: string; item?: string; ability?: string; nature?: string; attacks?: string[]}> | null;
+}
+
+/**
+ * The top `top` placings with a full team, as our tournament teams. Species are matched to our
+ * ids ("ninetales-alola" -> "ninetalesalola"); a member holding its Mega Stone battles as the Mega
+ * form. Names we don't know go to `unknown` and keep Limitless's id.
+ */
+export function parseStandings(
+  event: TournamentTeam['event'],
+  standings: LimitlessStanding[],
+  species: SpeciesTable,
+  top: number,
+  unknown: Set<string> = new Set(),
+): TournamentTeam[] {
+  const megas = new Map<string, string>();
+  for (const [id, s] of Object.entries(species)) {
+    if (s.requiredItem && s.baseSpecies) megas.set(`${toID(s.baseSpecies)}:${toID(s.requiredItem)}`, id);
+  }
+  return standings
+    .filter(p => p.placing !== null && p.placing <= top && p.decklist?.length === 6)
+    .sort((a, b) => (a.placing ?? 0) - (b.placing ?? 0))
+    .map(p => ({
+      event,
+      player: p.player,
+      playerName: p.name || p.player,
+      placing: p.placing ?? 0,
+      record: {wins: p.record?.wins ?? 0, losses: p.record?.losses ?? 0, ties: p.record?.ties ?? 0},
+      members: (p.decklist ?? []).map(m => {
+        const id = toID(m.id);
+        const data = species[id];
+        if (!data) unknown.add(m.id);
+        const base = toID(data?.baseSpecies ?? data?.name ?? id);
+        const form = (m.item && (megas.get(`${base}:${toID(m.item)}`) ?? megas.get(`${id}:${toID(m.item)}`))) || id;
+        return {
+          species: id,
+          name: data?.name ?? m.name,
+          form,
+          formName: species[form]?.name ?? data?.name ?? m.name,
+          icon: species[form]?.icon ?? data?.icon,
+          item: m.item ?? '',
+          ability: m.ability ?? '',
+          nature: m.nature ?? '',
+          moves: (m.attacks ?? []).filter(Boolean),
+        };
+      }),
+    }));
 }

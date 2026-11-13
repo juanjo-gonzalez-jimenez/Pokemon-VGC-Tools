@@ -11,6 +11,7 @@ Node comes only from nvm, so every shell needs `source ~/.nvm/nvm.sh` first.
 - `npx vitest run`: unit tests, in `src/lib/*.test.ts` and next to some components.
 - `npm run build`: runs `tsc` and then `vite build`.
 - `npm run update-data`: downloads Showdown data and Smogon stats into `src/data/`.
+- `npm run update-teams`: downloads recent top tournament teams from Limitless (run after `update-data`).
 - `npx vite preview --port 4201` serves the build at `http://localhost:4201/`, not at `/Pokemon-VGC-Tools/`. Run `pkill -f "vite preview"` as a separate command, because chaining it with other commands aborts the chain.
 
 Before committing, run lint, tests and build. Commit and push only when the user asks. Never add co-author or attribution lines.
@@ -30,7 +31,7 @@ Before committing, run lint, tests and build. Commit and push only when the user
 | Tab | Page | Main pieces |
 |---|---|---|
 | Pokémon (dex) | `src/pages/DexPage.tsx` | `components/dex/DexSidebar.tsx` (list, search, sort), `DexDetail.tsx` (stats, sets, usage tiles), `ShareList.tsx`. Sorting and trends: `lib/dex.ts`, `components/Trend.tsx`. |
-| Team | `src/pages/TeamPage.tsx` | `TeamSwitcher.tsx` (saved teams), `TeamCards.tsx`, `DefensiveChart.tsx`, `SpeedTiers.tsx`, `ThreatList.tsx`, `RolesChecklist.tsx`, `TeammateSuggestions.tsx` |
+| Team | `src/pages/TeamPage.tsx` (section tabs: Defense / Threats / Speed / Swap ideas / Top teams) | `TeamSwitcher.tsx` (saved teams), `TeamCards.tsx`, `DefensiveChart.tsx`, `SpeedTiers.tsx`, `ThreatList.tsx`, `RolesChecklist.tsx`, `TeammateSuggestions.tsx`, `TournamentTeams.tsx` |
 | Matchup | `src/pages/MatchupPage.tsx` | `components/matchup/OpponentPicker.tsx`, `MatchupGrid.tsx`, `Lineups.tsx` (suggested fours), `LeadBoard.tsx` (lead vs lead) |
 | Calc | `src/pages/CalcPage.tsx` | `components/calc/CalcSide.tsx` (one side's set), `SearchPicker.tsx` (the item and move dropdowns), `CalcResults.tsx`, `CalcFieldPanel.tsx`, `CalcOptimizer.tsx` |
 | Coverage | `src/pages/CoveragePage.tsx` | `TypePicker.tsx`, `TeamTypeShortcuts.tsx`, `CoverageSummary.tsx`, `PokemonTable.tsx` (roster table), `Suggestions.tsx` |
@@ -57,6 +58,7 @@ Before committing, run lint, tests and build. Commit and push only when the user
 | Pokémon list search, sort and trends | `dex.ts` |
 | Regulation mods applied to moves and items | `mods.ts` |
 | Saved teams store, naming rules, share links | `teams.ts`; hook in `src/hooks/useSavedTeam.ts` |
+| Tournament teams (Limitless): filtering, paste with usual spreads | `tournaments.ts`; data from `scripts/update-teams.ts` into `src/data/teams/<format>.json`, loaded by `src/data/useTournamentTeams.ts` |
 | localStorage helpers, `regulationKey` (Bo1 and Bo3 share stored state) | `storage.ts`; hook in `src/hooks/usePersistentState.ts` |
 | Sprites and icon sheets | `sprites.ts`, `components/Sprite.tsx` |
 | Test builders | `test-fixtures.ts` |

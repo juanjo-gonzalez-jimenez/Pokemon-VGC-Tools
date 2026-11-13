@@ -98,7 +98,7 @@ export interface LeadBoard {
   /** Your attacks into their leads, and theirs into yours. */
   mine: BoardRow[];
   against: BoardRow[];
-  /** "Incineroar's Intimidate: Rillaboom −1 Atk" style notes. */
+  /** "Your Incineroar's Intimidate: their Rillaboom −1 Atk" style notes. */
   notes: string[];
 }
 
@@ -106,8 +106,12 @@ export interface LeadBoard {
 export const BOARD_MOVE_SHARE = 0.15;
 const BOARD_MAX_MOVES = 4;
 
-/** Intimidate from every Intimidate user on one side into both foes. */
-function applyIntimidates(side: Combatant[], foes: Combatant[], notes: string[]): void {
+/**
+ * Intimidate from every Intimidate user on one side into both foes. Notes say whose Pokémon is
+ * whose, since both sides can lead the same species.
+ */
+function applyIntimidates(side: Combatant[], foes: Combatant[], notes: string[], owner: 'yours' | 'theirs'): void {
+  const [us, them] = owner === 'yours' ? ['Your', 'their'] : ['Their', 'your'];
   for (let i = 0; i < side.length; i++) {
     if (!hasIntimidate(side[i])) continue;
     for (let j = 0; j < foes.length; j++) {
@@ -120,11 +124,11 @@ function applyIntimidates(side: Combatant[], foes: Combatant[], notes: string[])
         .map(([s, n]) => `${n > 0 ? '+' : '−'}${Math.abs(n)} ${s === 'atk' ? 'Atk' : 'SpA'}`);
       const reflected = (side[i].boosts?.atk ?? 0) !== before.user;
       const effect = reflected
-        ? `reflected by ${foes[j].name}'s Mirror Armor`
+        ? `reflected by ${them} ${foes[j].name}'s Mirror Armor`
         : changes.length
-          ? `${foes[j].name} ${changes.join(', ')}`
-          : `${foes[j].name} unaffected`;
-      notes.push(`${side[i].name}'s Intimidate: ${effect}`);
+          ? `${them} ${foes[j].name} ${changes.join(', ')}`
+          : `${them} ${foes[j].name} unaffected`;
+      notes.push(`${us} ${side[i].name}'s Intimidate: ${effect}`);
     }
   }
 }
@@ -179,8 +183,8 @@ export function leadBoard(
   }
   const mine = yours.map(fromMember);
   const opp = theirs.map(fromMeta);
-  applyIntimidates(mine, opp, notes);
-  applyIntimidates(opp, mine, notes);
+  applyIntimidates(mine, opp, notes, 'yours');
+  applyIntimidates(opp, mine, notes, 'theirs');
   const field = fixedField ?? fieldOf([...mine, ...opp].map(c => c.ability));
   const [a, b] = mine as [Combatant, Combatant];
   const [x, y] = opp as [Combatant, Combatant];

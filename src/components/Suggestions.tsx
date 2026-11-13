@@ -20,8 +20,15 @@ export function Suggestions({suggestions, canAdd, onAdd}: Props) {
           <li key={s.type}>
             <button className="suggestion" disabled={!canAdd} onClick={() => onAdd(s.type)}>
               <TypeBadge type={s.type} />
-              <span className="gain good">{signed(s.superGain)} super effective</span>
-              <span className={`gain ${s.walledChange <= 0 ? 'good' : 'bad'}`}>{signed(s.walledChange)} walled</span>
+              {/* Number on top, what it measures underneath: each figure keeps its own line. */}
+              <span className="gain good">
+                {signed(s.superGain)}
+                <small>super effective</small>
+              </span>
+              <span className={`gain ${s.walledChange <= 0 ? 'good' : 'bad'}`}>
+                {signed(s.walledChange)}
+                <small>walled</small>
+              </span>
             </button>
           </li>
         ))}

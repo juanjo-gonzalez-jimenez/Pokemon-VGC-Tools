@@ -18,7 +18,9 @@ mode, searcher sort and type filter are remembered in the browser.
 ## Team analysis
 
 Paste a Showdown / Pokepaste export (the `EVs:` line holds Champions stat points) on the **Team**
-tab to see:
+tab. The team, its roles and its member cards stay on top; below them, section tabs
+(**Defense · Threats · Speed · Swap ideas · Top teams**) show one analysis at a time, and the
+last one picked is remembered. They cover:
 
 - Defensive chart: what each attacking type does to each member (abilities and Mega forms
   included), with shared weaknesses called out
@@ -123,8 +125,18 @@ The **Pokémon** tab uses the full screen. Its sidebar has:
 change in percentage points since the previous month of the same regulation at the same rating
 cutoff, or "new" for a Pokémon unused last month.
 The selected Pokémon shows base stats, moves, items, abilities, natures, the most common
-stat-point spreads (with resulting Lv. 50 stats) and common teammates (click one to open it).
+stat-point spreads (with resulting Lv. 50 stats), common teammates (click one to open it) and
+recent top tournament teams that use it.
 Links like `#/dex/garchomp` open a Pokémon directly.
+
+## Tournament teams
+
+Recent top teams from [Limitless](https://play.limitlesstcg.com/) tournaments: the top 4 of the
+25 biggest events (32+ players) of the regulation in the last 30 days, with placing, record,
+player and event. They appear on each Pokémon's page and in the Team tab's **Start from a top
+team** panel (the latest winners first). **Open in Team tab** saves one as a new team. Tournaments don't publish stat
+points, so each Pokémon gets its most used usage spread (with the team's nature when one
+matches); edit them in the text. The player's name links to the team on Limitless.
 
 ### Setup
 
@@ -139,6 +151,7 @@ npm run lint         # oxlint
 npm test             # unit tests
 npm run build        # static site in dist/
 npm run update-data  # refresh data from Showdown + Smogon
+npm run update-teams # refresh tournament teams from Limitless (after update-data)
 ```
 
 ### Data
@@ -159,6 +172,11 @@ Each regulation comes twice in the regulation menu:
 
 Both share your saved opponents, leads and calculator setup.
 
+`npm run update-teams` reads Limitless's public API (no key; 50 requests per 5 minutes, so it
+waits when the limit is close) and writes `src/data/teams/<format>.json`, shared by a
+regulation's Bo1 and Bo3 entries. Species are matched to Showdown ids, and a member holding its
+Mega Stone is recorded as the Mega form it battles as.
+
 Showdown's source files are only read as text (`scripts/parsers.ts`, covered by tests). The
 script computes everything first and aborts without writing if a result looks broken (too few
 species, moves, items or legal Pokémon, or a list that shrank by more than 30%).
@@ -167,8 +185,10 @@ species, moves, items or legal Pokémon, or a list that shrank by more than 30%)
 
 - `.github/workflows/deploy.yml`: every push to `main` is linted, tested, built and published
   to GitHub Pages (repo Settings → Pages → Source: GitHub Actions).
-- `.github/workflows/update-data.yml`: on the 3rd and 10th of each month (or run manually from
-  the Actions tab) it refreshes the data, commits it if it changed and redeploys.
+- `.github/workflows/update-data.yml`: every Monday (or run manually from the Actions tab) it
+  refreshes the usage data and the tournament teams, commits them if they changed and
+  redeploys. Smogon publishes a month's stats in the first days of the next month, so weekly
+  runs pick them up within a week.
 
 ### Game accuracy
 

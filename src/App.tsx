@@ -97,7 +97,7 @@ export function App() {
   const summary = index.regulations.find(r => r.id === regId);
 
   return (
-    <main className={page === 'dex' ? 'wide' : page === 'calc' ? 'full' : 'full narrow'}>
+    <main className={page === 'dex' ? 'wide' : 'full'}>
       <header>
         <div className="title-row">
           <h1>
@@ -184,13 +184,13 @@ export function App() {
         </Suspense>
       ) : (
         <Suspense fallback={<p className="muted">Loading…</p>}>
-          <TeamPage roster={roster} weighted={weighted} mod={summary?.mod} />
+          <TeamPage regId={regId} roster={roster} weighted={weighted} mod={summary?.mod} />
         </Suspense>
       )}
 
       {page !== 'dex' && page !== 'calc' && (
         <footer className="muted">
-          Built on Smogon usage stats. Damage figures are estimates: Intimidate and redirection are included; other
+          Built on Smogon usage stats; tournament teams from Limitless. Damage figures are estimates: Intimidate and redirection are included; other
           stat boosts, accuracy, crits, screens and Helping Hand are not.
         </footer>
       )}

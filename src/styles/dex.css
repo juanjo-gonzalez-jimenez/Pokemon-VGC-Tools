@@ -92,7 +92,7 @@ main.wide {
 .dex-head h2 { font-size: 1.7rem; font-weight: 700; line-height: 1.15; margin-bottom: 6px; }
 .dex-facts { display: flex; gap: 10px; margin: 0; }
 .dex-facts > div { background: color-mix(in srgb, var(--panel) 72%, transparent); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 14px; min-width: 92px; }
-.dex-facts dt { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.dex-facts dt { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .dex-facts dd { margin: 0; font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* Every tile is the same height; long content scrolls inside its tile. */
@@ -160,7 +160,7 @@ main.wide {
 .share-row.clickable:hover { background: var(--inset); }
 .share-row.clickable:hover .share-label { color: var(--accent); }
 .share-label { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; min-width: 0; }
-.share-label .type-badge { min-width: 0; font-size: 0.65rem; }
+.share-label .type-badge { min-width: 0; font-size: 0.7rem; }
 .share-detail { width: 100%; font-size: 0.75rem; color: var(--muted); }
 .share-value { font-family: var(--font-display); font-variant-numeric: tabular-nums; font-weight: 600; }
 .share-bar { position: absolute; left: 6px; bottom: 2px; height: 3px; max-width: calc(100% - 12px); border-radius: 2px; background: linear-gradient(90deg, var(--accent-fill), var(--accent)); opacity: 0.75; }
@@ -175,4 +175,4 @@ main.wide {
   .tile { max-height: 320px; }
 }
 .dex-source { margin: 0; padding: 10px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--resisted); font-size: 0.85rem; background: color-mix(in srgb, var(--resisted) 12%, transparent); }
-.dex-row-usage .tag { margin-left: 4px; font-size: 0.6rem; }
+.dex-row-usage .tag { margin-left: 4px; font-size: 0.7rem; }

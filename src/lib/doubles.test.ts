@@ -94,7 +94,7 @@ describe('leadBoard', () => {
   });
   it('notes Intimidate from the leads', () => {
     const lead = leadBoard([{...garchomp, ability: 'Intimidate'}, rotom], [pelipper, raichu], moves);
-    expect(lead.notes).toEqual(['Garchomp\'s Intimidate: Pelipper −1 Atk', 'Garchomp\'s Intimidate: Raichu −1 Atk']);
+    expect(lead.notes).toEqual(["Your Garchomp's Intimidate: their Pelipper −1 Atk", "Your Garchomp's Intimidate: their Raichu −1 Atk"]);
     expect(lead.theirs[0].boosts).toEqual({atk: -1});
   });
   it('lets only the first of two Mega Stone holders Mega Evolve', () => {

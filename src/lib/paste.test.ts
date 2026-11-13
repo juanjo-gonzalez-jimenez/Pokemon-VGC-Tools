@@ -11,6 +11,11 @@ const species: SpeciesTable = {
     name: 'Charizard-Mega-Y', types: ['Fire', 'Flying'], baseStats: stats(100), abilities: ['Drought'],
     requiredItem: 'Charizardite Y', baseSpecies: 'Charizard',
   },
+  floetteeternal: {name: 'Floette-Eternal', types: ['Fairy'], baseStats: stats(92), abilities: ['Flower Veil'], baseSpecies: 'Floette'},
+  floettemega: {
+    name: 'Floette-Mega', types: ['Fairy'], baseStats: stats(102), abilities: ['Fairy Aura'],
+    requiredItem: 'Floettite', baseSpecies: 'Floette',
+  },
 };
 const moves: MoveTable = {
   earthquake: {name: 'Earthquake', type: 'Ground', category: 'Physical', basePower: 100, target: 'allAdjacent', priority: 0},
@@ -76,6 +81,11 @@ Ability: Blaze
     expect(zard.species.name).toBe('Charizard-Mega-Y');
     expect(zard.baseSpecies.name).toBe('Charizard');
     expect(zard.pastedAbility).toBe('Blaze');
+  });
+  it('Mega Evolves a form whose Mega belongs to the base species', () => {
+    const [floette] = parseTeam('Floette-Eternal @ Floettite\nAbility: Flower Veil\n- Fake Out', species, moves).members;
+    expect(floette.isMega).toBe(true);
+    expect(floette.species.name).toBe('Floette-Mega');
   });
   it('skips unknown Pokémon', () => {
     const r = parseTeam('Fakemon @ Leftovers\n- Earthquake', species, moves);

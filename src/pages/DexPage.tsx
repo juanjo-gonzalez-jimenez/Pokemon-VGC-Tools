@@ -4,6 +4,7 @@ import {DexSidebar} from '../components/dex/DexSidebar';
 import type {RegulationSummary} from '../data/types';
 import {useDexList} from '../data/useDexList';
 import {useLookupTables} from '../data/useLookupTables';
+import {useTournamentTeams} from '../data/useTournamentTeams';
 import {usePersistentState} from '../hooks/usePersistentState';
 import {searchRoster, SORT_KEYS, sortRoster, type SortKey} from '../lib/dex';
 import {oneOf} from '../lib/storage';
@@ -26,6 +27,7 @@ export function DexPage({regulations, regId, onRegChange, selectedId, onSelect}:
   const [type, setType] = usePersistentState<TypeName | ''>('vgc-tools:dex-type', '', oneOf(['', ...TYPES]));
 
   const dexList = useDexList(regId);
+  const tournamentTeams = useTournamentTeams(regId);
   const roster = useMemo(() => dexList ?? [], [dexList]);
   const list = useMemo(() => sortRoster(searchRoster(roster, query, type), sort), [roster, query, type, sort]);
   // Usage rank only among Pokémon with rating-cutoff data (the list is already sorted that way).
@@ -64,6 +66,7 @@ export function DexPage({regulations, regId, onRegChange, selectedId, onSelect}:
             moves={tables?.moves ?? null}
             items={tables?.items ?? null}
             possibleAbilities={tables?.species[selected.id]?.abilities ?? []}
+            tournamentTeams={tournamentTeams}
             onSelect={onSelect}
           />
         ) : (

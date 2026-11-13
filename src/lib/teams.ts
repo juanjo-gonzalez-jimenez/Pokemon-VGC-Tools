@@ -116,7 +116,10 @@ export function importTeam(store: TeamStore, text: string, name: string): TeamSt
   if (same) return {...store, active: same.id};
   // Fill the blank first team instead of adding next to it.
   const current = activeTeam(store);
-  if (!current.text.trim()) return {...store, teams: store.teams.map(t => (t.id === current.id ? {...t, name, text} : t))};
+  if (!current.text.trim()) {
+    const unique = uniqueName({...store, teams: store.teams.filter(t => t.id !== current.id)}, name);
+    return {...store, teams: store.teams.map(t => (t.id === current.id ? {...t, name: unique, text} : t))};
+  }
   return addTeam(store, text, name);
 }
 
