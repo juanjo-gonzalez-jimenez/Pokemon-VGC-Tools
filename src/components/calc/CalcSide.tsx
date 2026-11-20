@@ -66,7 +66,7 @@ export function CalcSide({side, title, dex, tables, itemNames, moveNames, pokemo
             </div>
           </div>
         </div>
-        <PokemonSearch dex={dex} onPick={onPick} placeholder="Change Pokémon…" label={`${title}: change Pokémon`} />
+        <PokemonSearch dex={dex} onPick={onPick} placeholder="Change Pokémon…" label={`${title}: change Pokémon`} browse={50} />
       </header>
 
       {spreads.length > 0 ? (

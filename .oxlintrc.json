@@ -7,5 +7,5 @@
     "react/exhaustive-deps": "warn",
     "react/react-in-jsx-scope": "off"
   },
-  "ignorePatterns": ["dist", "node_modules", "src/data/**/*.json"]
+  "ignorePatterns": [".claude/**", "dist", "node_modules", "src/data/**/*.json"]
 }

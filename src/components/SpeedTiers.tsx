@@ -38,8 +38,11 @@ export function SpeedTiers({speeds, roster, mode, onModeChange}: Props) {
   }, [speeds, roster, mode, trickRoom]);
 
   const spreadTitle = (p: MetaPokemon) =>
+    // The 8 most common speeds, listed fastest first.
     metaSpeeds(p)
+      .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
+      .sort((a, b) => b[0] - a[0])
       .map(([s, share]) => `${their(s)}: ${pct(share, 0)}`)
       .join('\n');
 
