@@ -36,7 +36,7 @@ export interface CalcState {
   singleTarget: boolean;
 }
 
-const zeroSp = (): StatsTable => ({hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0});
+export const zeroSp = (): StatsTable => ({hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0});
 const noBoosts = (): Record<BoostStat, number> => ({atk: 0, def: 0, spa: 0, spd: 0, spe: 0});
 const top = (shares: Record<string, number>) =>
   Object.entries(shares).reduce<[string, number]>((a, b) => (b[1] > a[1] ? b : a), ['', 0])[0];

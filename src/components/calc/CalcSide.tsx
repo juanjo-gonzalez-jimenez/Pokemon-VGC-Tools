@@ -2,7 +2,7 @@ import type {MetaPokemon, SpeciesData} from '../../data/types';
 import type {LookupTables} from '../../data/useLookupTables';
 import {toID} from '../../lib/ids';
 import {canLearn, learnsetOf} from '../../lib/learnsets';
-import {BOOST_STATS, setStats, spProblems, spreadOptions, withSpread, type BoostStat, type CalcSet} from '../../lib/calcset';
+import {BOOST_STATS, setStats, spProblems, spreadOptions, withSpread, zeroSp, type BoostStat, type CalcSet} from '../../lib/calcset';
 import {NATURES, NEUTRAL_NATURES, STAT_LABELS, STATS} from '../../lib/stats';
 import {pct} from '../CoverageSummary';
 import {PokemonSearch} from '../PokemonSearch';
@@ -219,6 +219,9 @@ export function CalcSide({side, title, dex, tables, itemNames, moveNames, pokemo
           title="Lower Attack by one stage"
         >
           Intimidated (−1 Atk)
+        </button>
+        <button className="primary" onClick={() => update({sp: zeroSp()})} disabled={STATS.every(s => set.sp[s] === 0)}>
+          Reset points
         </button>
         {BOOST_STATS.some(s => set.boosts[s] !== 0) && (
           <button className="link" onClick={() => update({boosts: {atk: 0, def: 0, spa: 0, spd: 0, spe: 0}})}>
