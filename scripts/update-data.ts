@@ -17,6 +17,8 @@ import {
   championsVgcCutoffs,
   formatMods,
   formatName,
+  localNames,
+  parseCsv,
   isBo3,
   legalSpecies,
   parseIconIndexes,
@@ -73,6 +75,29 @@ const FLOORS = {species: 1000, moves: 700, items: 400, icons: 100, legal: 50, ro
 const MAX_SHRINK = 0.7;
 
 const OUT_DIR = join(import.meta.dirname, '..', 'src', 'data');
+
+/** PokéAPI's open data: translated names for the Spanish team list. */
+const POKEAPI_CSV = 'https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv';
+const SPANISH = '7';
+/** names-es.json group -> [PokéAPI identifier table, its names table, sanity floor]. */
+const NAME_TABLES = {
+  species: ['pokemon_species', 'pokemon_species_names', 1000],
+  moves: ['moves', 'move_names', 900],
+  items: ['items', 'item_names', 1500],
+  abilities: ['abilities', 'ability_names', 300],
+  natures: ['natures', 'nature_names', 25],
+} as const;
+type NameGroup = keyof typeof NAME_TABLES;
+
+async function spanishNames(): Promise<Record<NameGroup, Record<string, string>>> {
+  const csv = async (file: string) => parseCsv(await (await get(`${POKEAPI_CSV}/${file}.csv`)).text());
+  const out = {} as Record<NameGroup, Record<string, string>>;
+  for (const [group, [ids, names, floor]] of Object.entries(NAME_TABLES) as [NameGroup, (typeof NAME_TABLES)[NameGroup]][]) {
+    out[group] = localNames(await csv(ids), await csv(names), SPANISH);
+    check(Object.keys(out[group]).length >= floor, `only ${Object.keys(out[group]).length} Spanish ${group} names`);
+  }
+  return out;
+}
 
 interface DexEntry {
   num: number;
@@ -543,6 +568,10 @@ async function main() {
     `Lookup tables: ${Object.keys(species).length} species, ${Object.keys(moveTable).length} moves, ` +
       `${Object.keys(items).length} items`,
   ];
+  const es = await spanishNames();
+  outputs.set(join(OUT_DIR, 'names-es.json'), JSON.stringify(es, null, 1));
+  /** Names some regulation uses, to report the ones with no Spanish name (the sheet prints English). */
+  const used: Record<Exclude<NameGroup, 'natures'>, Set<string>> = {species: new Set(), moves: new Set(), items: new Set(), abilities: new Set()};
 
   const regulations: RegulationIndex['regulations'] = [];
   for (const [id, {month, cutoff, previousMonth}] of formats) {
@@ -597,6 +626,13 @@ async function main() {
     check(game.unavailableMoves.length < Object.keys(moveTable).length * 0.8, `${mod}: almost every move unavailable`);
     // Learnsets: forms without their own (Megas, battle forms) use the form they change from
     // (Floette-Mega -> Floette-Eternal).
+    for (const p of dexList) {
+      const entry = dex[p.id];
+      used.species.add(toID(entry?.baseSpecies ?? entry?.name ?? p.id));
+      for (const a of Object.values(entry?.abilities ?? {})) used.abilities.add(toID(a));
+      for (const m of Object.keys(p.moves)) used.moves.add(toID(m));
+      for (const i of Object.keys(p.items)) used.items.add(toID(i));
+    }
     if (game.learnsets) {
       for (const p of dexList) {
         const entry = dex[p.id];
@@ -640,6 +676,11 @@ async function main() {
   for (const r of regulations) played.set(base(r.id), (played.get(base(r.id)) ?? 0) + r.battles);
   regulations.sort(
     (a, b) => played.get(base(b.id))! - played.get(base(a.id))! || base(a.id).localeCompare(base(b.id)) || Number(isBo3(b.id)) - Number(isBo3(a.id)),
+  );
+  const noSpanish = Object.entries(used).flatMap(([g, ids]) => [...ids].filter(id => !es[g as NameGroup][id]));
+  summary.push(
+    `Spanish names: ${Object.entries(es).map(([g, n]) => `${Object.keys(n).length} ${g}`).join(', ')}` +
+      (noSpanish.length ? `; used but English only: ${noSpanish.slice(0, 20).join(', ')}` : ''),
   );
   // `updated` is the newest stats month, so re-running with unchanged stats rewrites nothing.
   const index: RegulationIndex = {updated: regulations.map(r => r.month).sort().at(-1)!, regulations};

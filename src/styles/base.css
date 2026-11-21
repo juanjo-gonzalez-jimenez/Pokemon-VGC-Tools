@@ -122,7 +122,7 @@ a, button, select, input, textarea, .panel, .tile, .team-card, .mate-card, .line
 .controls .source { margin: 0; font-size: 0.78rem; width: 100%; }
 
 /* Every typing box shares one look (selects, search, text and number fields, text areas). */
-select, input:not([type]), input[type="text"], input[type="search"], input[type="number"], textarea {
+select, input:not([type]), input[type="text"], input[type="search"], input[type="number"], input[type="date"], textarea {
   font: inherit;
   color: var(--text);
   background: var(--inset);
@@ -131,7 +131,7 @@ select, input:not([type]), input[type="text"], input[type="search"], input[type=
   padding: 7px 10px;
 }
 select { cursor: pointer; font-weight: 500; text-transform: none; letter-spacing: 0; font-size: 0.92rem; }
-select:hover, input:not([type]):hover, input[type="text"]:hover, input[type="search"]:hover, input[type="number"]:hover, textarea:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+select:hover, input:not([type]):hover, input[type="text"]:hover, input[type="search"]:hover, input[type="number"]:hover, input[type="date"]:hover, textarea:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
 select:focus-visible, input:focus-visible, textarea:focus-visible { outline-offset: 0; border-color: var(--accent); }
 input[type="checkbox"] { accent-color: var(--accent-fill); width: 16px; height: 16px; cursor: pointer; }
 

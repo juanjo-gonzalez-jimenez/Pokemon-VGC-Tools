@@ -217,3 +217,47 @@ export function parseStandings(
       }),
     }));
 }
+
+/** PokéAPI CSV rows without the header. Quoted fields may hold commas, and `""` inside quotes is a quote. */
+export function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = '';
+  let quoted = false;
+  const endField = () => {
+    row.push(field);
+    field = '';
+  };
+  const endRow = () => {
+    endField();
+    rows.push(row);
+    row = [];
+  };
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quoted) {
+      if (c !== '"') field += c;
+      else if (text[i + 1] === '"') field += text[++i];
+      else quoted = false;
+    } else if (c === '"') quoted = true;
+    else if (c === ',') endField();
+    else if (c === '\n') endRow();
+    else if (c !== '\r') field += c;
+  }
+  if (field || row.length) endRow();
+  return rows.slice(1);
+}
+
+/**
+ * Names in one language, keyed by Showdown ID. `identifiers` rows are `[id, identifier, …]`
+ * (e.g. items.csv) and `names` rows are `[ownerId, languageId, name, …]` (e.g. item_names.csv).
+ */
+export function localNames(identifiers: string[][], names: string[][], languageId: string): Record<string, string> {
+  const idOf = new Map(identifiers.map(([id, identifier]) => [id, toID(identifier)]));
+  const out: Record<string, string> = {};
+  for (const [owner, lang, name] of names) {
+    const id = idOf.get(owner);
+    if (lang === languageId && id && name) out[id] = name;
+  }
+  return out;
+}

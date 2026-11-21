@@ -3,6 +3,8 @@ import {
   championsVgcCutoffs,
   formatMods,
   formatName,
+  localNames,
+  parseCsv,
   legalSpecies,
   parseIconIndexes,
   parseItemNonstandard,
@@ -250,5 +252,20 @@ describe('parseStandings', () => {
     expect(b.members[0].form).toBe('charizard');
     expect(a.members[1]).toMatchObject({species: 'ninetalesalola', name: 'Ninetales-Alola', form: 'ninetalesalola'});
     expect(a.record).toEqual({wins: 7, losses: 1, ties: 0});
+  });
+});
+
+describe('PokéAPI CSV names', () => {
+  it('parseCsv drops the header and keeps quoted commas and quotes', () => {
+    expect(parseCsv('id,name\n1,"Sr. Mime, el"\n2,"say ""hi"""\n')).toEqual([
+      ['1', 'Sr. Mime, el'],
+      ['2', 'say "hi"'],
+    ]);
+  });
+
+  it('localNames maps Showdown ids to one language', () => {
+    const ids = [['264', 'choice-scarf'], ['2263', 'raichunite-y']];
+    const names = [['264', '7', 'Pañuelo Elección'], ['264', '9', 'Choice Scarf'], ['2263', '7', 'Raichunita Y']];
+    expect(localNames(ids, names, '7')).toEqual({choicescarf: 'Pañuelo Elección', raichunitey: 'Raichunita Y'});
   });
 });

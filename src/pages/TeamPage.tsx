@@ -10,14 +10,16 @@ import {ThreatList} from '../components/ThreatList';
 import type {MetaPokemon} from '../data/types';
 import {useLookupTables} from '../data/useLookupTables';
 import {usePersistentState} from '../hooks/usePersistentState';
-import {useSavedTeam} from '../hooks/useSavedTeam';
+import {useSavedTeam, useTeamStore} from '../hooks/useSavedTeam';
 import {checkLegality} from '../lib/legality';
 import {parseTeam} from '../lib/paste';
 import {teamRoles} from '../lib/roles';
 import {oneOf} from '../lib/storage';
+import {activeTeam} from '../lib/teams';
 import {defensiveChart, SPEED_MODE_IDS, teamSpeeds, type SpeedMode} from '../lib/team';
 import {suggestTeammates} from '../lib/teammates';
 import {threatList} from '../lib/threats';
+import {TeamListDownload} from '../components/TeamListDownload';
 import {TeamSwitcher} from '../components/TeamSwitcher';
 import {TournamentTeams} from '../components/TournamentTeams';
 import {useDexList} from '../data/useDexList';
@@ -158,6 +160,7 @@ interface Props {
 
 export function TeamPage({regId, roster, weighted, mod}: Props) {
   const [text, update] = useSavedTeam();
+  const [store] = useTeamStore();
   const tables = useLookupTables(mod);
   // Shared by the speed tiers and the threat list.
   const [speedMode, setSpeedMode] = usePersistentState<SpeedMode>('vgc-tools:speed-mode', 'normal', oneOf(SPEED_MODE_IDS));
@@ -231,6 +234,7 @@ export function TeamPage({regId, roster, weighted, mod}: Props) {
               availability).
             </p>
           ))}
+        {team.length > 0 && <TeamListDownload team={team} teamName={activeTeam(store).name} />}
       </Panel>
       {team.length > 0 && <RolesChecklist roles={roles} />}
       </div>
